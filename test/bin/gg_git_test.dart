@@ -7,26 +7,34 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:gg_capture_print/gg_capture_print.dart';
 import 'package:test/test.dart';
 
 import '../../bin/gg_git.dart';
+import '../commands/test_helpers.dart';
 
 void main() {
+  late Directory d;
+
+  setUp(() {
+    d = initTestDir();
+  });
+
   group('bin/gg_git.dart', () {
     // #########################################################################
 
     test('should be executable', () async {
+      await initGit(d);
+
       // Execute bin/gg_git.dart and check if it prints help
       final result = await Process.run(
         './bin/gg_git.dart',
-        ['version-from-git', '--head-only'],
+        ['get-tags', '--head-only'],
         stdoutEncoding: utf8,
         stderrEncoding: utf8,
       );
 
       final expectedMessages = [
-        'No version tag found in head.',
+        'No head tags found.\n',
       ];
 
       final stdout = result.stdout as String;
@@ -39,22 +47,14 @@ void main() {
 
   // ###########################################################################
   group('run(args, log)', () {
-    group('with args=[--param, value]', () {
-      test('should print "value"', () async {
-        // Execute bin/gg_git.dart and check if it prints "value"
-        final messages = <String>[];
-        await run(args: ['--param', '5'], log: messages.add);
+    test('should print "value"', () async {
+      await initGit(d);
 
-        final expectedMessages = [
-          'version-from-git',
-          'Returns the version tag of the latest state or nothing '
-              'if not tagged',
-        ];
+      // Execute bin/gg_git.dart and check if it prints "value"
+      final messages = <String>[];
+      await run(args: ['get-tags', '--directory', d.path], log: messages.add);
 
-        for (final msg in expectedMessages) {
-          expect(hasLog(messages, msg), isTrue);
-        }
-      });
+      expect(messages.last, 'No tags found.');
     });
   });
 }

@@ -15,7 +15,7 @@ Future<void> run({
 }) =>
     GgCommandRunner(
       log: log,
-      command: GgGitCmd(log: log),
+      command: GgGit(log: log),
     ).run(args: args);
 
 // .............................................................................

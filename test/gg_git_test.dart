@@ -22,17 +22,8 @@ void main() {
 
   group('GgGit()', () {
     // #########################################################################
-    group('exec()', () {
-      test('description of the test ', () async {
-        final ggGit = GgGit(param: 'foo', log: (msg) => messages.add(msg));
-
-        await ggGit.exec();
-      });
-    });
-
-    // #########################################################################
     group('GgGit', () {
-      final ggGit = GgGitCmd(log: (msg) => messages.add(msg));
+      final ggGit = GgGit(log: (msg) => messages.add(msg));
 
       final CommandRunner<void> runner = CommandRunner<void>(
         'ggGit',
