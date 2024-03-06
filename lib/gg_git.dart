@@ -11,4 +11,3 @@ export 'src/commands/get_tags.dart';
 export 'src/commands/is_commited.dart';
 export 'src/commands/is_pushed.dart';
 export 'src/base/gg_git_base.dart';
-export 'src/base/gg_dir_base.dart';

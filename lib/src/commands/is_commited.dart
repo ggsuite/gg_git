@@ -30,7 +30,7 @@ class IsCommited extends GgGitBase {
     await super.run();
 
     final result = await isCommited(
-      directory: directory,
+      directory: inputDir,
       processWrapper: processWrapper,
     );
 

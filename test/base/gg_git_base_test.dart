@@ -43,7 +43,7 @@ void main() {
         test('if directory does not exist', () async {
           initCommand();
           await expectLater(
-            runner.run(['example', '--directory', 'xyz']),
+            runner.run(['example', '--input', 'xyz']),
             throwsA(
               isA<ArgumentError>().having(
                 (e) => e.message,
@@ -59,7 +59,7 @@ void main() {
           initTestDir();
           initCommand();
           await expectLater(
-            runner.run(['example', '--directory', d.path]),
+            runner.run(['example', '--input', d.path]),
             throwsA(
               isA<ArgumentError>().having(
                 (e) => e.message,
@@ -77,7 +77,7 @@ void main() {
       initTestDir();
       await initGit(d);
       initCommand();
-      await runner.run(['example', '--directory', d.path]);
+      await runner.run(['example', '--input', d.path]);
       expect(messages, ['Example executed for "test".']);
       expect(exitCode, 0);
     });

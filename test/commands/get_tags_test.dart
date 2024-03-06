@@ -132,8 +132,7 @@ void main() {
 
             final runner = CommandRunner<void>('test', 'test');
             runner.addCommand(GetTags(log: messages.add));
-            await runner
-                .run(['get-tags', '--directory', d.path, '--head-only']);
+            await runner.run(['get-tags', '--input', d.path, '--head-only']);
 
             expect(messages.last.split('\n'), ['1b', '1a']);
           });
@@ -153,7 +152,7 @@ void main() {
 
             final runner = CommandRunner<void>('test', 'test');
             runner.addCommand(GetTags(log: messages.add));
-            await runner.run(['get-tags', '--directory', d.path]);
+            await runner.run(['get-tags', '--input', d.path]);
 
             expect(messages.last.split('\n'), ['1b', '1a', '0b', '0a']);
           });

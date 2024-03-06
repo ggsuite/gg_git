@@ -33,7 +33,7 @@ class GetTags extends GgGitBase {
 
     if (headOnly) {
       final result = await fromHead(
-        directory: directory,
+        directory: inputDir,
         processWrapper: processWrapper,
         log: super.log,
       );
@@ -41,7 +41,7 @@ class GetTags extends GgGitBase {
       log(result.isNotEmpty ? result.join('\n') : 'No head tags found.');
     } else {
       final result = await all(
-        directory: directory,
+        directory: inputDir,
         processWrapper: processWrapper,
         log: super.log,
       );

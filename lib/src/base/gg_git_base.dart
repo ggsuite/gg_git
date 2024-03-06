@@ -6,13 +6,13 @@
 
 import 'dart:io';
 
-import 'package:gg_git/src/base/gg_dir_base.dart';
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
 
 // #############################################################################
 /// Base class for all ggGit commands
-abstract class GgGitBase extends GgDirBase {
+abstract class GgGitBase extends GgDirCommand {
   /// Constructor
   GgGitBase({
     required super.log,
@@ -22,7 +22,7 @@ abstract class GgGitBase extends GgDirBase {
   // ...........................................................................
   /// Returns true if everything in the directory is commited.
   static Future<void> checkDir({required String directory}) async {
-    await GgDirBase.checkDir(directory: directory);
+    await GgDirCommand.checkDir(directory: directory);
 
     // Does directory exist?
     final dirName = basename(canonicalize(directory));
@@ -58,7 +58,7 @@ class GgGitCommandExample extends GgGitBase {
   @override
   Future<void> run() async {
     await super.run();
-    await GgGitBase.checkDir(directory: directory);
-    log('Example executed for "$directoryName".');
+    await GgGitBase.checkDir(directory: inputDir);
+    log('Example executed for "$inputDirName".');
   }
 }

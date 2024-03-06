@@ -4,8 +4,6 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
-import 'dart:convert';
-
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
@@ -32,7 +30,7 @@ class IsPushed extends GgGitBase {
     String? lastLog;
 
     final result = await isPushed(
-      directory: directory,
+      directory: inputDir,
       processWrapper: processWrapper,
       log: (msg) {
         log(msg);
@@ -59,8 +57,6 @@ class IsPushed extends GgGitBase {
       'git',
       ['status'],
       workingDirectory: directory,
-      stderrEncoding: utf8,
-      stdoutEncoding: utf8,
     );
 
     final directoryName = basename(canonicalize(directory));

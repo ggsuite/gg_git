@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:gg_git/src/commands/is_commited.dart';
 import 'package:gg_process/gg_process.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'test_helpers.dart' as h;
 
@@ -43,8 +44,20 @@ void main() {
     group('run(), isCommited()', () {
       // .......................................................................
       test('should throw if "git status" fails', () async {
-        final failingProcessWrapper = GgProcessWrapperMock(
-          runResult: ProcessResult(
+        final failingProcessWrapper = MockGgProcessWrapper();
+
+        initTestDir();
+        await initGit();
+        initCommand(processWrapper: failingProcessWrapper);
+
+        when(
+          () => failingProcessWrapper.run(
+            any(),
+            any(),
+            workingDirectory: testDir.path,
+          ),
+        ).thenAnswer(
+          (_) async => ProcessResult(
             1,
             1,
             'git status failed',
@@ -52,12 +65,8 @@ void main() {
           ),
         );
 
-        initTestDir();
-        await initGit();
-        initCommand(processWrapper: failingProcessWrapper);
-
         await expectLater(
-          runner.run(['is-commited', '--directory', testDir.path]),
+          runner.run(['is-commited', '--input', testDir.path]),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -76,7 +85,7 @@ void main() {
         initCommand();
 
         await expectLater(
-          runner.run(['is-commited', '--directory', testDir.path]),
+          runner.run(['is-commited', '--input', testDir.path]),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -95,7 +104,7 @@ void main() {
         initTestDir();
         await initGit();
         initCommand();
-        await runner.run(['is-commited', '--directory', testDir.path]);
+        await runner.run(['is-commited', '--input', testDir.path]);
         expect(messages, ['Everything is commited.']);
       });
     });
