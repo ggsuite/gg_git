@@ -91,6 +91,16 @@ Directory initLocalGit(Directory testDir) {
     throw Exception('Could not initialize local git repository.');
   }
 
+  final result2 = Process.runSync(
+    'git',
+    ['checkout', '-b', 'main'],
+    workingDirectory: localDir.path,
+  );
+
+  if (result2.exitCode != 0) {
+    throw Exception('Could not create main branch.');
+  }
+
   return localDir;
 }
 
