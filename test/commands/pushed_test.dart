@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:gg_git/src/commands/pushed.dart';
+import 'package:gg_git/src/tools/is_github.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
@@ -145,18 +146,22 @@ void main() {
         isA<Exception>().having(
           (e) => e.toString(),
           'message',
-          'Exception: Not everything is pushed.',
+          contains(message),
         ),
       ),
     );
-
-    expect(messages.last, contains(message));
   }
 
   // ...........................................................................
   setUp(() {
+    testIsGitHub = true;
     runner = CommandRunner<void>('test', 'test');
     messages.clear();
+  });
+
+  // ...........................................................................
+  tearDown(() {
+    testIsGitHub = null;
   });
 
   group('GgIsPushed', () {
@@ -258,7 +263,7 @@ void main() {
 
           // Push state
           await runner.run(['pushed', '--input', localDir.path]);
-          expect(messages.last, 'Everything is pushed.');
+          expect(messages.last, contains('✅ Everything is pushed.'));
 
           // .............
           // Make a change
@@ -276,7 +281,7 @@ void main() {
           // Push state
           pushFile();
           await runner.run(['pushed', '--input', localDir.path]);
-          expect(messages.last, 'Everything is pushed.');
+          expect(messages.last, contains('Everything is pushed.'));
 
           // ..................
           // Remove last commit
@@ -285,7 +290,7 @@ void main() {
 
           pull();
           await runner.run(['pushed', '--input', localDir.path]);
-          expect(messages.last, 'Everything is pushed.');
+          expect(messages.last, contains('Everything is pushed.'));
         });
       });
     });
@@ -309,7 +314,7 @@ void main() {
         // Push state
         pushFile();
         await runner.run(['pushed', '--input', localDir.path]);
-        expect(messages.last, 'Everything is pushed.');
+        expect(messages.last, contains('Everything is pushed.'));
 
         // .............
         // Make a change
@@ -318,14 +323,14 @@ void main() {
         commitFile();
         pushFile();
         await runner.run(['pushed', '--input', localDir.path]);
-        expect(messages.last, 'Everything is pushed.');
+        expect(messages.last, contains('Everything is pushed.'));
 
         // ..................
         // Remove last commit
         removeLastCommit();
         pull();
         await runner.run(['pushed', '--input', localDir.path]);
-        expect(messages.last, 'Everything is pushed.');
+        expect(messages.last, contains('Everything is pushed.'));
       });
     });
   });
