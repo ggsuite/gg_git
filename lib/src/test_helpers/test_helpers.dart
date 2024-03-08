@@ -66,7 +66,7 @@ Directory initRemoteGit(Directory testDir) {
   remoteDir.createSync(recursive: true);
   final result = Process.runSync(
     'git',
-    ['init', '--bare'],
+    ['init', '--bare', '--initial-branch=main'],
     workingDirectory: remoteDir.path,
   );
   if (result.exitCode != 0) {
@@ -84,7 +84,7 @@ Directory initLocalGit(Directory testDir) {
 
   final result = Process.runSync(
     'git',
-    ['init'],
+    ['init', '--initial-branch=main'],
     workingDirectory: localDir.path,
   );
   if (result.exitCode != 0) {
