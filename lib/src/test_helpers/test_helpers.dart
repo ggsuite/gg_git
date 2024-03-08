@@ -6,6 +6,8 @@
 
 import 'dart:io';
 
+import 'package:gg_is_github/gg_is_github.dart';
+
 // coverage:ignore-file
 
 // .............................................................................
@@ -34,24 +36,26 @@ Future<void> initGit(Directory testDir) async {
     throw Exception('Could not initialize git repository. ${result.stderr}');
   }
 
-  final result2 = await Process.run(
-    'git',
-    ['config', '--global', 'user.email', 'githubaction@inlavigo.com'],
-    workingDirectory: testDir.path,
-  );
+  if (isGitHub) {
+    final result2 = await Process.run(
+      'git',
+      ['config', '--global', 'user.email', 'githubaction@inlavigo.com'],
+      workingDirectory: testDir.path,
+    );
 
-  if (result.exitCode != 0) {
-    throw Exception('Could not set mail. ${result2.stderr}');
-  }
+    if (result.exitCode != 0) {
+      throw Exception('Could not set mail. ${result2.stderr}');
+    }
 
-  final result3 = await Process.run(
-    'git',
-    ['config', '--global', 'user.name', 'Github Action'],
-    workingDirectory: testDir.path,
-  );
+    final result3 = await Process.run(
+      'git',
+      ['config', '--global', 'user.name', 'Github Action'],
+      workingDirectory: testDir.path,
+    );
 
-  if (result.exitCode != 0) {
-    throw Exception('Could not set mail. ${result3.stderr}');
+    if (result.exitCode != 0) {
+      throw Exception('Could not set mail. ${result3.stderr}');
+    }
   }
 }
 
