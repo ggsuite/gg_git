@@ -36,7 +36,7 @@ Future<void> initGit(Directory testDir) async {
 
   final result2 = await Process.run(
     'git',
-    ['config', 'user.email', 'githubaction@inlavigo.com'],
+    ['config', '--global', 'user.email', 'githubaction@inlavigo.com'],
     workingDirectory: testDir.path,
   );
 
@@ -46,7 +46,7 @@ Future<void> initGit(Directory testDir) async {
 
   final result3 = await Process.run(
     'git',
-    ['config', 'user.name', 'Github Action'],
+    ['config', '--global', 'user.name', 'Github Action'],
     workingDirectory: testDir.path,
   );
 
