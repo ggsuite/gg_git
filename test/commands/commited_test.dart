@@ -7,7 +7,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:gg_git/src/commands/is_commited.dart';
+import 'package:gg_git/gg_git.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -16,7 +16,7 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
-  late IsCommited ggIsCommited;
+  late Commited ggIsCommited;
   late Directory testDir;
 
   // ...........................................................................
@@ -26,7 +26,7 @@ void main() {
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
-    ggIsCommited = IsCommited(
+    ggIsCommited = Commited(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
@@ -66,7 +66,7 @@ void main() {
         );
 
         await expectLater(
-          runner.run(['is-commited', '--input', testDir.path]),
+          runner.run(['commited', '--input', testDir.path]),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -85,7 +85,7 @@ void main() {
         initCommand();
 
         await expectLater(
-          runner.run(['is-commited', '--input', testDir.path]),
+          runner.run(['commited', '--input', testDir.path]),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -104,7 +104,7 @@ void main() {
         initTestDir();
         await initGit();
         initCommand();
-        await runner.run(['is-commited', '--input', testDir.path]);
+        await runner.run(['commited', '--input', testDir.path]);
         expect(messages, ['Everything is commited.']);
       });
     });

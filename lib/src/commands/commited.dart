@@ -11,17 +11,17 @@ import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
 
 // #############################################################################
-/// Provides "ggGit is-commited <dir>" command
-class IsCommited extends GgGitBase {
+/// Provides "ggGit commited <dir>" command
+class Commited extends GgGitBase {
   /// Constructor
-  IsCommited({
+  Commited({
     required super.log,
     super.processWrapper,
   });
 
   // ...........................................................................
   @override
-  final name = 'is-commited';
+  final name = 'commited';
   @override
   final description =
       'Is everything in the current working directory commited?';
