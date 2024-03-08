@@ -1,7 +1,8 @@
 # Change Log
 
-## 1.0.4
+## 1.0.5
 
+- Colorful command line outputs
 - Remove double `Everything is pushed.` message
 
 ## 1.0.2
