@@ -11,17 +11,17 @@ import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
 
 // #############################################################################
-/// Provides "ggGit is-pushed <dir>" command
-class IsPushed extends GgGitBase {
+/// Provides "ggGit pushed <dir>" command
+class Pushed extends GgGitBase {
   /// Constructor
-  IsPushed({
+  Pushed({
     required super.log,
     super.processWrapper,
   });
 
   // ...........................................................................
   @override
-  final name = 'is-pushed';
+  final name = 'pushed';
   @override
   final description = 'Is everything in the current working directory pushed?';
 

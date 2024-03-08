@@ -7,7 +7,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:gg_git/src/commands/is_pushed.dart';
+import 'package:gg_git/src/commands/pushed.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
@@ -17,7 +17,7 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
-  late IsPushed ggIsPushed;
+  late Pushed ggIsPushed;
   late Directory d;
   late Directory remoteDir;
   late Directory localDir;
@@ -130,7 +130,7 @@ void main() {
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
-    ggIsPushed = IsPushed(
+    ggIsPushed = Pushed(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
@@ -140,7 +140,7 @@ void main() {
   // ...........................................................................
   Future<void> expectException(String message) async {
     await expectLater(
-      runner.run(['is-pushed', '--input', localDir.path]),
+      runner.run(['pushed', '--input', localDir.path]),
       throwsA(
         isA<Exception>().having(
           (e) => e.toString(),
@@ -186,7 +186,7 @@ void main() {
           );
 
           await expectLater(
-            runner.run(['is-pushed', '--input', localDir.path]),
+            runner.run(['pushed', '--input', localDir.path]),
             throwsA(
               isA<Exception>().having(
                 (e) => e.toString(),
@@ -221,7 +221,7 @@ void main() {
           );
 
           await expectLater(
-            runner.run(['is-pushed', '--input', localDir.path]),
+            runner.run(['pushed', '--input', localDir.path]),
             throwsA(
               isA<Exception>().having(
                 (e) => e.toString(),
@@ -255,7 +255,7 @@ void main() {
           addRemoteToLocal();
 
           // Push state
-          await runner.run(['is-pushed', '--input', localDir.path]);
+          await runner.run(['pushed', '--input', localDir.path]);
           expect(messages.last, 'Everything is pushed.');
 
           // .............
@@ -273,7 +273,7 @@ void main() {
 
           // Push state
           pushFile();
-          await runner.run(['is-pushed', '--input', localDir.path]);
+          await runner.run(['pushed', '--input', localDir.path]);
           expect(messages.last, 'Everything is pushed.');
 
           // ..................
@@ -282,7 +282,7 @@ void main() {
           await expectException('Local branch is behind remote branch.');
 
           pull();
-          await runner.run(['is-pushed', '--input', localDir.path]);
+          await runner.run(['pushed', '--input', localDir.path]);
           expect(messages.last, 'Everything is pushed.');
         });
       });
@@ -306,7 +306,7 @@ void main() {
 
         // Push state
         pushFile();
-        await runner.run(['is-pushed', '--input', localDir.path]);
+        await runner.run(['pushed', '--input', localDir.path]);
         expect(messages.last, 'Everything is pushed.');
 
         // .............
@@ -315,14 +315,14 @@ void main() {
         addFile();
         commitFile();
         pushFile();
-        await runner.run(['is-pushed', '--input', localDir.path]);
+        await runner.run(['pushed', '--input', localDir.path]);
         expect(messages.last, 'Everything is pushed.');
 
         // ..................
         // Remove last commit
         removeLastCommit();
         pull();
-        await runner.run(['is-pushed', '--input', localDir.path]);
+        await runner.run(['pushed', '--input', localDir.path]);
         expect(messages.last, 'Everything is pushed.');
       });
     });

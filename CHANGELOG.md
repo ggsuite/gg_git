@@ -3,6 +3,7 @@
 ## 1.0.2
 
 - Rename `is-commited` to `commited`
+- Rename `is-pushed` to `pushed`
 
 ## 1.0.1
 

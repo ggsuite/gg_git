@@ -10,7 +10,7 @@
 import 'package:args/command_runner.dart';
 import 'package:gg_git/src/commands/get_tags.dart';
 import 'package:gg_git/src/commands/commited.dart';
-import 'package:gg_git/src/commands/is_pushed.dart';
+import 'package:gg_git/src/commands/pushed.dart';
 
 // #############################################################################
 /// The command line interface for GgGit
@@ -19,7 +19,7 @@ class GgGit extends Command<dynamic> {
   GgGit({required this.log}) {
     addSubcommand(GetTags(log: log));
     addSubcommand(Commited(log: log));
-    addSubcommand(IsPushed(log: log));
+    addSubcommand(Pushed(log: log));
   }
 
   /// The log function
