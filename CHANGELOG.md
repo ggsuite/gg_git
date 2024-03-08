@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.7
+
+- Make pipeline working
+
 ## 1.0.6
 
 - Colorful command line outputs
