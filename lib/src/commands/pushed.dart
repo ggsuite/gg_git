@@ -38,7 +38,7 @@ class Pushed extends GgGitBase {
     final printer = GgStatusPrinter<bool>(
       message: 'Everything is pushed.',
       printCallback: log,
-      useCarriageReturn: isGitHub,
+      useCarriageReturn: !isGitHub,
     );
 
     final result = await printer.logTask(

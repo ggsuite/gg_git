@@ -90,7 +90,7 @@ void main() {
             isA<Exception>().having(
               (e) => e.toString(),
               'message',
-              'Exception: There are uncommited changes.',
+              contains('There are uncommmited changes.'),
             ),
           ),
         );
@@ -105,7 +105,7 @@ void main() {
         await initGit();
         initCommand();
         await runner.run(['commited', '--input', testDir.path]);
-        expect(messages, ['Everything is commited.']);
+        expect(messages.last, contains('✅ Everything is commited.'));
       });
     });
   });

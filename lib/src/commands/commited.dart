@@ -6,8 +6,11 @@
 
 import 'dart:io';
 
+import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
+import 'package:gg_git/src/tools/is_github.dart';
 import 'package:gg_process/gg_process.dart';
+import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:path/path.dart';
 
 // #############################################################################
@@ -31,15 +34,28 @@ class Commited extends GgGitBase {
   Future<void> run() async {
     await super.run();
 
-    final result = await isCommited(
-      directory: inputDir,
-      processWrapper: processWrapper,
+    final messages = <String>[];
+
+    final printer = GgStatusPrinter<bool>(
+      message: 'Everything is commited.',
+      printCallback: log,
+      useCarriageReturn: !isGitHub,
     );
 
-    if (result) {
-      log('Everything is commited.');
-    } else {
-      throw Exception('There are uncommited changes.');
+    final result = await printer.logTask(
+      task: () => isCommited(
+        directory: inputDir,
+        processWrapper: processWrapper,
+      ),
+      success: (success) => success,
+    );
+
+    if (!result) {
+      if (messages.isEmpty) {
+        messages.add('There are uncommmited changes.');
+      }
+
+      throw Exception("$brightBlack${messages.join('\n')}$reset");
     }
   }
 
