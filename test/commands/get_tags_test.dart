@@ -23,13 +23,13 @@ void main() {
   });
 
   Future<List<String>> getFromHead() => GetTags.fromHead(
-        directory: d.path,
+        directory: d,
         processWrapper: const GgProcessWrapper(),
         log: (msg) => messages.add(msg),
       );
 
   Future<List<String>> getAll({bool sort = true}) => GetTags.all(
-        directory: d.path,
+        directory: d,
         processWrapper: const GgProcessWrapper(),
         log: (msg) => messages.add(msg),
       );

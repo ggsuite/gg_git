@@ -21,14 +21,14 @@ abstract class GgGitBase extends GgDirCommand {
 
   // ...........................................................................
   /// Returns true if everything in the directory is commited.
-  static Future<void> checkDir({required String directory}) async {
+  static Future<void> checkDir({required Directory directory}) async {
     await GgDirCommand.checkDir(directory: directory);
 
     // Does directory exist?
-    final dirName = basename(canonicalize(directory));
+    final dirName = basename(canonicalize(directory.path));
 
     // Is directory a git repository?
-    final gitDir = Directory('$directory/.git');
+    final gitDir = Directory('${directory.path}/.git');
     if (!(await gitDir.exists())) {
       throw ArgumentError('Directory "$dirName" is not a git repository.');
     }

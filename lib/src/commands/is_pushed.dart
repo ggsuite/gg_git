@@ -4,6 +4,8 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+import 'dart:io';
+
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
@@ -48,7 +50,7 @@ class IsPushed extends GgGitBase {
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   static Future<bool> isPushed({
-    required String directory,
+    required Directory directory,
     required GgProcessWrapper processWrapper,
     required void Function(String message) log,
   }) async {
@@ -56,10 +58,10 @@ class IsPushed extends GgGitBase {
     final result = await processWrapper.run(
       'git',
       ['status'],
-      workingDirectory: directory,
+      workingDirectory: directory.path,
     );
 
-    final directoryName = basename(canonicalize(directory));
+    final directoryName = basename(canonicalize(directory.path));
 
     if (result.exitCode != 0) {
       throw Exception('Could not run "git push" in "$directoryName".');

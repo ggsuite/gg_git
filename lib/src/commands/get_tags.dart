@@ -4,6 +4,8 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+import 'dart:io';
+
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_process/gg_process.dart';
 
@@ -53,7 +55,7 @@ class GetTags extends GgGitBase {
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   static Future<List<String>> fromHead({
-    required String directory,
+    required Directory directory,
     required GgProcessWrapper processWrapper,
     required void Function(String message) log,
   }) =>
@@ -66,7 +68,7 @@ class GetTags extends GgGitBase {
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   static Future<List<String>> all({
-    required String directory,
+    required Directory directory,
     required GgProcessWrapper processWrapper,
     required void Function(String message) log,
   }) =>
@@ -78,7 +80,7 @@ class GetTags extends GgGitBase {
 
   // ...........................................................................
   static Future<List<String>> _getTags({
-    required String directory,
+    required Directory directory,
     required GgProcessWrapper processWrapper,
     required List<String> args,
   }) async {
@@ -87,7 +89,7 @@ class GetTags extends GgGitBase {
     final result = await processWrapper.run(
       'git',
       ['tag', '-l', ...args],
-      workingDirectory: directory,
+      workingDirectory: directory.path,
     );
 
     if (result.exitCode == 0) {
