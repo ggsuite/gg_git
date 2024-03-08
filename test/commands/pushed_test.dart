@@ -100,7 +100,7 @@ void main() {
   void pushFile() {
     final result = Process.runSync(
       'git',
-      ['push'],
+      ['push', '-u', 'origin', 'main'],
       workingDirectory: localDir.path,
     );
     if (result.exitCode != 0) {
