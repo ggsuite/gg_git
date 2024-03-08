@@ -31,7 +31,27 @@ Future<void> initGit(Directory testDir) async {
   final result =
       await Process.run('git', ['init'], workingDirectory: testDir.path);
   if (result.exitCode != 0) {
-    throw Exception('Could not initialize git repository.');
+    throw Exception('Could not initialize git repository. ${result.stderr}');
+  }
+
+  final result2 = await Process.run(
+    'git',
+    ['config', 'user.email', 'githubaction@inlavigo.com'],
+    workingDirectory: testDir.path,
+  );
+
+  if (result.exitCode != 0) {
+    throw Exception('Could not set mail. ${result2.stderr}');
+  }
+
+  final result3 = await Process.run(
+    'git',
+    ['config', 'user.name', 'Github Action'],
+    workingDirectory: testDir.path,
+  );
+
+  if (result.exitCode != 0) {
+    throw Exception('Could not set mail. ${result3.stderr}');
   }
 }
 
