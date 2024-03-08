@@ -12,7 +12,7 @@ import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
-import 'test_helpers.dart' as h;
+import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 
 void main() {
   final messages = <String>[];

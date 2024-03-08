@@ -11,7 +11,7 @@ import 'package:gg_git/src/commands/get_tags.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:test/test.dart';
 
-import 'test_helpers.dart';
+import 'package:gg_git/src/test_helpers/test_helpers.dart';
 
 void main() {
   late Directory d;

@@ -4,6 +4,8 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+// coverage:ignore-file
+
 // #############################################################################
 import 'package:args/command_runner.dart';
 import 'package:gg_git/src/commands/get_tags.dart';

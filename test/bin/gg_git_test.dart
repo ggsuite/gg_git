@@ -10,7 +10,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 import '../../bin/gg_git.dart';
-import '../commands/test_helpers.dart';
+import 'package:gg_git/src/test_helpers/test_helpers.dart';
 
 void main() {
   late Directory d;
