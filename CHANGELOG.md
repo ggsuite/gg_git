@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.3
+
+- Remove double `Everything is pushed.` message
+
 ## 1.0.2
 
 - Rename `is-commited` to `commited`

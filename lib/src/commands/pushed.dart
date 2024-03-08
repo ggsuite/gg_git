@@ -40,9 +40,7 @@ class Pushed extends GgGitBase {
       },
     );
 
-    if (result) {
-      log('Everything is pushed.');
-    } else {
+    if (!result) {
       throw Exception(lastLog ?? 'There are unpushed changes.');
     }
   }
