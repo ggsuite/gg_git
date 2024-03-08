@@ -43,7 +43,9 @@ void main() {
     );
 
     if (result2.exitCode != 0) {
-      throw Exception('Could not add remote to local git repository.');
+      throw Exception(
+        'Could not add remote to local git repository. ${result2.stderr}',
+      );
     }
 
     final result3 = Process.runSync(
@@ -58,7 +60,7 @@ void main() {
     );
 
     if (result3.exitCode != 0) {
-      throw Exception('Could not set up-stream.');
+      throw Exception('Could not set up-stream. ${result3.stderr}');
     }
   }
 
@@ -88,7 +90,9 @@ void main() {
       workingDirectory: localDir.path,
     );
     if (result.exitCode != 0) {
-      throw Exception('Could not commit file to local git repository.');
+      throw Exception(
+        'Could not commit file to local git repository. ${result.stderr}',
+      );
     }
   }
 
@@ -100,7 +104,9 @@ void main() {
       workingDirectory: localDir.path,
     );
     if (result.exitCode != 0) {
-      throw Exception('Could not push file to remote git repository.');
+      throw Exception(
+        'Could not push file to remote git repository. ${result.stderr}',
+      );
     }
   }
 
@@ -112,7 +118,9 @@ void main() {
       workingDirectory: localDir.path,
     );
     if (result.exitCode != 0) {
-      throw Exception('Could not pull to remote git repository.');
+      throw Exception(
+        'Could not pull to remote git repository. ${result.stderr}',
+      );
     }
   }
 
@@ -124,7 +132,7 @@ void main() {
       workingDirectory: localDir.path,
     );
     if (result.exitCode != 0) {
-      throw Exception('Could remove last commit.');
+      throw Exception('Could remove last commit. ${result.stderr}');
     }
   }
 
