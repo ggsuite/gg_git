@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.0.3
+## 1.0.4
 
 - Remove double `Everything is pushed.` message
 

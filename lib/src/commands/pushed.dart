@@ -29,19 +29,15 @@ class Pushed extends GgGitBase {
   @override
   Future<void> run() async {
     await super.run();
-    String? lastLog;
 
     final result = await isPushed(
       directory: inputDir,
       processWrapper: processWrapper,
-      log: (msg) {
-        log(msg);
-        lastLog = msg;
-      },
+      log: log,
     );
 
     if (!result) {
-      throw Exception(lastLog ?? 'There are unpushed changes.');
+      throw Exception('Not everything is pushed.');
     }
   }
 

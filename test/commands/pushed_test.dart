@@ -145,10 +145,12 @@ void main() {
         isA<Exception>().having(
           (e) => e.toString(),
           'message',
-          'Exception: $message',
+          'Exception: Not everything is pushed.',
         ),
       ),
     );
+
+    expect(messages.last, contains(message));
   }
 
   // ...........................................................................
