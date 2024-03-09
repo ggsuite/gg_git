@@ -40,7 +40,7 @@ class IsPushed extends GgGitBase {
     );
 
     final result = await printer.logTask(
-      task: () => isPushed(
+      task: () => get(
         directory: inputDir,
         processWrapper: processWrapper,
         log: messages.add,
@@ -54,10 +54,8 @@ class IsPushed extends GgGitBase {
   }
 
   // ...........................................................................
-
-  // ...........................................................................
   /// Returns true if everything in the directory is pushed.
-  static Future<bool> isPushed({
+  static Future<bool> get({
     required Directory directory,
     required GgProcessWrapper processWrapper,
     required void Function(String message) log,

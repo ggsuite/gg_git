@@ -41,7 +41,7 @@ class IsCommitted extends GgGitBase {
     );
 
     final result = await printer.logTask(
-      task: () => isIsCommitted(
+      task: () => get(
         directory: inputDir,
         processWrapper: processWrapper,
       ),
@@ -59,7 +59,7 @@ class IsCommitted extends GgGitBase {
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
-  static Future<bool> isIsCommitted({
+  static Future<bool> get({
     required Directory directory,
     required GgProcessWrapper processWrapper,
   }) async {

@@ -16,7 +16,7 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
-  late IsCommitted ggIsIsCommitted;
+  late IsCommitted isCommitted;
   late Directory testDir;
 
   // ...........................................................................
@@ -26,11 +26,11 @@ void main() {
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
-    ggIsIsCommitted = IsCommitted(
+    isCommitted = IsCommitted(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
-    runner.addCommand(ggIsIsCommitted);
+    runner.addCommand(isCommitted);
   }
 
   // ...........................................................................
@@ -39,9 +39,9 @@ void main() {
     messages.clear();
   });
 
-  group('GgIsIsCommitted', () {
+  group('IsCommitted', () {
     // #########################################################################
-    group('run(), isIsCommitted()', () {
+    group('run(), get()', () {
       // .......................................................................
       test('should throw if "git status" fails', () async {
         final failingProcessWrapper = MockGgProcessWrapper();
