@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.8
+
+- Various renamings
+
 ## 1.0.7
 
 - Make pipeline working
@@ -11,7 +15,7 @@
 
 ## 1.0.2
 
-- Rename `is-commited` to `commited`
+- Rename `is-committed` to `committed`
 - Rename `is-pushed` to `pushed`
 
 ## 1.0.1

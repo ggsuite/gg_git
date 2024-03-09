@@ -20,7 +20,7 @@ abstract class GgGitBase extends GgDirCommand {
   }) : processWrapper = processWrapper ?? const GgProcessWrapper();
 
   // ...........................................................................
-  /// Returns true if everything in the directory is commited.
+  /// Returns true if everything in the directory is committed.
   static Future<void> checkDir({required Directory directory}) async {
     await GgDirCommand.checkDir(directory: directory);
 

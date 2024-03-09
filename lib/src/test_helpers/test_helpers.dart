@@ -180,7 +180,7 @@ Future<void> updateAndCommitSampleFile(Directory testDir) async {
 
 // .............................................................................
 /// Init uncommitted file
-void initUncommitedFile(Directory testDir) =>
+void initUncommittedFile(Directory testDir) =>
     initFile(testDir, 'uncommitted.txt', 'uncommitted');
 
 // ## pubspect.yaml

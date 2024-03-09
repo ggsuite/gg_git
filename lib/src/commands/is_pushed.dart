@@ -14,16 +14,16 @@ import 'package:path/path.dart';
 
 // #############################################################################
 /// Provides "ggGit pushed <dir>" command
-class Pushed extends GgGitBase {
+class IsPushed extends GgGitBase {
   /// Constructor
-  Pushed({
+  IsPushed({
     required super.log,
     super.processWrapper,
   });
 
   // ...........................................................................
   @override
-  final name = 'pushed';
+  final name = 'is-pushed';
   @override
   final description = 'Is everything in the current working directory pushed?';
 
@@ -87,7 +87,7 @@ class Pushed extends GgGitBase {
       log('There are untracked files.');
       return false;
     } else if (stdout.contains('Changes to be committed')) {
-      log('There are staged but uncommited changes.');
+      log('There are staged but uncommitted changes.');
       return false;
     } else if (stdout.contains('Changes not staged for commit')) {
       log('There are not-added files.');

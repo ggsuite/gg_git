@@ -13,20 +13,20 @@ import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:path/path.dart';
 
 // #############################################################################
-/// Provides "ggGit commited <dir>" command
-class IsCommited extends GgGitBase {
+/// Provides "ggGit committed <dir>" command
+class IsCommitted extends GgGitBase {
   /// Constructor
-  IsCommited({
+  IsCommitted({
     required super.log,
     super.processWrapper,
   });
 
   // ...........................................................................
   @override
-  final name = 'is-commited';
+  final name = 'is-committed';
   @override
   final description =
-      'Is everything in the current working directory commited?';
+      'Is everything in the current working directory committed?';
 
   // ...........................................................................
   @override
@@ -36,12 +36,12 @@ class IsCommited extends GgGitBase {
     final messages = <String>[];
 
     final printer = GgStatusPrinter<bool>(
-      message: 'Everything is commited.',
+      message: 'Everything is committed.',
       log: log,
     );
 
     final result = await printer.logTask(
-      task: () => isIsCommited(
+      task: () => isIsCommitted(
         directory: inputDir,
         processWrapper: processWrapper,
       ),
@@ -58,15 +58,15 @@ class IsCommited extends GgGitBase {
   }
 
   // ...........................................................................
-  /// Returns true if everything in the directory is commited.
-  static Future<bool> isIsCommited({
+  /// Returns true if everything in the directory is committed.
+  static Future<bool> isIsCommitted({
     required Directory directory,
     required GgProcessWrapper processWrapper,
   }) async {
     await GgGitBase.checkDir(directory: directory);
     final directoryName = basename(canonicalize(directory.path));
 
-    // Is everything commited?
+    // Is everything committed?
     final result = await processWrapper.run(
       'git',
       ['status', '--porcelain'],

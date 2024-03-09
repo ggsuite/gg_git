@@ -16,16 +16,16 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart';
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
-  late GgGitCommandExample ggIsIsCommited;
+  late GgGitCommandExample ggIsIsCommitted;
   late Directory d;
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
-    ggIsIsCommited = GgGitCommandExample(
+    ggIsIsCommitted = GgGitCommandExample(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
-    runner.addCommand(ggIsIsCommited);
+    runner.addCommand(ggIsIsCommitted);
   }
 
   // ...........................................................................
@@ -37,7 +37,7 @@ void main() {
 
   group('GgGitCommandExample', () {
     // #########################################################################
-    group('run(), isIsCommited()', () {
+    group('run(), isIsCommitted()', () {
       group('should throw', () {
         // .....................................................................
         test('if directory does not exist', () async {
