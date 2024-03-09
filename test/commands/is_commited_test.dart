@@ -16,7 +16,7 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
-  late Commited ggIsCommited;
+  late IsCommited ggIsIsCommited;
   late Directory testDir;
 
   // ...........................................................................
@@ -26,11 +26,11 @@ void main() {
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
-    ggIsCommited = Commited(
+    ggIsIsCommited = IsCommited(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
-    runner.addCommand(ggIsCommited);
+    runner.addCommand(ggIsIsCommited);
   }
 
   // ...........................................................................
@@ -39,9 +39,9 @@ void main() {
     messages.clear();
   });
 
-  group('GgIsCommited', () {
+  group('GgIsIsCommited', () {
     // #########################################################################
-    group('run(), isCommited()', () {
+    group('run(), isIsCommited()', () {
       // .......................................................................
       test('should throw if "git status" fails', () async {
         final failingProcessWrapper = MockGgProcessWrapper();
@@ -66,7 +66,7 @@ void main() {
         );
 
         await expectLater(
-          runner.run(['commited', '--input', testDir.path]),
+          runner.run(['is-commited', '--input', testDir.path]),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -85,7 +85,7 @@ void main() {
         initCommand();
 
         await expectLater(
-          runner.run(['commited', '--input', testDir.path]),
+          runner.run(['is-commited', '--input', testDir.path]),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -104,7 +104,7 @@ void main() {
         initTestDir();
         await initGit();
         initCommand();
-        await runner.run(['commited', '--input', testDir.path]);
+        await runner.run(['is-commited', '--input', testDir.path]);
         expect(messages.last, contains('✅ Everything is commited.'));
       });
     });

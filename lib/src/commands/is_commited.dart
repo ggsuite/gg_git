@@ -14,16 +14,16 @@ import 'package:path/path.dart';
 
 // #############################################################################
 /// Provides "ggGit commited <dir>" command
-class Commited extends GgGitBase {
+class IsCommited extends GgGitBase {
   /// Constructor
-  Commited({
+  IsCommited({
     required super.log,
     super.processWrapper,
   });
 
   // ...........................................................................
   @override
-  final name = 'commited';
+  final name = 'is-commited';
   @override
   final description =
       'Is everything in the current working directory commited?';
@@ -41,7 +41,7 @@ class Commited extends GgGitBase {
     );
 
     final result = await printer.logTask(
-      task: () => isCommited(
+      task: () => isIsCommited(
         directory: inputDir,
         processWrapper: processWrapper,
       ),
@@ -59,7 +59,7 @@ class Commited extends GgGitBase {
 
   // ...........................................................................
   /// Returns true if everything in the directory is commited.
-  static Future<bool> isCommited({
+  static Future<bool> isIsCommited({
     required Directory directory,
     required GgProcessWrapper processWrapper,
   }) async {

@@ -8,6 +8,6 @@ library;
 
 export 'src/gg_git.dart';
 export 'src/commands/get_tags.dart';
-export 'src/commands/commited.dart';
+export 'src/commands/is_commited.dart';
 export 'src/commands/pushed.dart';
 export 'src/base/gg_git_base.dart';

@@ -170,7 +170,7 @@ void main() {
 
   group('GgIsPushed', () {
     // #########################################################################
-    group('run(), isCommited()', () {
+    group('run(), isIsCommited()', () {
       // #######################################################################
       group('should throw', () {
         // .....................................................................
@@ -271,7 +271,7 @@ void main() {
 
           // .............
           // Make a change
-          await file.writeAsString('commited');
+          await file.writeAsString('is-commited');
           await expectException('There are not-added files.');
 
           // Not yet commited file?
@@ -322,7 +322,7 @@ void main() {
 
         // .............
         // Make a change
-        await file.writeAsString('commited');
+        await file.writeAsString('is-commited');
         addFile();
         commitFile();
         pushFile();
