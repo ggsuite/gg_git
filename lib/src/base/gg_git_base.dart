@@ -16,12 +16,13 @@ abstract class GgGitBase extends GgDirCommand {
   /// Constructor
   GgGitBase({
     required super.log,
+    super.inputDir,
     GgProcessWrapper? processWrapper,
   }) : processWrapper = processWrapper ?? const GgProcessWrapper();
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
-  static Future<void> checkDir({required Directory directory}) async {
+  Future<void> checkDir({required Directory directory}) async {
     await GgDirCommand.checkDir(directory: directory);
 
     // Does directory exist?
@@ -45,6 +46,7 @@ class GgGitCommandExample extends GgGitBase {
   /// Constructor
   GgGitCommandExample({
     super.processWrapper,
+    super.inputDir,
     required super.log,
   });
 
@@ -58,7 +60,7 @@ class GgGitCommandExample extends GgGitBase {
   @override
   Future<void> run() async {
     await super.run();
-    await GgGitBase.checkDir(directory: inputDir);
+    await checkDir(directory: inputDir);
     log('Example executed for "$inputDirName".');
   }
 }

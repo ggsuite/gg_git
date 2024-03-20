@@ -4,10 +4,7 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
-import 'dart:io';
-
 import 'package:gg_git/src/base/gg_git_base.dart';
-import 'package:gg_process/gg_process.dart';
 
 // #############################################################################
 /// Provides "ggGit current-version-tag <dir>" command
@@ -16,6 +13,7 @@ class GetTags extends GgGitBase {
   GetTags({
     required super.log,
     super.processWrapper,
+    super.inputDir,
   }) {
     _addArgs();
   }
@@ -34,19 +32,11 @@ class GetTags extends GgGitBase {
     final headOnly = argResults!['head-only'] as bool;
 
     if (headOnly) {
-      final result = await fromHead(
-        directory: inputDir,
-        processWrapper: processWrapper,
-        log: super.log,
-      );
+      final result = await fromHead;
 
       log(result.isNotEmpty ? result.join('\n') : 'No head tags found.');
     } else {
-      final result = await all(
-        directory: inputDir,
-        processWrapper: processWrapper,
-        log: super.log,
-      );
+      final result = await all;
 
       log(result.isNotEmpty ? result.join('\n') : 'No tags found.');
     }
@@ -54,42 +44,26 @@ class GetTags extends GgGitBase {
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
-  static Future<List<String>> fromHead({
-    required Directory directory,
-    required GgProcessWrapper processWrapper,
-    required void Function(String message) log,
-  }) =>
-      _getTags(
-        directory: directory,
-        processWrapper: processWrapper,
+  Future<List<String>> get fromHead => _getTags(
         args: ['--contains', 'HEAD'],
       );
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
-  static Future<List<String>> all({
-    required Directory directory,
-    required GgProcessWrapper processWrapper,
-    required void Function(String message) log,
-  }) =>
-      _getTags(
-        directory: directory,
-        processWrapper: processWrapper,
+  Future<List<String>> get all => _getTags(
         args: [],
       );
 
   // ...........................................................................
-  static Future<List<String>> _getTags({
-    required Directory directory,
-    required GgProcessWrapper processWrapper,
+  Future<List<String>> _getTags({
     required List<String> args,
   }) async {
-    await GgGitBase.checkDir(directory: directory);
+    await checkDir(directory: inputDir);
 
     final result = await processWrapper.run(
       'git',
       ['tag', '-l', ...args],
-      workingDirectory: directory.path,
+      workingDirectory: inputDir.path,
     );
 
     if (result.exitCode == 0) {

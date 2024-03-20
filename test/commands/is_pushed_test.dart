@@ -137,10 +137,11 @@ void main() {
   }
 
   // ...........................................................................
-  void initCommand({GgProcessWrapper? processWrapper}) {
+  void initCommand({GgProcessWrapper? processWrapper, Directory? inputDir}) {
     ggIsPushed = IsPushed(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
+      inputDir: inputDir,
     );
     runner.addCommand(ggIsPushed);
   }
@@ -174,38 +175,94 @@ void main() {
       // #######################################################################
       group('should throw', () {
         // .....................................................................
-        test('if "git status" fails', () async {
-          final failingProcessWrapper = MockGgProcessWrapper();
+        group('if "git status" fails', () {
+          group('with inputDir', () {
+            test('taken from --input arg', () async {
+              final failingProcessWrapper = MockGgProcessWrapper();
 
-          initTestDir();
-          initLocalGit();
-          initCommand(processWrapper: failingProcessWrapper);
+              initTestDir();
+              initLocalGit();
+              initCommand(processWrapper: failingProcessWrapper);
 
-          when(
-            () => failingProcessWrapper.run(
-              any(),
-              any(),
-              workingDirectory: localDir.path,
-            ),
-          ).thenAnswer(
-            (_) async => ProcessResult(
-              1,
-              1,
-              'git status failed',
-              'git status failed',
-            ),
-          );
+              when(
+                () => failingProcessWrapper.run(
+                  any(),
+                  any(),
+                  workingDirectory: localDir.path,
+                ),
+              ).thenAnswer(
+                (_) async => ProcessResult(
+                  1,
+                  1,
+                  'git status failed',
+                  'git status failed',
+                ),
+              );
 
-          await expectLater(
-            runner.run(['is-pushed', '--input', localDir.path]),
-            throwsA(
-              isA<Exception>().having(
-                (e) => e.toString(),
-                'message',
-                'Exception: Could not run "git push" in "local".',
-              ),
-            ),
-          );
+              await expectLater(
+                runner.run(['is-pushed', '--input', localDir.path]),
+                throwsA(
+                  isA<Exception>().having(
+                    (e) => e.toString(),
+                    'message',
+                    'Exception: Could not run "git push" in "local".',
+                  ),
+                ),
+              );
+            });
+
+            test('taken from constructor', () {
+              final failingProcessWrapper = MockGgProcessWrapper();
+
+              initTestDir();
+              initLocalGit();
+              initCommand(
+                processWrapper: failingProcessWrapper,
+                inputDir: localDir,
+              );
+
+              when(
+                () => failingProcessWrapper.run(
+                  any(),
+                  any(),
+                  workingDirectory: localDir.path,
+                ),
+              ).thenAnswer(
+                (_) async => ProcessResult(
+                  1,
+                  1,
+                  'git status failed',
+                  'git status failed',
+                ),
+              );
+
+              when(
+                () => failingProcessWrapper.run(
+                  any(),
+                  any(),
+                  workingDirectory: localDir.path,
+                ),
+              ).thenAnswer(
+                (_) async => ProcessResult(
+                  1,
+                  1,
+                  'git status failed',
+                  'git status failed',
+                ),
+              );
+
+              expect(
+                () => ggIsPushed.get(),
+                throwsA(
+                  isA<Exception>().having(
+                    (e) => e.toString(),
+                    'message',
+                    'Exception: Could not run "git push" in "local".',
+                  ),
+                ),
+              );
+            });
+          });
         });
 
         // .....................................................................

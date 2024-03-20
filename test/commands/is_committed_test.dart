@@ -25,10 +25,11 @@ void main() {
   void initUncommittedFile() => h.initUncommittedFile(testDir);
 
   // ...........................................................................
-  void initCommand({GgProcessWrapper? processWrapper}) {
+  void initCommand({GgProcessWrapper? processWrapper, Directory? inputDir}) {
     isCommitted = IsCommitted(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
+      inputDir: inputDir,
     );
     runner.addCommand(isCommitted);
   }
@@ -42,7 +43,6 @@ void main() {
   group('IsCommitted', () {
     // #########################################################################
     group('run(), get()', () {
-      // .......................................................................
       test('should throw if "git status" fails', () async {
         final failingProcessWrapper = MockGgProcessWrapper();
 
@@ -100,12 +100,22 @@ void main() {
     // #########################################################################
     group('should return', () {
       // .......................................................................
-      test('true if everything is committed', () async {
-        initTestDir();
-        await initGit();
-        initCommand();
-        await runner.run(['is-committed', '--input', testDir.path]);
-        expect(messages.last, contains('✅ Everything is committed.'));
+      group('true if everything is committed', () {
+        test('with inputDir from --input args', () async {
+          initTestDir();
+          await initGit();
+          initCommand();
+          await runner.run(['is-committed', '--input', testDir.path]);
+          expect(messages.last, contains('✅ Everything is committed.'));
+        });
+
+        test('with inputDir taken from constructor', () async {
+          initTestDir();
+          await initGit();
+          initCommand(inputDir: testDir);
+          final result = await isCommitted.get();
+          expect(result, isTrue);
+        });
       });
     });
   });

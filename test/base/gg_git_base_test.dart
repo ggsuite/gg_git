@@ -16,16 +16,17 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart';
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
-  late GgGitCommandExample ggIsCommitted;
+  late GgGitCommandExample ggGit;
   late Directory d;
 
   // ...........................................................................
-  void initCommand({GgProcessWrapper? processWrapper}) {
-    ggIsCommitted = GgGitCommandExample(
+  void initCommand({GgProcessWrapper? processWrapper, Directory? inputDir}) {
+    ggGit = GgGitCommandExample(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
+      inputDir: inputDir,
     );
-    runner.addCommand(ggIsCommitted);
+    runner.addCommand(ggGit);
   }
 
   // ...........................................................................
@@ -40,18 +41,34 @@ void main() {
     group('run(), get()', () {
       group('should throw', () {
         // .....................................................................
-        test('if directory does not exist', () async {
-          initCommand();
-          await expectLater(
-            runner.run(['example', '--input', 'xyz']),
-            throwsA(
-              isA<ArgumentError>().having(
-                (e) => e.message,
-                'message',
-                'Directory "xyz" does not exist.',
+        group('if directory does not exist', () {
+          test('specified via --input', () async {
+            initCommand();
+            await expectLater(
+              runner.run(['example', '--input', 'xyz']),
+              throwsA(
+                isA<ArgumentError>().having(
+                  (e) => e.message,
+                  'message',
+                  'Directory "xyz" does not exist.',
+                ),
               ),
-            ),
-          );
+            );
+          });
+
+          test('specified via constructor', () async {
+            initCommand(inputDir: Directory('xyz'));
+            await expectLater(
+              ggGit.run(),
+              throwsA(
+                isA<ArgumentError>().having(
+                  (e) => e.message,
+                  'message',
+                  'Directory "xyz" does not exist.',
+                ),
+              ),
+            );
+          });
         });
 
         // .....................................................................

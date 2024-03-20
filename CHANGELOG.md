@@ -1,7 +1,8 @@
 # Change Log
 
-## 1.1.0
+## 1.0.10
 
+- Turn static methods in class methods to allow mocking
 - Various renamings
 
 ## 1.0.7
