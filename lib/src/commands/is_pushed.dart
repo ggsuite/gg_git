@@ -4,30 +4,28 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+import 'dart:io';
+
 import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
 
 // #############################################################################
 /// Provides "ggGit pushed <dir>" command
-class IsPushed extends GgGitBase {
+class IsPushed extends GgGitBase<void> {
   /// Constructor
   IsPushed({
     required super.log,
     super.processWrapper,
-    super.inputDir,
-  });
+  }) : super(
+          name: 'is-pushed',
+          description: 'Is everything in the current working directory pushed?',
+        );
 
   // ...........................................................................
   @override
-  final name = 'is-pushed';
-  @override
-  final description = 'Is everything in the current working directory pushed?';
-
-  // ...........................................................................
-  @override
-  Future<void> run() async {
-    await super.run();
+  Future<void> run({Directory? directory}) async {
+    final inputDir = dir(directory);
 
     final messages = <String>[];
 
@@ -37,7 +35,7 @@ class IsPushed extends GgGitBase {
     );
 
     final result = await printer.logTask(
-      task: () => _get(log: messages.add),
+      task: () => get(log: messages.add, directory: inputDir),
       success: (success) => success,
     );
 
@@ -48,21 +46,20 @@ class IsPushed extends GgGitBase {
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
-  Future<bool> get() => _get(log: log);
-
-  // ...........................................................................
-  Future<bool> _get({
-    required void Function(String) log,
+  Future<bool> get({
+    void Function(String)? log,
+    required Directory directory,
   }) async {
+    log ??= this.log;
     // Is everything pushed?
     final result = await processWrapper.run(
       'git',
       ['status'],
-      workingDirectory: inputDir.path,
+      workingDirectory: directory.path,
     );
 
     if (result.exitCode != 0) {
-      throw Exception('Could not run "git push" in "$inputDirName".');
+      throw Exception('Could not run "git push" in "${dirName(directory)}".');
     }
 
     final stdout = result.stdout as String;
@@ -90,6 +87,6 @@ class IsPushed extends GgGitBase {
       return false;
     }
 
-    throw Exception('Unknown status of "git push" in "$inputDirName".');
+    throw Exception('Unknown status of "git push" in "${dirName(directory)}".');
   }
 }

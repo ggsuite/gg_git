@@ -25,11 +25,10 @@ void main() {
   void initUncommittedFile() => h.initUncommittedFile(testDir);
 
   // ...........................................................................
-  void initCommand({GgProcessWrapper? processWrapper, Directory? inputDir}) {
+  void initCommand({GgProcessWrapper? processWrapper}) {
     isCommitted = IsCommitted(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
-      inputDir: inputDir,
     );
     runner.addCommand(isCommitted);
   }
@@ -65,8 +64,9 @@ void main() {
           ),
         );
 
-        await expectLater(
-          runner.run(['is-committed', '--input', testDir.path]),
+        expect(
+          () async =>
+              await runner.run(['is-committed', '--input', testDir.path]),
           throwsA(
             isA<Exception>().having(
               (e) => e.toString(),
@@ -112,8 +112,8 @@ void main() {
         test('with inputDir taken from constructor', () async {
           initTestDir();
           await initGit();
-          initCommand(inputDir: testDir);
-          final result = await isCommitted.get();
+          initCommand();
+          final result = await isCommitted.get(directory: testDir);
           expect(result, isTrue);
         });
       });

@@ -12,18 +12,20 @@ import 'package:path/path.dart';
 
 // #############################################################################
 /// Base class for all ggGit commands
-abstract class GgGitBase extends GgDirCommand {
+abstract class GgGitBase<T> extends DirCommand<T> {
   /// Constructor
   GgGitBase({
     required super.log,
-    super.inputDir,
+    required super.name,
+    required super.description,
     GgProcessWrapper? processWrapper,
   }) : processWrapper = processWrapper ?? const GgProcessWrapper();
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
-  Future<void> checkDir({required Directory directory}) async {
-    await GgDirCommand.checkDir(directory: directory);
+  @override
+  Future<void> check({required Directory directory}) async {
+    await super.check(directory: directory);
 
     // Does directory exist?
     final dirName = basename(canonicalize(directory.path));
@@ -42,25 +44,22 @@ abstract class GgGitBase extends GgDirCommand {
 
 // #############################################################################
 /// Example git command implementation
-class GgGitCommandExample extends GgGitBase {
+class GgGitCommandExample extends GgGitBase<void> {
   /// Constructor
   GgGitCommandExample({
     super.processWrapper,
-    super.inputDir,
     required super.log,
-  });
+  }) : super(
+          name: 'example',
+          description: 'This is an example command.',
+        );
 
   // ...........................................................................
   @override
-  final name = 'example';
-  @override
-  final description = 'This is an example command.';
+  Future<void> run({Directory? directory}) async {
+    final inputDir = dir(directory);
 
-  // ...........................................................................
-  @override
-  Future<void> run() async {
-    await super.run();
-    await checkDir(directory: inputDir);
-    log('Example executed for "$inputDirName".');
+    await check(directory: inputDir);
+    log('Example executed for "${dirName(inputDir)}".');
   }
 }

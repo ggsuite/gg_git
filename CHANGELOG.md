@@ -1,6 +1,10 @@
 # Change Log
 
-## 1.0.10
+1.0.12
+
+- Rework `DirCommand`
+
+## 1.0.11
 
 - Turn static methods in class methods to allow mocking
 - Various renamings

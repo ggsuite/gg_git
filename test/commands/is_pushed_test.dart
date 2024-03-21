@@ -137,11 +137,10 @@ void main() {
   }
 
   // ...........................................................................
-  void initCommand({GgProcessWrapper? processWrapper, Directory? inputDir}) {
+  void initCommand({GgProcessWrapper? processWrapper}) {
     ggIsPushed = IsPushed(
       log: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
-      inputDir: inputDir,
     );
     runner.addCommand(ggIsPushed);
   }
@@ -218,7 +217,6 @@ void main() {
               initLocalGit();
               initCommand(
                 processWrapper: failingProcessWrapper,
-                inputDir: localDir,
               );
 
               when(
@@ -252,7 +250,7 @@ void main() {
               );
 
               expect(
-                () => ggIsPushed.get(),
+                () => ggIsPushed.get(directory: localDir),
                 throwsA(
                   isA<Exception>().having(
                     (e) => e.toString(),

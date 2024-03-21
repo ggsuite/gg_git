@@ -23,6 +23,10 @@ void main() {
   setUp(() {
     d = initTestDir();
     messages.clear();
+    getTags = GetTags(
+      log: messages.add,
+      processWrapper: const GgProcessWrapper(),
+    );
   });
 
   // ...........................................................................
@@ -31,22 +35,12 @@ void main() {
   });
 
   // ...........................................................................
-  void initCommand({Directory? inputDir}) {
-    getTags = GetTags(
-      log: messages.add,
-      processWrapper: const GgProcessWrapper(),
-      inputDir: inputDir,
-    );
-  }
-
-  // ...........................................................................
   group('HeadTags', () {
     group('fromHead', () {
       group('should throw', () {
         test('when directory is not a git repo', () async {
-          initCommand(inputDir: d);
           await expectLater(
-            getTags.fromHead,
+            getTags.fromHead(directory: d),
             throwsA(
               isA<ArgumentError>().having(
                 (e) => e.message,
@@ -60,9 +54,8 @@ void main() {
 
       group('should return nothing', () {
         test('when no tags are available', () async {
-          initCommand(inputDir: d);
           await initGit(d);
-          final result = await getTags.fromHead;
+          final result = await getTags.fromHead(directory: d);
           expect(result, isEmpty);
           expect(messages, isEmpty);
         });
@@ -71,36 +64,33 @@ void main() {
       group('should return', () {
         group('one', () {
           test('when available', () async {
-            initCommand(inputDir: d);
             await initGit(d);
             addAndCommitSampleFile(d);
             await addTag(d, 'V0');
-            expect(await getTags.fromHead, ['V0']);
+            expect(await getTags.fromHead(directory: d), ['V0']);
             expect(messages, isEmpty);
           });
         });
 
         group('multiple', () {
           test('when available', () async {
-            initCommand(inputDir: d);
             await initGit(d);
             addAndCommitSampleFile(d);
             await addTags(d, ['V0', 'T0', 'T1']);
-            expect(await getTags.fromHead, ['V0', 'T1', 'T0']);
+            expect(await getTags.fromHead(directory: d), ['V0', 'T1', 'T0']);
           });
 
           test('but not tags of previous commits', () async {
-            initCommand(inputDir: d);
             await initGit(d);
             await setPubspec(d, version: '1.0.0');
             commitPubspec(d);
             await addTag(d, 'T0');
-            expect(await getTags.fromHead, ['T0']);
+            expect(await getTags.fromHead(directory: d), ['T0']);
 
             // Commit a new change -> No tags should be returned
             await setPubspec(d, version: '2.0.0');
             commitPubspec(d);
-            expect(await getTags.fromHead, isEmpty);
+            expect(await getTags.fromHead(directory: d), isEmpty);
           });
         });
       });
@@ -109,24 +99,23 @@ void main() {
     group('all(....)', () {
       group('should return', () {
         test('all tags', () async {
-          initCommand(inputDir: d);
           await initGit(d);
           addAndCommitSampleFile(d);
 
           // Initially we should get no tags
-          expect(await getTags.all, <String>[]);
+          expect(await getTags.all(directory: d), <String>[]);
 
           // Add a first two tags
           await addTags(d, ['0a', '0b']);
-          expect(await getTags.all, ['0b', '0a']);
+          expect(await getTags.all(directory: d), ['0b', '0a']);
 
           // Add another commit
           await updateAndCommitSampleFile(d);
           await addTags(d, ['1a', '1b']);
-          expect(await getTags.all, ['1b', '1a', '0b', '0a']);
+          expect(await getTags.all(directory: d), ['1b', '1a', '0b', '0a']);
 
           // From head should still work
-          expect(await getTags.fromHead, ['1b', '1a']);
+          expect(await getTags.fromHead(directory: d), ['1b', '1a']);
         });
       });
     });
@@ -135,7 +124,6 @@ void main() {
       group('with --head-only', () {
         group('should log', () {
           test('the tags of the latest revision', () async {
-            initCommand(inputDir: d);
             await initGit(d);
             addAndCommitSampleFile(d);
             await addTags(d, ['0a', '0b']);
@@ -155,7 +143,6 @@ void main() {
       group('without --head-only', () {
         group('should log', () {
           test('all historic tags', () async {
-            initCommand(inputDir: d);
             await initGit(d);
 
             addAndCommitSampleFile(d);
