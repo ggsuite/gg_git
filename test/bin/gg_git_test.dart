@@ -28,7 +28,7 @@ void main() {
       // Execute bin/gg_git.dart and check if it prints help
       final result = await Process.run(
         './bin/gg_git.dart',
-        ['get-tags', '--head-only'],
+        ['get-tags', '--head-only', '--input', d.path],
         stdoutEncoding: utf8,
         stderrEncoding: utf8,
       );

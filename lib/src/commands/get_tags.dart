@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:gg_git/src/base/gg_git_base.dart';
+import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Provides "ggGit current-version-tag <dir>" command
@@ -104,3 +105,6 @@ class GetTags extends GgGitBase<void> {
     );
   }
 }
+
+/// Mocktail mock
+class MockGetTags extends mocktail.Mock implements GetTags {}

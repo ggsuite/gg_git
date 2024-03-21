@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
+import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Provides "ggGit committed <dir>" command
@@ -71,3 +72,6 @@ class IsCommitted extends GgGitBase<void> {
     return (result.stdout as String).isEmpty;
   }
 }
+
+/// Mocktail mock
+class MockIsCommited extends mocktail.Mock implements IsCommitted {}
