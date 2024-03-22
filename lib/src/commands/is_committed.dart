@@ -74,4 +74,4 @@ class IsCommitted extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockIsCommited extends mocktail.Mock implements IsCommitted {}
+class MockIsCommitted extends mocktail.Mock implements IsCommitted {}

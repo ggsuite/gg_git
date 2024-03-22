@@ -161,8 +161,8 @@ void commitFile(Directory testDir, String name) {
 
 // .............................................................................
 /// Add and commit sample file
-void addAndCommitSampleFile(Directory testDir) {
-  initFile(testDir, 'sample.txt', 'sample');
+Future<void> addAndCommitSampleFile(Directory testDir) async {
+  await initFile(testDir, 'sample.txt', 'sample');
   commitFile(testDir, 'sample.txt');
 }
 

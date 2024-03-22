@@ -78,43 +78,46 @@ void main() {
       });
 
       // .......................................................................
-      test('if there are uncommitted changes', () async {
-        initTestDir();
-        await initGit();
-        initUncommittedFile();
-        initCommand();
+      group('should return', () {
+        group('false', () {
+          test('if there are uncommitted changes', () async {
+            initTestDir();
+            await initGit();
+            initUncommittedFile();
+            initCommand();
 
-        await expectLater(
-          runner.run(['is-committed', '--input', testDir.path]),
-          throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
-              'message',
-              contains('There are uncommmited changes.'),
-            ),
-          ),
-        );
-      });
-    });
-
-    // #########################################################################
-    group('should return', () {
-      // .......................................................................
-      group('true if everything is committed', () {
-        test('with inputDir from --input args', () async {
-          initTestDir();
-          await initGit();
-          initCommand();
-          await runner.run(['is-committed', '--input', testDir.path]);
-          expect(messages.last, contains('✅ Everything is committed.'));
+            await expectLater(
+              runner.run(['is-committed', '--input', testDir.path]),
+              throwsA(
+                isA<Exception>().having(
+                  (e) => e.toString(),
+                  'message',
+                  contains('There are uncommmited changes.'),
+                ),
+              ),
+            );
+          });
         });
 
-        test('with inputDir taken from constructor', () async {
-          initTestDir();
-          await initGit();
-          initCommand();
-          final result = await isCommitted.get(directory: testDir);
-          expect(result, isTrue);
+        // .....................................................................
+        group('true', () {
+          group('if everything is committed', () {
+            test('with inputDir from --input args', () async {
+              initTestDir();
+              await initGit();
+              initCommand();
+              await runner.run(['is-committed', '--input', testDir.path]);
+              expect(messages.last, contains('✅ Everything is committed.'));
+            });
+
+            test('with inputDir taken from constructor', () async {
+              initTestDir();
+              await initGit();
+              initCommand();
+              final result = await isCommitted.get(directory: testDir);
+              expect(result, isTrue);
+            });
+          });
         });
       });
     });

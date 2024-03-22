@@ -65,7 +65,7 @@ void main() {
         group('one', () {
           test('when available', () async {
             await initGit(d);
-            addAndCommitSampleFile(d);
+            await addAndCommitSampleFile(d);
             await addTag(d, 'V0');
             expect(await getTags.fromHead(directory: d), ['V0']);
             expect(messages, isEmpty);
@@ -75,7 +75,7 @@ void main() {
         group('multiple', () {
           test('when available', () async {
             await initGit(d);
-            addAndCommitSampleFile(d);
+            await addAndCommitSampleFile(d);
             await addTags(d, ['V0', 'T0', 'T1']);
             expect(await getTags.fromHead(directory: d), ['V0', 'T1', 'T0']);
           });
@@ -100,7 +100,7 @@ void main() {
       group('should return', () {
         test('all tags', () async {
           await initGit(d);
-          addAndCommitSampleFile(d);
+          await addAndCommitSampleFile(d);
 
           // Initially we should get no tags
           expect(await getTags.all(directory: d), <String>[]);
@@ -125,7 +125,7 @@ void main() {
         group('should log', () {
           test('the tags of the latest revision', () async {
             await initGit(d);
-            addAndCommitSampleFile(d);
+            await addAndCommitSampleFile(d);
             await addTags(d, ['0a', '0b']);
 
             await updateAndCommitSampleFile(d);
@@ -145,7 +145,7 @@ void main() {
           test('all historic tags', () async {
             await initGit(d);
 
-            addAndCommitSampleFile(d);
+            await addAndCommitSampleFile(d);
             await addTags(d, ['0b', '0a']);
 
             await updateAndCommitSampleFile(d);

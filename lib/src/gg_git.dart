@@ -9,6 +9,7 @@
 // #############################################################################
 import 'package:args/command_runner.dart';
 import 'package:gg_git/src/commands/get_tags.dart';
+import 'package:gg_git/src/commands/head_hash.dart';
 import 'package:gg_git/src/commands/is_committed.dart';
 import 'package:gg_git/src/commands/is_pushed.dart';
 
@@ -20,6 +21,7 @@ class GgGit extends Command<dynamic> {
     addSubcommand(GetTags(log: log));
     addSubcommand(IsCommitted(log: log));
     addSubcommand(IsPushed(log: log));
+    addSubcommand(HeadHash(log: log));
   }
 
   /// The log function
