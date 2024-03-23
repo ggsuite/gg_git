@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.17
+
+- Update GgConsoleColors
+
 ## 1.0.16
 
 - Add GgLog

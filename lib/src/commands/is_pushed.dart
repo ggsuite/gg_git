@@ -43,7 +43,7 @@ class IsPushed extends GgGitBase<void> {
     );
 
     if (!result) {
-      throw Exception("$brightBlack${messages.join('\n')}$reset");
+      throw Exception(brightBlack(messages.join('\n')));
     }
   }
 
