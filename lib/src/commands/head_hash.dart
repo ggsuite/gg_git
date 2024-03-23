@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:gg_git/gg_git.dart';
+import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
@@ -14,12 +15,12 @@ import 'package:mocktail/mocktail.dart' as mocktail;
 class HeadHash extends GgGitBase<void> {
   /// Constructor
   HeadHash({
-    required super.log,
+    required super.ggLog,
     super.processWrapper,
     IsCommitted? isCommitted,
   })  : _isCommitted = isCommitted ??
             IsCommitted(
-              log: log,
+              ggLog: ggLog,
               processWrapper: processWrapper,
             ),
         super(
@@ -29,26 +30,26 @@ class HeadHash extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> run({Directory? directory}) async {
-    final inputDir = dir(directory);
-
-    final result = await get(directory: inputDir);
-    log(result);
+  Future<void> exec({
+    required Directory directory,
+    required GgLog ggLog,
+  }) async {
+    final result = await get(directory: directory, ggLog: ggLog);
+    ggLog(result);
   }
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   Future<String> get({
-    void Function(String)? log,
+    required GgLog ggLog,
     required Directory directory,
   }) async {
-    log ??= this.log;
-
     // Directory is a git repo?
     await check(directory: directory);
 
     // Everything is commited?
-    final isCommited = await _isCommitted.get(directory: directory, log: log);
+    final isCommited =
+        await _isCommitted.get(directory: directory, ggLog: ggLog);
 
     if (!isCommited) {
       throw Exception('Not everything is commited.');

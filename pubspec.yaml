@@ -1,6 +1,6 @@
 name: gg_git
 description: A collection of git helper scripts for repository checks and other utilities.
-version: 1.0.15
+version: 1.0.16
 repository: https://github.com/inlavigo/gg_git.git
 
 environment:
@@ -12,6 +12,7 @@ dependencies:
   gg_args: ^1.1.0
   gg_console_colors: ^1.0.0
   gg_is_github: ^1.0.1
+  gg_log: ^1.0.0
   gg_process: ^1.0.7
   gg_status_printer: ^1.0.7
   meta: ^1.12.0

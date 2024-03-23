@@ -7,21 +7,22 @@
 
 import 'package:gg_args/gg_args.dart';
 import 'package:gg_git/gg_git.dart';
+import 'package:gg_log/gg_log.dart';
 
 // .............................................................................
 Future<void> run({
   required List<String> args,
-  required void Function(String msg) log,
+  required GgLog ggLog,
 }) =>
     GgCommandRunner(
-      log: log,
-      command: GgGit(log: log),
+      ggLog: ggLog,
+      command: GgGit(ggLog: ggLog),
     ).run(args: args);
 
 // .............................................................................
 Future<void> main(List<String> args) async {
   await run(
     args: args,
-    log: (msg) => print(msg),
+    ggLog: (msg) => print(msg),
   );
 }

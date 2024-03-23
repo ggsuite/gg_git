@@ -52,7 +52,7 @@ void main() {
 
       // Execute bin/gg_git.dart and check if it prints "value"
       final messages = <String>[];
-      await run(args: ['get-tags', '--input', d.path], log: messages.add);
+      await run(args: ['get-tags', '--input', d.path], ggLog: messages.add);
 
       expect(messages.last, 'No tags found.');
     });

@@ -20,7 +20,7 @@ void main() {
   setUp(() {
     messages.clear();
     d = initTestDir();
-    headHash = HeadHash(log: messages.add);
+    headHash = HeadHash(ggLog: messages.add);
   });
 
   tearDown(() {
@@ -33,7 +33,7 @@ void main() {
       group('should throw', () {
         test('when the directory is not a git repo', () {
           expect(
-            () => headHash.get(directory: d),
+            () => headHash.get(directory: d, ggLog: messages.add),
             throwsA(
               isA<ArgumentError>().having(
                 (e) => e.toString(),
@@ -52,7 +52,7 @@ void main() {
 
           // Getting the head hash should throw
           await expectLater(
-            () => headHash.get(directory: d),
+            () => headHash.get(directory: d, ggLog: messages.add),
             throwsA(
               isA<Exception>().having(
                 (e) => e.toString(),
@@ -69,7 +69,7 @@ void main() {
 
           // Mock IsCommitted
           final isCommited = MockIsCommitted();
-          when(() => isCommited.get(directory: d, log: any(named: 'log')))
+          when(() => isCommited.get(directory: d, ggLog: any(named: 'ggLog')))
               .thenAnswer((_) => Future.value(true));
 
           // Getting the head hash should throw
@@ -93,13 +93,13 @@ void main() {
 
           // Run headHash.get and check if it throws
           headHash = HeadHash(
-            log: messages.add,
+            ggLog: messages.add,
             processWrapper: failingProcessWrapper,
             isCommitted: isCommited,
           );
 
           await expectLater(
-            () => headHash.get(directory: d),
+            () => headHash.get(directory: d, ggLog: messages.add),
             throwsA(
               isA<Exception>().having(
                 (e) => e.toString(),
@@ -120,7 +120,7 @@ void main() {
           await addAndCommitSampleFile(d);
 
           // Getting the head hash should work
-          final hash = await headHash.get(directory: d);
+          final hash = await headHash.get(directory: d, ggLog: messages.add);
           expect(hash, isNotEmpty);
         });
       });
@@ -133,7 +133,7 @@ void main() {
         await addAndCommitSampleFile(d);
 
         // Run the command
-        await headHash.run(directory: d);
+        await headHash.exec(directory: d, ggLog: messages.add);
         expect(messages.last, isNotEmpty);
       });
     });

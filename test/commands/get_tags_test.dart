@@ -24,7 +24,7 @@ void main() {
     d = initTestDir();
     messages.clear();
     getTags = GetTags(
-      log: messages.add,
+      ggLog: messages.add,
       processWrapper: const GgProcessWrapper(),
     );
   });
@@ -40,7 +40,7 @@ void main() {
       group('should throw', () {
         test('when directory is not a git repo', () async {
           await expectLater(
-            getTags.fromHead(directory: d),
+            getTags.fromHead(directory: d, ggLog: messages.add),
             throwsA(
               isA<ArgumentError>().having(
                 (e) => e.message,
@@ -55,7 +55,8 @@ void main() {
       group('should return nothing', () {
         test('when no tags are available', () async {
           await initGit(d);
-          final result = await getTags.fromHead(directory: d);
+          final result =
+              await getTags.fromHead(directory: d, ggLog: messages.add);
           expect(result, isEmpty);
           expect(messages, isEmpty);
         });
@@ -67,7 +68,13 @@ void main() {
             await initGit(d);
             await addAndCommitSampleFile(d);
             await addTag(d, 'V0');
-            expect(await getTags.fromHead(directory: d), ['V0']);
+            expect(
+              await getTags.fromHead(
+                directory: d,
+                ggLog: messages.add,
+              ),
+              ['V0'],
+            );
             expect(messages, isEmpty);
           });
         });
@@ -77,7 +84,13 @@ void main() {
             await initGit(d);
             await addAndCommitSampleFile(d);
             await addTags(d, ['V0', 'T0', 'T1']);
-            expect(await getTags.fromHead(directory: d), ['V0', 'T1', 'T0']);
+            expect(
+              await getTags.fromHead(
+                directory: d,
+                ggLog: messages.add,
+              ),
+              ['V0', 'T1', 'T0'],
+            );
           });
 
           test('but not tags of previous commits', () async {
@@ -85,12 +98,24 @@ void main() {
             await setPubspec(d, version: '1.0.0');
             commitPubspec(d);
             await addTag(d, 'T0');
-            expect(await getTags.fromHead(directory: d), ['T0']);
+            expect(
+              await getTags.fromHead(
+                directory: d,
+                ggLog: messages.add,
+              ),
+              ['T0'],
+            );
 
             // Commit a new change -> No tags should be returned
             await setPubspec(d, version: '2.0.0');
             commitPubspec(d);
-            expect(await getTags.fromHead(directory: d), isEmpty);
+            expect(
+              await getTags.fromHead(
+                directory: d,
+                ggLog: messages.add,
+              ),
+              isEmpty,
+            );
           });
         });
       });
@@ -103,19 +128,43 @@ void main() {
           await addAndCommitSampleFile(d);
 
           // Initially we should get no tags
-          expect(await getTags.all(directory: d), <String>[]);
+          expect(
+            await getTags.all(
+              directory: d,
+              ggLog: messages.add,
+            ),
+            <String>[],
+          );
 
           // Add a first two tags
           await addTags(d, ['0a', '0b']);
-          expect(await getTags.all(directory: d), ['0b', '0a']);
+          expect(
+            await getTags.all(
+              directory: d,
+              ggLog: messages.add,
+            ),
+            ['0b', '0a'],
+          );
 
           // Add another commit
           await updateAndCommitSampleFile(d);
           await addTags(d, ['1a', '1b']);
-          expect(await getTags.all(directory: d), ['1b', '1a', '0b', '0a']);
+          expect(
+            await getTags.all(
+              directory: d,
+              ggLog: messages.add,
+            ),
+            ['1b', '1a', '0b', '0a'],
+          );
 
           // From head should still work
-          expect(await getTags.fromHead(directory: d), ['1b', '1a']);
+          expect(
+            await getTags.fromHead(
+              directory: d,
+              ggLog: messages.add,
+            ),
+            ['1b', '1a'],
+          );
         });
       });
     });
@@ -132,7 +181,7 @@ void main() {
             await addTags(d, ['1a', '1b']);
 
             final runner = CommandRunner<void>('test', 'test');
-            runner.addCommand(GetTags(log: messages.add));
+            runner.addCommand(GetTags(ggLog: messages.add));
             await runner.run(['get-tags', '--input', d.path, '--head-only']);
 
             expect(messages.last.split('\n'), ['1b', '1a']);
@@ -152,7 +201,7 @@ void main() {
             await addTags(d, ['1b', '1a']);
 
             final runner = CommandRunner<void>('test', 'test');
-            runner.addCommand(GetTags(log: messages.add));
+            runner.addCommand(GetTags(ggLog: messages.add));
             await runner.run(['get-tags', '--input', d.path]);
 
             expect(messages.last.split('\n'), ['1b', '1a', '0b', '0a']);

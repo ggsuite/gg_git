@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:gg_git/src/base/gg_git_base.dart';
+import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
@@ -14,7 +15,7 @@ import 'package:mocktail/mocktail.dart' as mocktail;
 class GetTags extends GgGitBase<void> {
   /// Constructor
   GetTags({
-    required super.log,
+    required super.ggLog,
     super.processWrapper,
   }) : super(
           name: 'get-tags',
@@ -25,54 +26,53 @@ class GetTags extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> run({Directory? directory}) async {
-    final inputDir = dir(directory);
-
+  Future<void> exec({
+    required Directory directory,
+    required GgLog ggLog,
+  }) async {
     final headOnly = argResults!['head-only'] as bool;
 
     if (headOnly) {
-      final result = await fromHead(directory: inputDir);
+      final result = await fromHead(directory: directory, ggLog: ggLog);
 
-      log(result.isNotEmpty ? result.join('\n') : 'No head tags found.');
+      ggLog(result.isNotEmpty ? result.join('\n') : 'No head tags found.');
     } else {
-      final result = await all(directory: inputDir);
+      final result = await all(directory: directory, ggLog: ggLog);
 
-      log(result.isNotEmpty ? result.join('\n') : 'No tags found.');
+      ggLog(result.isNotEmpty ? result.join('\n') : 'No tags found.');
     }
   }
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   Future<List<String>> fromHead({
-    void Function(String)? log,
+    required GgLog ggLog,
     required Directory directory,
   }) =>
       _getTags(
         args: ['--contains', 'HEAD'],
-        log: log,
+        ggLog: ggLog,
         directory: directory,
       );
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   Future<List<String>> all({
-    void Function(String)? log,
+    required GgLog ggLog,
     required Directory directory,
   }) =>
       _getTags(
         args: [],
-        log: log,
+        ggLog: ggLog,
         directory: directory,
       );
 
   // ...........................................................................
   Future<List<String>> _getTags({
     required List<String> args,
-    void Function(String)? log,
+    required GgLog ggLog,
     required Directory directory,
   }) async {
-    log ??= this.log;
-
     await check(directory: directory);
 
     final result = await processWrapper.run(

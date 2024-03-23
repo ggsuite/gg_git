@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.0.16
+
+- Add GgLog
+
 ## 1.0.15
 
 - Add `head-hash` returning the hash of the current head revision

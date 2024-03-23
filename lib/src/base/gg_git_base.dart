@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:gg_args/gg_args.dart';
+import 'package:gg_log/gg_log.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
 
@@ -15,7 +16,7 @@ import 'package:path/path.dart';
 abstract class GgGitBase<T> extends DirCommand<T> {
   /// Constructor
   GgGitBase({
-    required super.log,
+    required super.ggLog,
     required super.name,
     required super.description,
     GgProcessWrapper? processWrapper,
@@ -48,7 +49,7 @@ class GgGitCommandExample extends GgGitBase<void> {
   /// Constructor
   GgGitCommandExample({
     super.processWrapper,
-    required super.log,
+    required super.ggLog,
   }) : super(
           name: 'example',
           description: 'This is an example command.',
@@ -56,10 +57,11 @@ class GgGitCommandExample extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> run({Directory? directory}) async {
-    final inputDir = dir(directory);
-
-    await check(directory: inputDir);
-    log('Example executed for "${dirName(inputDir)}".');
+  Future<void> exec({
+    required Directory directory,
+    required GgLog ggLog,
+  }) async {
+    await check(directory: directory);
+    ggLog('Example executed for "${dirName(directory)}".');
   }
 }

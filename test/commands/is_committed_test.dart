@@ -27,7 +27,7 @@ void main() {
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
     isCommitted = IsCommitted(
-      log: messages.add,
+      ggLog: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
     runner.addCommand(isCommitted);
@@ -114,7 +114,10 @@ void main() {
               initTestDir();
               await initGit();
               initCommand();
-              final result = await isCommitted.get(directory: testDir);
+              final result = await isCommitted.get(
+                directory: testDir,
+                ggLog: messages.add,
+              );
               expect(result, isTrue);
             });
           });

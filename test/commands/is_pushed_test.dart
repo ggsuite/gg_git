@@ -139,7 +139,7 @@ void main() {
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
     ggIsPushed = IsPushed(
-      log: messages.add,
+      ggLog: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
     runner.addCommand(ggIsPushed);
@@ -250,7 +250,7 @@ void main() {
               );
 
               expect(
-                () => ggIsPushed.get(directory: localDir),
+                () => ggIsPushed.get(directory: localDir, ggLog: messages.add),
                 throwsA(
                   isA<Exception>().having(
                     (e) => e.toString(),

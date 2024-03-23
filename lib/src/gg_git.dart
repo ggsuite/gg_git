@@ -12,20 +12,21 @@ import 'package:gg_git/src/commands/get_tags.dart';
 import 'package:gg_git/src/commands/head_hash.dart';
 import 'package:gg_git/src/commands/is_committed.dart';
 import 'package:gg_git/src/commands/is_pushed.dart';
+import 'package:gg_log/gg_log.dart';
 
 // #############################################################################
 /// The command line interface for GgGit
 class GgGit extends Command<dynamic> {
   /// Constructor
-  GgGit({required this.log}) {
-    addSubcommand(GetTags(log: log));
-    addSubcommand(IsCommitted(log: log));
-    addSubcommand(IsPushed(log: log));
-    addSubcommand(HeadHash(log: log));
+  GgGit({required this.ggLog}) {
+    addSubcommand(GetTags(ggLog: ggLog));
+    addSubcommand(IsCommitted(ggLog: ggLog));
+    addSubcommand(IsPushed(ggLog: ggLog));
+    addSubcommand(HeadHash(ggLog: ggLog));
   }
 
   /// The log function
-  final void Function(String message) log;
+  final GgLog ggLog;
 
   // ...........................................................................
   @override

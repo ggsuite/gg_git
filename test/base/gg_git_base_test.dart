@@ -22,7 +22,7 @@ void main() {
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
     ggGit = GgGitCommandExample(
-      log: messages.add,
+      ggLog: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
     runner.addCommand(ggGit);
@@ -58,7 +58,10 @@ void main() {
           test('specified via constructor', () async {
             initCommand();
             await expectLater(
-              ggGit.run(directory: Directory('xyz')),
+              ggGit.exec(
+                directory: Directory('xyz'),
+                ggLog: messages.add,
+              ),
               throwsA(
                 isA<ArgumentError>().having(
                   (e) => e.message,

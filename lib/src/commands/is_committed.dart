@@ -8,15 +8,16 @@ import 'dart:io';
 
 import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
+import 'package:gg_log/gg_log.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
-/// Provides "ggGit committed <dir>" command
+/// Checks if eyerything in the current working directory is committed.
 class IsCommitted extends GgGitBase<void> {
   /// Constructor
   IsCommitted({
-    required super.log,
+    required super.ggLog,
     super.processWrapper,
   }) : super(
           name: 'is-committed',
@@ -26,18 +27,19 @@ class IsCommitted extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> run({Directory? directory}) async {
-    final inputDir = dir(directory);
-
+  Future<void> exec({
+    required Directory directory,
+    required GgLog ggLog,
+  }) async {
     final messages = <String>[];
 
     final printer = GgStatusPrinter<bool>(
       message: 'Everything is committed.',
-      log: log,
+      ggLog: ggLog,
     );
 
     final result = await printer.logTask(
-      task: () => get(log: messages.add, directory: inputDir),
+      task: () => get(ggLog: messages.add, directory: directory),
       success: (success) => success,
     );
 
@@ -53,10 +55,9 @@ class IsCommitted extends GgGitBase<void> {
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
   Future<bool> get({
-    void Function(String msg)? log,
+    required GgLog ggLog,
     required Directory directory,
   }) async {
-    log ??= this.log;
     await check(directory: directory);
 
     // Is everything committed?
