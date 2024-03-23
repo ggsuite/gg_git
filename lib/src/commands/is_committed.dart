@@ -48,7 +48,7 @@ class IsCommitted extends GgGitBase<void> {
         messages.add('There are uncommmited changes.');
       }
 
-      throw Exception("$brightBlack${messages.join('\n')}$reset");
+      throw Exception(brightBlack(messages.join('\n')));
     }
   }
 
