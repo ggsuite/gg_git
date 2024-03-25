@@ -15,8 +15,8 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart';
 void main() {
   late Directory d;
 
-  setUp(() {
-    d = initTestDir();
+  setUp(() async {
+    d = await initTestDir();
   });
 
   group('bin/gg_git.dart', () {

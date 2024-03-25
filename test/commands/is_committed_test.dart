@@ -20,7 +20,7 @@ void main() {
   late Directory testDir;
 
   // ...........................................................................
-  void initTestDir() => testDir = h.initTestDir();
+  Future<void> initTestDir() async => testDir = await h.initTestDir();
   Future<void> initGit() => h.initGit(testDir);
   Future<void> initUncommittedFile() => h.initUncommittedFile(testDir);
 
@@ -45,7 +45,7 @@ void main() {
       test('should throw if "git status" fails', () async {
         final failingProcessWrapper = MockGgProcessWrapper();
 
-        initTestDir();
+        await initTestDir();
         await initGit();
         initCommand(processWrapper: failingProcessWrapper);
 
@@ -81,7 +81,7 @@ void main() {
       group('should return', () {
         group('false', () {
           test('if there are uncommitted changes', () async {
-            initTestDir();
+            await initTestDir();
             await initGit();
             await initUncommittedFile();
             initCommand();
@@ -103,7 +103,7 @@ void main() {
         group('true', () {
           group('if everything is committed', () {
             test('with inputDir from --input args', () async {
-              initTestDir();
+              await initTestDir();
               await initGit();
               initCommand();
               await runner.run(['is-committed', '--input', testDir.path]);
@@ -111,7 +111,7 @@ void main() {
             });
 
             test('with inputDir taken from constructor', () async {
-              initTestDir();
+              await initTestDir();
               await initGit();
               initCommand();
               final result = await isCommitted.get(

@@ -24,9 +24,9 @@ void main() {
   late File file;
 
   // ...........................................................................
-  void initTestDir() => d = h.initTestDir();
-  void initRemoteGit() => remoteDir = h.initRemoteGit(d);
-  void initLocalGit() => localDir = h.initLocalGit(d);
+  Future<void> initTestDir() async => d = await h.initTestDir();
+  Future<void> initRemoteGit() async => remoteDir = await h.initRemoteGit(d);
+  Future<void> initLocalGit() async => localDir = await h.initLocalGit(d);
 
   // ...........................................................................
   void addRemoteToLocal() {
@@ -179,8 +179,8 @@ void main() {
             test('taken from --input arg', () async {
               final failingProcessWrapper = MockGgProcessWrapper();
 
-              initTestDir();
-              initLocalGit();
+              await initTestDir();
+              await initLocalGit();
               initCommand(processWrapper: failingProcessWrapper);
 
               when(
@@ -210,11 +210,11 @@ void main() {
               );
             });
 
-            test('taken from constructor', () {
+            test('taken from constructor', () async {
               final failingProcessWrapper = MockGgProcessWrapper();
 
-              initTestDir();
-              initLocalGit();
+              await initTestDir();
+              await initLocalGit();
               initCommand(
                 processWrapper: failingProcessWrapper,
               );
@@ -267,8 +267,8 @@ void main() {
         test('if "git returns an unknown status"', () async {
           final failingProcessWrapper = MockGgProcessWrapper();
 
-          initTestDir();
-          initLocalGit();
+          await initTestDir();
+          await initLocalGit();
           initCommand(processWrapper: failingProcessWrapper);
 
           when(
@@ -300,8 +300,8 @@ void main() {
 
         // .....................................................................
         test('if not everything is pushed', () async {
-          initTestDir();
-          initLocalGit();
+          await initTestDir();
+          await initLocalGit();
           initCommand();
 
           // Not yet added file?
@@ -317,7 +317,7 @@ void main() {
           await expectException('The branch has no remote.');
 
           // Add a remote
-          initRemoteGit();
+          await initRemoteGit();
           addRemoteToLocal();
 
           // Push state
@@ -357,8 +357,8 @@ void main() {
     group('should print »Everything is pushed.«', () {
       // .....................................................................
       test('when everything is pushed', () async {
-        initTestDir();
-        initLocalGit();
+        await initTestDir();
+        await initLocalGit();
         initCommand();
 
         // Create a pushed file
@@ -367,7 +367,7 @@ void main() {
         commitFile();
 
         // Add a remote
-        initRemoteGit();
+        await initRemoteGit();
         addRemoteToLocal();
 
         // Push state

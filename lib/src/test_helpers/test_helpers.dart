@@ -12,17 +12,18 @@ import 'package:gg_is_github/gg_is_github.dart';
 
 // .............................................................................
 /// Initializes a test directory
-Directory initTestDir() {
-  final tmpBase =
-      Directory('/tmp').existsSync() ? Directory('/tmp') : Directory.systemTemp;
+Future<Directory> initTestDir() async {
+  final tmpBase = await Directory('/tmp').exists()
+      ? Directory('/tmp')
+      : Directory.systemTemp;
 
-  final tmp = tmpBase.createTempSync('gg_git_test');
+  final tmp = await tmpBase.createTemp('gg_git_test');
 
   final testDir = Directory('${tmp.path}/test');
-  if (testDir.existsSync()) {
-    testDir.deleteSync(recursive: true);
+  if (await testDir.exists()) {
+    await testDir.delete(recursive: true);
   }
-  testDir.createSync(recursive: true);
+  await testDir.create(recursive: true);
 
   return testDir;
 }
@@ -60,11 +61,19 @@ Future<void> initGit(Directory testDir) async {
 }
 
 // .............................................................................
+/// Adds a gitignore file to the test directory
+Future<void> addAndCommitGitIgnoreFile(
+  Directory d, {
+  String content = '',
+}) =>
+    addAndCommitSampleFile(d, fileName: '.gitignore', content: content);
+
+// .............................................................................
 /// Init remote git repository in directory
-Directory initRemoteGit(Directory testDir) {
+Future<Directory> initRemoteGit(Directory testDir) async {
   final remoteDir = Directory('${testDir.path}/remote');
-  remoteDir.createSync(recursive: true);
-  final result = Process.runSync(
+  await remoteDir.create(recursive: true);
+  final result = await Process.run(
     'git',
     ['init', '--bare', '--initial-branch=main'],
     workingDirectory: remoteDir.path,
@@ -78,11 +87,11 @@ Directory initRemoteGit(Directory testDir) {
 
 // .............................................................................
 /// Init local git repository in directory
-Directory initLocalGit(Directory testDir) {
+Future<Directory> initLocalGit(Directory testDir) async {
   final localDir = Directory('${testDir.path}/local');
-  localDir.createSync(recursive: true);
+  await localDir.create(recursive: true);
 
-  final result = Process.runSync(
+  final result = await Process.run(
     'git',
     ['init', '--initial-branch=main'],
     workingDirectory: localDir.path,
@@ -91,7 +100,7 @@ Directory initLocalGit(Directory testDir) {
     throw Exception('Could not initialize local git repository.');
   }
 
-  final result2 = Process.runSync(
+  final result2 = await Process.run(
     'git',
     ['checkout', '-b', 'main'],
     workingDirectory: localDir.path,
@@ -138,8 +147,8 @@ Future<void> initFile(Directory testDir, String name, String content) =>
 
 // .............................................................................
 /// Commit the file with a name in the test directory
-void commitFile(Directory testDir, String name) {
-  final result = Process.runSync(
+Future<void> commitFile(Directory testDir, String name) async {
+  final result = await Process.run(
     'git',
     ['add', name],
     workingDirectory: testDir.path,
@@ -147,7 +156,7 @@ void commitFile(Directory testDir, String name) {
   if (result.exitCode != 0) {
     throw Exception('Could not add $name.');
   }
-  final result2 = Process.runSync(
+  final result2 = await Process.run(
     'git',
     ['commit', '-m', 'Initial commit'],
     workingDirectory: testDir.path,
@@ -161,19 +170,23 @@ void commitFile(Directory testDir, String name) {
 
 // .............................................................................
 /// Add and commit sample file
-Future<void> addAndCommitSampleFile(Directory testDir) async {
-  await initFile(testDir, 'sample.txt', 'sample');
-  commitFile(testDir, 'sample.txt');
+Future<void> addAndCommitSampleFile(
+  Directory testDir, {
+  String fileName = 'sample.txt',
+  String content = 'sample',
+}) async {
+  await initFile(testDir, fileName, content);
+  await commitFile(testDir, fileName);
 }
 
 // .............................................................................
 /// Update and commit sample file
 Future<void> updateAndCommitSampleFile(Directory testDir) async {
   final file = File('${testDir.path}/sample.txt');
-  final content = file.existsSync() ? file.readAsStringSync() : '';
+  final content = await file.exists() ? file.readAsString() : '';
   final newContent = '${content}updated';
   await File('${testDir.path}/sample.txt').writeAsString(newContent);
-  commitFile(testDir, 'sample.txt');
+  await commitFile(testDir, 'sample.txt');
 }
 
 // ## uncommitted.txt
@@ -190,8 +203,8 @@ Future<void> initUncommittedFile(Directory testDir) =>
 Future<void> setPubspec(Directory testDir, {required String? version}) async {
   final file = File('${testDir.path}/pubspec.yaml');
 
-  var content = file.existsSync()
-      ? file.readAsStringSync()
+  var content = await file.exists()
+      ? await file.readAsString()
       : 'name: test\nversion: $version\n';
 
   if (version == null) {
@@ -205,7 +218,8 @@ Future<void> setPubspec(Directory testDir, {required String? version}) async {
 
 // .............................................................................
 /// Commit the pubspec file
-void commitPubspec(Directory testDir) => commitFile(testDir, 'pubspec.yaml');
+Future<void> commitPubspec(Directory testDir) =>
+    commitFile(testDir, 'pubspec.yaml');
 
 // ## CHANGELOG.md
 
@@ -238,7 +252,7 @@ Future<void> setupVersions(
   required String? gitHead,
 }) async {
   await setPubspec(testDir, version: pubspec);
-  commitPubspec(testDir);
+  await commitPubspec(testDir);
   await setChangeLog(testDir, version: changeLog);
   commitChangeLog(testDir);
 

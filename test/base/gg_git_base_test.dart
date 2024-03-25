@@ -29,9 +29,9 @@ void main() {
   }
 
   // ...........................................................................
-  setUp(() {
+  setUp(() async {
     runner = CommandRunner<void>('test', 'test');
-    d = initTestDir();
+    d = await initTestDir();
     messages.clear();
   });
 
@@ -75,7 +75,7 @@ void main() {
 
         // .....................................................................
         test('if directory is not a git repository', () async {
-          initTestDir();
+          await initTestDir();
           initCommand();
           await expectLater(
             runner.run(['example', '--input', d.path]),
@@ -93,7 +93,7 @@ void main() {
 
     // #########################################################################
     test('should succeed', () async {
-      initTestDir();
+      await initTestDir();
       await initGit(d);
       initCommand();
       await runner.run(['example', '--input', d.path]);

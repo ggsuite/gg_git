@@ -20,8 +20,8 @@ void main() {
   late GetTags getTags;
 
   // ...........................................................................
-  setUp(() {
-    d = initTestDir();
+  setUp(() async {
+    d = await initTestDir();
     messages.clear();
     getTags = GetTags(
       ggLog: messages.add,
@@ -96,7 +96,7 @@ void main() {
           test('but not tags of previous commits', () async {
             await initGit(d);
             await setPubspec(d, version: '1.0.0');
-            commitPubspec(d);
+            await commitPubspec(d);
             await addTag(d, 'T0');
             expect(
               await getTags.fromHead(
@@ -108,7 +108,7 @@ void main() {
 
             // Commit a new change -> No tags should be returned
             await setPubspec(d, version: '2.0.0');
-            commitPubspec(d);
+            await commitPubspec(d);
             expect(
               await getTags.fromHead(
                 directory: d,

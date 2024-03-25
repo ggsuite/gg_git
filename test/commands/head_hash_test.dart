@@ -17,9 +17,9 @@ void main() {
   late HeadHash headHash;
   final messages = <String>[];
 
-  setUp(() {
+  setUp(() async {
     messages.clear();
-    d = initTestDir();
+    d = await initTestDir();
     headHash = HeadHash(ggLog: messages.add);
   });
 

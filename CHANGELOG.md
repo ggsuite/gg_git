@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.19
+
+- Breaking change: Made all test helpers async
+
 ## 1.0.18
 
 - Replace gg_check by gg
