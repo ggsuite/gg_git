@@ -48,7 +48,7 @@ void main() {
           await initGit(d);
 
           // Add an uncommitted file
-          initUncommittedFile(d);
+          await initUncommittedFile(d);
 
           // Getting the head hash should throw
           await expectLater(

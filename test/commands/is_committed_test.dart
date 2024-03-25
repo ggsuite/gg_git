@@ -22,7 +22,7 @@ void main() {
   // ...........................................................................
   void initTestDir() => testDir = h.initTestDir();
   Future<void> initGit() => h.initGit(testDir);
-  void initUncommittedFile() => h.initUncommittedFile(testDir);
+  Future<void> initUncommittedFile() => h.initUncommittedFile(testDir);
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
@@ -83,7 +83,7 @@ void main() {
           test('if there are uncommitted changes', () async {
             initTestDir();
             await initGit();
-            initUncommittedFile();
+            await initUncommittedFile();
             initCommand();
 
             await expectLater(
