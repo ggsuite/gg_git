@@ -147,7 +147,11 @@ Future<void> initFile(Directory testDir, String name, String content) =>
 
 // .............................................................................
 /// Commit the file with a name in the test directory
-Future<void> commitFile(Directory testDir, String name) async {
+Future<void> commitFile(
+  Directory testDir,
+  String name, {
+  String message = 'Commit Message',
+}) async {
   final result = await Process.run(
     'git',
     ['add', name],
@@ -158,7 +162,7 @@ Future<void> commitFile(Directory testDir, String name) async {
   }
   final result2 = await Process.run(
     'git',
-    ['commit', '-m', 'Initial commit'],
+    ['commit', '-m', message],
     workingDirectory: testDir.path,
   );
   if (result2.exitCode != 0) {
@@ -174,19 +178,23 @@ Future<void> addAndCommitSampleFile(
   Directory testDir, {
   String fileName = 'sample.txt',
   String content = 'sample',
+  String message = 'Commit Message',
 }) async {
   await initFile(testDir, fileName, content);
-  await commitFile(testDir, fileName);
+  await commitFile(testDir, fileName, message: message);
 }
 
 // .............................................................................
 /// Update and commit sample file
-Future<void> updateAndCommitSampleFile(Directory testDir) async {
+Future<void> updateAndCommitSampleFile(
+  Directory testDir, {
+  String message = 'Commit Message',
+}) async {
   final file = File('${testDir.path}/sample.txt');
   final content = await file.exists() ? file.readAsString() : '';
   final newContent = '${content}updated';
   await File('${testDir.path}/sample.txt').writeAsString(newContent);
-  await commitFile(testDir, 'sample.txt');
+  await commitFile(testDir, 'sample.txt', message: message);
 }
 
 // ## uncommitted.txt
