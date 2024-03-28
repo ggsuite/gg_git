@@ -11,4 +11,5 @@ export 'src/commands/get_tags.dart';
 export 'src/commands/is_committed.dart';
 export 'src/commands/is_pushed.dart';
 export 'src/commands/head_hash.dart';
+export 'src/commands/head_message.dart';
 export 'src/base/gg_git_base.dart';

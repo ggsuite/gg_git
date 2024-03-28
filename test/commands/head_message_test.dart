@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/gg_git_test_helpers.dart';
-import 'package:gg_git/src/commands/head_message.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
