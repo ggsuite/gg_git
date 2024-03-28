@@ -6,6 +6,7 @@
 
 import 'dart:io';
 
+import 'package:gg_git/gg_git.dart';
 import 'package:gg_is_github/gg_is_github.dart';
 
 // coverage:ignore-file
@@ -178,6 +179,14 @@ Future<void> stageFile(
   if (result.exitCode != 0) {
     throw Exception('Could not add $name.');
   }
+}
+
+// .............................................................................
+/// Returns a list of modified files in the directory
+Future<List<String>> modifiedFiles(Directory directory) {
+  return ModifiedFiles(
+    ggLog: print,
+  ).get(directory: directory, ggLog: print);
 }
 
 // ## sample.txt

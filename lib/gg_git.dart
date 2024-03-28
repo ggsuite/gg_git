@@ -13,4 +13,5 @@ export 'src/commands/is_pushed.dart';
 export 'src/commands/head_hash.dart';
 export 'src/commands/head_message.dart';
 export 'src/commands/modified_files.dart';
+export 'src/commands/commit.dart';
 export 'src/base/gg_git_base.dart';
