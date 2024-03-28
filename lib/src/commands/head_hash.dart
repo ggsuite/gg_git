@@ -26,15 +26,22 @@ class HeadHash extends GgGitBase<void> {
         super(
           name: 'head-hash',
           description: 'Returns the commit hash of the head revision.',
-        );
+        ) {
+    _addParams();
+  }
 
   // ...........................................................................
   @override
   Future<void> exec({
     required Directory directory,
     required GgLog ggLog,
+    String? generation,
   }) async {
-    final result = await get(directory: directory, ggLog: ggLog);
+    final result = await get(
+      directory: directory,
+      ggLog: ggLog,
+      generation: generation ?? argResults?['generation'] as String? ?? '',
+    );
     ggLog(result);
   }
 
@@ -43,7 +50,10 @@ class HeadHash extends GgGitBase<void> {
   Future<String> get({
     required GgLog ggLog,
     required Directory directory,
+    String generation = '',
   }) async {
+    _checkGeneration(generation);
+
     // Directory is a git repo?
     await check(directory: directory);
 
@@ -58,7 +68,7 @@ class HeadHash extends GgGitBase<void> {
     // Read the hash
     final result = await processWrapper.run(
       'git',
-      ['rev-parse', 'HEAD'],
+      ['rev-parse', 'HEAD$generation'],
       workingDirectory: directory.path,
     );
 
@@ -71,6 +81,28 @@ class HeadHash extends GgGitBase<void> {
 
   // ...........................................................................
   final IsCommitted _isCommitted;
+
+  // ...........................................................................
+  void _addParams() {
+    argParser.addOption(
+      'generation',
+      abbr: 'g',
+      help: 'E.g. ~1 to get one commit before the head hash.',
+      mandatory: false,
+    );
+  }
+
+  // ...........................................................................
+  void _checkGeneration(String generation) {
+    if (generation.isNotEmpty) {
+      if (!RegExp(r'^~\d+$').hasMatch(generation)) {
+        throw Exception(
+          'Invalid generation reference: $generation. '
+          'Correct example: "~1"',
+        );
+      }
+    }
+  }
 }
 
 /// Mocktail mock

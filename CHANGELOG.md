@@ -1,6 +1,10 @@
 # Change Log
 
-## 1.1.19
+## 1.1.0
+
+- head-hash command: Add Option -g to get predecessor of the head hash
+
+## 1.0.19
 
 - Breaking change: Made all test helpers async
 

@@ -6,6 +6,7 @@
 
 import 'dart:io';
 
+import 'package:args/command_runner.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/gg_git_test_helpers.dart';
 import 'package:gg_process/gg_process.dart';
@@ -28,8 +29,7 @@ void main() {
   });
 
   group('HeadHash', () {
-    group('get(directory)', () {
-      // const HeadHash();
+    group('get(directory, generation)', () {
       group('should throw', () {
         test('when the directory is not a git repo', () {
           expect(
@@ -62,6 +62,28 @@ void main() {
             ),
           );
         });
+
+        test('when the generation has a wrong format', () async {
+          late String exception;
+          try {
+            await headHash.get(
+              directory: d,
+              ggLog: messages.add,
+              generation: 'wrong',
+            );
+          } catch (e) {
+            exception = e.toString();
+          }
+
+          expect(
+            exception,
+            contains(
+              'Exception: Invalid generation reference: wrong. '
+              'Correct example: "~1"',
+            ),
+          );
+        });
+
         test('when something goes wrong while getting the tag', () async {
           // Init git
           await initGit(d);
@@ -124,17 +146,89 @@ void main() {
           expect(hash, isNotEmpty);
         });
       });
+
+      group('should allow to get the hashes of commits before head', () {
+        test('when generation is used', () async {
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
+          final oldHead = await headHash.get(directory: d, ggLog: messages.add);
+
+          // Do another commit
+          await updateAndCommitSampleFile(d);
+          final newHead = await headHash.get(directory: d, ggLog: messages.add);
+
+          // Get the hash of the commit before the head
+          final hash = await headHash.get(
+            directory: d,
+            ggLog: messages.add,
+            generation: '~1',
+          );
+
+          expect(hash, oldHead);
+          expect(newHead, isNot(oldHead));
+        });
+      });
     });
 
-    group('run(directory)', () {
-      test('should allow to run the command from cli', () async {
-        // Init git
-        await initGit(d);
-        await addAndCommitSampleFile(d);
+    group('exec(directory)', () {
+      group('should allow to run the command from cli', () {
+        test('programmatically', () async {
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
 
-        // Run the command
-        await headHash.exec(directory: d, ggLog: messages.add);
-        expect(messages.last, isNotEmpty);
+          // Run the command
+          await headHash.exec(directory: d, ggLog: messages.add);
+          final oldHead = messages.last;
+          expect(oldHead, isNotEmpty);
+
+          // Make another commit
+          await updateAndCommitSampleFile(d);
+
+          // Run the command again
+          await headHash.exec(directory: d, ggLog: messages.add);
+          final newHead = messages.last;
+
+          // Get the head before the last commit
+          await headHash.exec(
+            directory: d,
+            ggLog: messages.add,
+            generation: '~1',
+          );
+
+          final oldHead2 = messages.last;
+          expect(oldHead2, oldHead);
+          expect(newHead, isNot(oldHead));
+        });
+
+        test('using cli', () async {
+          final runner = CommandRunner<void>('test', 'test');
+          runner.addCommand(headHash);
+
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
+
+          // Run the command
+          await runner.run(['head-hash', '-i', d.path]);
+          final oldHead = messages.last;
+          expect(oldHead, isNotEmpty);
+
+          // Make another commit
+          await updateAndCommitSampleFile(d);
+
+          // Run the command again
+          await runner.run(['head-hash', '-i', d.path]);
+          final newHead = messages.last;
+
+          // Get the head before the last commit
+          await runner.run(['head-hash', '-i', d.path, '-g', '~1']);
+
+          final oldHead2 = messages.last;
+          expect(oldHead2, oldHead);
+          expect(newHead, isNot(oldHead));
+        });
       });
     });
   });
