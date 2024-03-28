@@ -13,6 +13,7 @@ import 'package:gg_git/src/commands/head_hash.dart';
 import 'package:gg_git/src/commands/head_message.dart';
 import 'package:gg_git/src/commands/is_committed.dart';
 import 'package:gg_git/src/commands/is_pushed.dart';
+import 'package:gg_git/src/commands/modified_files.dart';
 import 'package:gg_log/gg_log.dart';
 
 // #############################################################################
@@ -25,6 +26,7 @@ class GgGit extends Command<dynamic> {
     addSubcommand(IsPushed(ggLog: ggLog));
     addSubcommand(HeadHash(ggLog: ggLog));
     addSubcommand(HeadMessage(ggLog: ggLog));
+    addSubcommand(ModifiedFiles(ggLog: ggLog));
   }
 
   /// The log function

@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.3.1
+
+- Add `modified-files` command
+
 ## 1.2.2
 
 - Add `head-message` command

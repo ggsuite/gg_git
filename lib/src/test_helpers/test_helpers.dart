@@ -152,14 +152,8 @@ Future<void> commitFile(
   String name, {
   String message = 'Commit Message',
 }) async {
-  final result = await Process.run(
-    'git',
-    ['add', name],
-    workingDirectory: testDir.path,
-  );
-  if (result.exitCode != 0) {
-    throw Exception('Could not add $name.');
-  }
+  await stageFile(testDir, name);
+
   final result2 = await Process.run(
     'git',
     ['commit', '-m', message],
@@ -167,6 +161,22 @@ Future<void> commitFile(
   );
   if (result2.exitCode != 0) {
     throw Exception('Could not commit $name.');
+  }
+}
+
+// .............................................................................
+/// Commit the file with a name in the test directory
+Future<void> stageFile(
+  Directory testDir,
+  String name,
+) async {
+  final result = await Process.run(
+    'git',
+    ['add', name],
+    workingDirectory: testDir.path,
+  );
+  if (result.exitCode != 0) {
+    throw Exception('Could not add $name.');
   }
 }
 
@@ -201,8 +211,11 @@ Future<void> updateAndCommitSampleFile(
 
 // .............................................................................
 /// Init uncommitted file
-Future<void> initUncommittedFile(Directory testDir) =>
-    initFile(testDir, 'uncommitted.txt', 'uncommitted');
+Future<void> initUncommittedFile(
+  Directory testDir, {
+  String fileName = 'uncommitted.txt',
+}) =>
+    initFile(testDir, fileName, 'uncommitted');
 
 // ## pubspect.yaml
 
