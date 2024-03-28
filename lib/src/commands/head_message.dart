@@ -35,12 +35,14 @@ class HeadMessage extends GgGitBase<void> {
   Future<void> exec({
     required Directory directory,
     required GgLog ggLog,
-    String? generation,
+    int? offset,
   }) async {
+    offset = HeadHash.readOffset(offset, argResults);
+
     final result = await get(
       directory: directory,
       ggLog: ggLog,
-      generation: generation ?? argResults?['generation'] as String? ?? '',
+      offset: offset,
     );
     ggLog(result);
   }
@@ -50,9 +52,9 @@ class HeadMessage extends GgGitBase<void> {
   Future<String> get({
     required GgLog ggLog,
     required Directory directory,
-    String generation = '',
+    int offset = 0,
   }) async {
-    _checkGeneration(generation);
+    HeadHash.checkOffset(offset);
 
     await check(directory: directory);
 
@@ -64,9 +66,10 @@ class HeadMessage extends GgGitBase<void> {
     }
 
     // To get the commit message, the command is adjusted to use `git log`
+    final offsetString = offset == 0 ? '' : '~$offset';
     final result = await processWrapper.run(
       'git',
-      ['log', '-1', '--pretty=format:%B', 'HEAD$generation'],
+      ['log', '-1', '--pretty=format:%B', 'HEAD$offsetString'],
       workingDirectory: directory.path,
     );
 
@@ -83,26 +86,14 @@ class HeadMessage extends GgGitBase<void> {
 
   final IsCommitted _isCommitted;
 
-  // ...........................................................................
+// ...........................................................................
   void _addParams() {
     argParser.addOption(
-      'generation',
-      abbr: 'g',
-      help: 'E.g. ~1 to get the commit message one commit before the head.',
+      'offset',
+      abbr: 'o',
+      help: 'E.g. 1 to get one commit before the head hash.',
       mandatory: false,
     );
-  }
-
-  // ...........................................................................
-  void _checkGeneration(String generation) {
-    if (generation.isNotEmpty) {
-      if (!RegExp(r'^~\d+$').hasMatch(generation)) {
-        throw Exception(
-          'Invalid generation reference: $generation. '
-          'Correct example: "~1"',
-        );
-      }
-    }
   }
 }
 

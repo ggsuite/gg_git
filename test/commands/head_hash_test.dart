@@ -29,7 +29,7 @@ void main() {
   });
 
   group('HeadHash', () {
-    group('get(directory, generation)', () {
+    group('get(directory, offset)', () {
       group('should throw', () {
         test('when the directory is not a git repo', () {
           expect(
@@ -63,13 +63,13 @@ void main() {
           );
         });
 
-        test('when the generation has a wrong format', () async {
+        test('when the offset has a wrong format', () async {
           late String exception;
           try {
             await headHash.get(
               directory: d,
               ggLog: messages.add,
-              generation: 'wrong',
+              offset: -1,
             );
           } catch (e) {
             exception = e.toString();
@@ -77,10 +77,7 @@ void main() {
 
           expect(
             exception,
-            contains(
-              'Exception: Invalid generation reference: wrong. '
-              'Correct example: "~1"',
-            ),
+            'Exception: Invalid offset -1. Offset must be a positive integer.',
           );
         });
 
@@ -148,7 +145,7 @@ void main() {
       });
 
       group('should allow to get the hashes of commits before head', () {
-        test('when generation is used', () async {
+        test('when offset is used', () async {
           // Init git
           await initGit(d);
           await addAndCommitSampleFile(d);
@@ -162,7 +159,7 @@ void main() {
           final hash = await headHash.get(
             directory: d,
             ggLog: messages.add,
-            generation: '~1',
+            offset: 1,
           );
 
           expect(hash, oldHead);
@@ -172,7 +169,7 @@ void main() {
     });
 
     group('exec(directory)', () {
-      group('should allow to run the command from cli', () {
+      group('should allow to run the command', () {
         test('programmatically', () async {
           // Init git
           await initGit(d);
@@ -194,7 +191,7 @@ void main() {
           await headHash.exec(
             directory: d,
             ggLog: messages.add,
-            generation: '~1',
+            offset: 1,
           );
 
           final oldHead2 = messages.last;
@@ -223,11 +220,60 @@ void main() {
           final newHead = messages.last;
 
           // Get the head before the last commit
-          await runner.run(['head-hash', '-i', d.path, '-g', '~1']);
+          await runner.run(['head-hash', '-i', d.path, '-o', '1']);
 
           final oldHead2 = messages.last;
           expect(oldHead2, oldHead);
           expect(newHead, isNot(oldHead));
+        });
+      });
+
+      group('should throw', () {
+        test('when the offset is a negative int', () async {
+          final runner = CommandRunner<void>('test', 'test');
+          runner.addCommand(headHash);
+
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
+
+          // Run the command
+          late String exception;
+
+          try {
+            await runner.run(['head-hash', '-i', d.path, '-o', '-1']);
+          } catch (e) {
+            exception = e.toString();
+          }
+
+          expect(
+            exception,
+            'Exception: Invalid offset -1. '
+            'Offset must be a positive integer.',
+          );
+        });
+
+        test('when the offset is a string', () async {
+          final runner = CommandRunner<void>('test', 'test');
+          runner.addCommand(headHash);
+
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
+
+          // Run the command
+          late String exception;
+
+          try {
+            await runner.run(['head-hash', '-i', d.path, '-o', 'a']);
+          } catch (e) {
+            exception = e.toString();
+          }
+
+          expect(
+            exception,
+            'Exception: Invalid offset a. Offset must be a positive integer.',
+          );
         });
       });
     });

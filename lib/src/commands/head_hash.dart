@@ -6,6 +6,7 @@
 
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart' as mocktail;
@@ -35,12 +36,14 @@ class HeadHash extends GgGitBase<void> {
   Future<void> exec({
     required Directory directory,
     required GgLog ggLog,
-    String? generation,
+    int? offset,
   }) async {
+    offset = readOffset(offset, argResults);
+
     final result = await get(
       directory: directory,
       ggLog: ggLog,
-      generation: generation ?? argResults?['generation'] as String? ?? '',
+      offset: offset,
     );
     ggLog(result);
   }
@@ -50,9 +53,9 @@ class HeadHash extends GgGitBase<void> {
   Future<String> get({
     required GgLog ggLog,
     required Directory directory,
-    String generation = '',
+    int offset = 0,
   }) async {
-    _checkGeneration(generation);
+    checkOffset(offset);
 
     // Directory is a git repo?
     await check(directory: directory);
@@ -66,9 +69,11 @@ class HeadHash extends GgGitBase<void> {
     }
 
     // Read the hash
+    final head = 'HEAD${offset == 0 ? '' : '~$offset'}';
+
     final result = await processWrapper.run(
       'git',
-      ['rev-parse', 'HEAD$generation'],
+      ['rev-parse', head],
       workingDirectory: directory.path,
     );
 
@@ -80,28 +85,53 @@ class HeadHash extends GgGitBase<void> {
   }
 
   // ...........................................................................
+  /// The message for an invalid offset.
+  static String invalidOffsetMessage(String offset) =>
+      'Invalid offset $offset. Offset must be a positive integer.';
+
+  // ...........................................................................
+  /// Checks if the offset is valid.
+  static void checkOffset(int offset) {
+    if (offset < 0) {
+      throw Exception(
+        invalidOffsetMessage('$offset'),
+      );
+    }
+  }
+
+  // ...........................................................................
+  /// Reads the offset from the command line arguments.
+  static int readOffset(int? override, ArgResults? argResults) {
+    if (override != null) {
+      return override;
+    }
+
+    final offset = argResults?['offset'] as String?;
+    if (offset == null) {
+      return 0;
+    }
+
+    final offsetInt = int.tryParse(offset);
+    if (offsetInt == null) {
+      throw Exception(
+        invalidOffsetMessage(offset),
+      );
+    }
+
+    return offsetInt;
+  }
+
+  // ...........................................................................
   final IsCommitted _isCommitted;
 
   // ...........................................................................
   void _addParams() {
     argParser.addOption(
-      'generation',
-      abbr: 'g',
-      help: 'E.g. ~1 to get one commit before the head hash.',
+      'offset',
+      abbr: 'o',
+      help: 'E.g. 1 to get one commit before the head hash.',
       mandatory: false,
     );
-  }
-
-  // ...........................................................................
-  void _checkGeneration(String generation) {
-    if (generation.isNotEmpty) {
-      if (!RegExp(r'^~\d+$').hasMatch(generation)) {
-        throw Exception(
-          'Invalid generation reference: $generation. '
-          'Correct example: "~1"',
-        );
-      }
-    }
   }
 }
 

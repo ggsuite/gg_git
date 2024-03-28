@@ -1,12 +1,9 @@
 # Change Log
 
-## 1.2.1
+## 1.2.2
 
 - Add `head-message` command
-
-## 1.1.0
-
-- head-hash command: Add Option -g to get predecessor of the head hash
+- head-hash command: Add Option --offset -o to get predecessor of the head hash
 
 ## 1.0.19
 

@@ -29,7 +29,7 @@ void main() {
   });
 
   group('HeadMessage', () {
-    group('get(directory, generation)', () {
+    group('get(directory, offset)', () {
       group('should throw', () {
         test('when the directory is not a git repo', () {
           expect(
@@ -63,13 +63,13 @@ void main() {
           );
         });
 
-        test('when the generation has a wrong format', () async {
+        test('when the offset has a wrong format', () async {
           late String exception;
           try {
             await headMessage.get(
               directory: d,
               ggLog: messages.add,
-              generation: 'wrong',
+              offset: -2,
             );
           } catch (e) {
             exception = e.toString();
@@ -77,10 +77,7 @@ void main() {
 
           expect(
             exception,
-            contains(
-              'Exception: Invalid generation reference: wrong. '
-              'Correct example: "~1"',
-            ),
+            'Exception: Invalid offset -2. Offset must be a positive integer.',
           );
         });
 
@@ -150,7 +147,7 @@ void main() {
       });
 
       group('should allow to get the messages of commits before head', () {
-        test('when generation is used', () async {
+        test('when offset is used', () async {
           // Init git
           await initGit(d);
           await addAndCommitSampleFile(d, message: 'Old commit');
@@ -166,7 +163,7 @@ void main() {
           final message = await headMessage.get(
             directory: d,
             ggLog: messages.add,
-            generation: '~1',
+            offset: 1,
           );
 
           expect(message, oldMessage);
@@ -198,7 +195,7 @@ void main() {
           await headMessage.exec(
             directory: d,
             ggLog: messages.add,
-            generation: '~1',
+            offset: 1,
           );
 
           final oldMessage2 = messages.last;
@@ -227,12 +224,61 @@ void main() {
           final newMessage = messages.last;
 
           // Get the head before the last commit
-          await runner.run(['head-message', '-i', d.path, '-g', '~1']);
+          await runner.run(['head-message', '-i', d.path, '-o', '1']);
 
           final oldMessage2 = messages.last;
           expect(oldMessage2, 'message 1');
           expect(oldMessage2, oldMessage);
           expect(newMessage, 'message 2');
+        });
+      });
+
+      group('should throw', () {
+        test('when the offset is a negative int', () async {
+          final runner = CommandRunner<void>('test', 'test');
+          runner.addCommand(headMessage);
+
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
+
+          // Run the command
+          late String exception;
+
+          try {
+            await runner.run(['head-message', '-i', d.path, '-o', '-1']);
+          } catch (e) {
+            exception = e.toString();
+          }
+
+          expect(
+            exception,
+            'Exception: Invalid offset -1. '
+            'Offset must be a positive integer.',
+          );
+        });
+
+        test('when the offset is a string', () async {
+          final runner = CommandRunner<void>('test', 'test');
+          runner.addCommand(headMessage);
+
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
+
+          // Run the command
+          late String exception;
+
+          try {
+            await runner.run(['head-message', '-i', d.path, '-o', 'a']);
+          } catch (e) {
+            exception = e.toString();
+          }
+
+          expect(
+            exception,
+            'Exception: Invalid offset a. Offset must be a positive integer.',
+          );
         });
       });
     });
