@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.0.0
+
+- Test
+
 ## 1.4.1
 
 - Add `commit` command
