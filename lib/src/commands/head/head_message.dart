@@ -24,7 +24,7 @@ class HeadMessage extends GgGitBase<void> {
               processWrapper: processWrapper,
             ),
         super(
-          name: 'head-message',
+          name: 'message',
           description: 'Returns the commit message of the head revision.',
         ) {
     _addParams();

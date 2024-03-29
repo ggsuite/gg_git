@@ -25,7 +25,7 @@ class HeadHash extends GgGitBase<void> {
               processWrapper: processWrapper,
             ),
         super(
-          name: 'head-hash',
+          name: 'hash',
           description: 'Returns the commit hash of the head revision.',
         ) {
     _addParams();

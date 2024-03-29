@@ -15,25 +15,25 @@ import 'package:test/test.dart';
 
 void main() {
   late Directory d;
-  late HeadHash headHash;
+  late HeadMessage headMessage;
   final messages = <String>[];
 
   setUp(() async {
     messages.clear();
     d = await initTestDir();
-    headHash = HeadHash(ggLog: messages.add);
+    headMessage = HeadMessage(ggLog: messages.add);
   });
 
   tearDown(() {
     d.deleteSync(recursive: true);
   });
 
-  group('HeadHash', () {
+  group('HeadMessage', () {
     group('get(directory, offset)', () {
       group('should throw', () {
         test('when the directory is not a git repo', () {
           expect(
-            () => headHash.get(directory: d, ggLog: messages.add),
+            () => headMessage.get(directory: d, ggLog: messages.add),
             throwsA(
               isA<ArgumentError>().having(
                 (e) => e.toString(),
@@ -50,9 +50,9 @@ void main() {
           // Add an uncommitted file
           await initUncommittedFile(d);
 
-          // Getting the head hash should throw
+          // Getting the head commit message should throw
           await expectLater(
-            () => headHash.get(directory: d, ggLog: messages.add),
+            () => headMessage.get(directory: d, ggLog: messages.add),
             throwsA(
               isA<Exception>().having(
                 (e) => e.toString(),
@@ -66,10 +66,10 @@ void main() {
         test('when the offset has a wrong format', () async {
           late String exception;
           try {
-            await headHash.get(
+            await headMessage.get(
               directory: d,
               ggLog: messages.add,
-              offset: -1,
+              offset: -2,
             );
           } catch (e) {
             exception = e.toString();
@@ -77,11 +77,11 @@ void main() {
 
           expect(
             exception,
-            'Exception: Invalid offset -1. Offset must be a positive integer.',
+            'Exception: Invalid offset -2. Offset must be a positive integer.',
           );
         });
 
-        test('when something goes wrong while getting the tag', () async {
+        test('when something goes wrong while getting the message', () async {
           // Init git
           await initGit(d);
           await addAndCommitSampleFile(d);
@@ -91,7 +91,7 @@ void main() {
           when(() => isCommited.get(directory: d, ggLog: any(named: 'ggLog')))
               .thenAnswer((_) => Future.value(true));
 
-          // Getting the head hash should throw
+          // Getting the head commit message should throw
           final failingProcessWrapper = MockGgProcessWrapper();
 
           // Mock a failing process
@@ -110,128 +110,133 @@ void main() {
             ),
           );
 
-          // Run headHash.get and check if it throws
-          headHash = HeadHash(
+          // Run headMessage.get and check if it throws
+          headMessage = HeadMessage(
             ggLog: messages.add,
             processWrapper: failingProcessWrapper,
             isCommitted: isCommited,
           );
 
-          await expectLater(
-            () => headHash.get(directory: d, ggLog: messages.add),
-            throwsA(
-              isA<Exception>().having(
-                (e) => e.toString(),
-                'toString()',
-                contains(
-                  'Exception: Could not read the head hash: stderr',
-                ),
-              ),
+          late String exception;
+          try {
+            await headMessage.get(directory: d, ggLog: messages.add);
+          } catch (e) {
+            exception = e.toString();
+          }
+
+          expect(
+            exception,
+            contains(
+              'Exception: Could not read the head message: stderr',
             ),
           );
         });
       });
 
-      group('should return the head hash', () {
+      group('should return the head commit message', () {
         test('when everything is commited', () async {
           // Init git
           await initGit(d);
           await addAndCommitSampleFile(d);
 
-          // Getting the head hash should work
-          final hash = await headHash.get(directory: d, ggLog: messages.add);
-          expect(hash, isNotEmpty);
+          // Getting the head commit message should work
+          final message =
+              await headMessage.get(directory: d, ggLog: messages.add);
+          expect(message, isNotEmpty);
         });
       });
 
-      group('should allow to get the hashes of commits before head', () {
+      group('should allow to get the messages of commits before head', () {
         test('when offset is used', () async {
           // Init git
           await initGit(d);
-          await addAndCommitSampleFile(d);
-          final oldHead = await headHash.get(directory: d, ggLog: messages.add);
+          await addAndCommitSampleFile(d, message: 'Old commit');
+          final oldMessage =
+              await headMessage.get(directory: d, ggLog: messages.add);
 
           // Do another commit
-          await updateAndCommitSampleFile(d);
-          final newHead = await headHash.get(directory: d, ggLog: messages.add);
+          await updateAndCommitSampleFile(d, message: 'New commit');
+          final newMessage =
+              await headMessage.get(directory: d, ggLog: messages.add);
 
-          // Get the hash of the commit before the head
-          final hash = await headHash.get(
+          // Get the message of the commit before the head
+          final message = await headMessage.get(
             directory: d,
             ggLog: messages.add,
             offset: 1,
           );
 
-          expect(hash, oldHead);
-          expect(newHead, isNot(oldHead));
+          expect(message, oldMessage);
+          expect(newMessage, isNot(oldMessage));
         });
       });
     });
 
     group('exec(directory)', () {
-      group('should allow to run the command', () {
+      group('should allow to run the command from cli', () {
         test('programmatically', () async {
           // Init git
           await initGit(d);
-          await addAndCommitSampleFile(d);
+          await addAndCommitSampleFile(d, message: 'message 1');
 
           // Run the command
-          await headHash.exec(directory: d, ggLog: messages.add);
-          final oldHead = messages.last;
-          expect(oldHead, isNotEmpty);
+          await headMessage.exec(directory: d, ggLog: messages.add);
+          final oldMessage = messages.last;
+          expect(oldMessage, isNotEmpty);
 
           // Make another commit
-          await updateAndCommitSampleFile(d);
+          await updateAndCommitSampleFile(d, message: 'message 2');
 
           // Run the command again
-          await headHash.exec(directory: d, ggLog: messages.add);
-          final newHead = messages.last;
+          await headMessage.exec(directory: d, ggLog: messages.add);
+          final newMessage = messages.last;
 
           // Get the head before the last commit
-          await headHash.exec(
+          await headMessage.exec(
             directory: d,
             ggLog: messages.add,
             offset: 1,
           );
 
-          final oldHead2 = messages.last;
-          expect(oldHead2, oldHead);
-          expect(newHead, isNot(oldHead));
+          final oldMessage2 = messages.last;
+          expect(oldMessage2, oldMessage);
+          expect(newMessage, isNot(oldMessage));
         });
 
         test('using cli', () async {
           final runner = CommandRunner<void>('test', 'test');
-          runner.addCommand(headHash);
+          runner.addCommand(headMessage);
 
           // Init git
           await initGit(d);
-          await addAndCommitSampleFile(d);
+          await addAndCommitSampleFile(d, message: 'message 1');
 
           // Run the command
-          await runner.run(['head-hash', '-i', d.path]);
-          final oldHead = messages.last;
-          expect(oldHead, isNotEmpty);
+          await runner.run(['message', '-i', d.path]);
+          final oldMessage = messages.last;
+          expect(oldMessage, isNotEmpty);
 
           // Make another commit
-          await updateAndCommitSampleFile(d);
+          await updateAndCommitSampleFile(d, message: 'message 2');
 
           // Run the command again
-          await runner.run(['head-hash', '-i', d.path]);
-          final newHead = messages.last;
+          await runner.run(['message', '-i', d.path]);
+          final newMessage = messages.last;
 
           // Get the head before the last commit
-          await runner.run(['head-hash', '-i', d.path, '-o', '1']);
+          await runner.run(['message', '-i', d.path, '-o', '1']);
 
-          final oldHead2 = messages.last;
-          expect(oldHead2, oldHead);
-          expect(newHead, isNot(oldHead));
+          final oldMessage2 = messages.last;
+          expect(oldMessage2, 'message 1');
+          expect(oldMessage2, oldMessage);
+          expect(newMessage, 'message 2');
         });
       });
 
       group('should throw', () {
         test('when the offset is a negative int', () async {
           final runner = CommandRunner<void>('test', 'test');
-          runner.addCommand(headHash);
+          runner.addCommand(headMessage);
 
           // Init git
           await initGit(d);
@@ -241,7 +246,7 @@ void main() {
           late String exception;
 
           try {
-            await runner.run(['head-hash', '-i', d.path, '-o', '-1']);
+            await runner.run(['message', '-i', d.path, '-o', '-1']);
           } catch (e) {
             exception = e.toString();
           }
@@ -255,7 +260,7 @@ void main() {
 
         test('when the offset is a string', () async {
           final runner = CommandRunner<void>('test', 'test');
-          runner.addCommand(headHash);
+          runner.addCommand(headMessage);
 
           // Init git
           await initGit(d);
@@ -265,7 +270,7 @@ void main() {
           late String exception;
 
           try {
-            await runner.run(['head-hash', '-i', d.path, '-o', 'a']);
+            await runner.run(['message', '-i', d.path, '-o', 'a']);
           } catch (e) {
             exception = e.toString();
           }

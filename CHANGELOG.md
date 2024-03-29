@@ -1,8 +1,8 @@
 # Change Log
 
-## 2.0.0
+## 1.5.0
 
-- Test
+- Add `gg_git head message|hash`
 
 ## 1.4.1
 
