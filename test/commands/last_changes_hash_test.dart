@@ -28,7 +28,7 @@ void main() {
   });
 
   group('LastChangesHash', () {
-    group('get(ggLog, directory)', () {
+    group('get(ggLog, directory, ignoredFiles)', () {
       test(
           'should return a 64bit hash summarizing the changes '
           'since the last commit.', () async {
@@ -54,8 +54,16 @@ void main() {
           ggLog: messages.add,
           directory: d,
         );
-
         expect(hash1, isNot(hash0));
+
+        // Request the hash wile ignoring 'file1.txt'
+        // We should get the former hash
+        final hash1a = await lastChangesHahs.get(
+          ggLog: messages.add,
+          directory: d,
+          ignoreFiles: ['file1.txt'],
+        );
+        expect(hash1a, hash0);
 
         // Let's commit the changes
         await commitFile(d, 'file1.txt', message: 'commit file1.txt');
@@ -90,7 +98,7 @@ void main() {
           content: 'content1',
         );
 
-        // Whe should get the same hash as before
+        // We should get the same hash as before
         final hash4 = await lastChangesHahs.get(
           ggLog: messages.add,
           directory: d,

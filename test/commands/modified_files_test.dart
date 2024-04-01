@@ -30,7 +30,7 @@ void main() {
   });
 
   group('ModifiedFiles', () {
-    group('get', () {
+    group('get(directory, force, ignoreFiles)', () {
       group('should return a list of modified files', () {
         test('with force = false', () async {
           // Initially no files are modified
@@ -86,6 +86,15 @@ void main() {
           );
           expect(result, ['file1.txt']);
 
+          // Request again, but with file1.txt ignored
+          result = await modifiedFiles.get(
+            directory: d,
+            ggLog: messages.add,
+            force: true,
+            ignoreFiles: ['file1.txt'],
+          );
+          expect(result, isEmpty);
+
           // Let's modify another file
           await initUncommittedFile(d, fileName: 'file2.txt');
           result = await modifiedFiles.get(
@@ -94,6 +103,15 @@ void main() {
             force: true,
           );
           expect(result, ['file1.txt', 'file2.txt']);
+
+          // Ignore the other file
+          result = await modifiedFiles.get(
+            directory: d,
+            ggLog: messages.add,
+            force: true,
+            ignoreFiles: ['file2.txt'],
+          );
+          expect(result, ['file1.txt']);
 
           // Commit the first file
           await commitFile(d, 'file1.txt', message: 'Commit message');
@@ -123,8 +141,8 @@ void main() {
           );
           expect(result, isEmpty);
 
-          // Commit the second file
-          // With force = true,
+          // Get the modified files
+          // with force = true,
           // the files changed in the last commit should be shown
           result = await modifiedFiles.get(
             directory: d,
@@ -132,6 +150,16 @@ void main() {
             force: true,
           );
           expect(result, ['file2.txt']);
+
+          // Try again with force = true
+          // and ignore file2.txt
+          result = await modifiedFiles.get(
+            directory: d,
+            ggLog: messages.add,
+            force: true,
+            ignoreFiles: ['file2.txt'],
+          );
+          expect(result, isEmpty);
         });
       });
 

@@ -46,17 +46,21 @@ class ModifiedFiles extends GgGitBase<void> {
     required GgLog ggLog,
     required Directory directory,
     bool force = false,
+    List<String> ignoreFiles = const [],
   }) async {
     final result = await _getModifiedFilesSinceLastCommit(
       ggLog: ggLog,
       directory: directory,
+      ignoreFiles: ignoreFiles,
     );
 
     if (result.isNotEmpty) {
       return result;
     }
 
-    if (!await _hasCommits(directory: directory)) {
+    if (!await _hasCommits(
+      directory: directory,
+    )) {
       return [];
     }
 
@@ -67,6 +71,7 @@ class ModifiedFiles extends GgGitBase<void> {
     return await _getFilesModifiedInLastCommit(
       ggLog: ggLog,
       directory: directory,
+      ignoreFiles: ignoreFiles,
     );
   }
 
@@ -74,6 +79,7 @@ class ModifiedFiles extends GgGitBase<void> {
   Future<List<String>> _getModifiedFilesSinceLastCommit({
     required GgLog ggLog,
     required Directory directory,
+    required List<String> ignoreFiles,
   }) async {
     // Check if the directory is a Git repository
     await check(directory: directory);
@@ -85,13 +91,14 @@ class ModifiedFiles extends GgGitBase<void> {
       workingDirectory: directory.path,
     );
 
-    return _parseResult(result);
+    return _parseResult(result, ignoreFiles);
   }
 
   // ...........................................................................
   Future<List<String>> _getFilesModifiedInLastCommit({
     required GgLog ggLog,
     required Directory directory,
+    required List<String> ignoreFiles,
   }) async {
     // Use git status -s to get the status in a short format
     final result = await processWrapper.run(
@@ -100,11 +107,11 @@ class ModifiedFiles extends GgGitBase<void> {
       workingDirectory: directory.path,
     );
 
-    return _parseResult(result);
+    return _parseResult(result, ignoreFiles);
   }
 
   // ...........................................................................
-  List<String> _parseResult(ProcessResult result) {
+  List<String> _parseResult(ProcessResult result, List<String> ignoreFiles) {
     if (result.exitCode == 0) {
       // Process the output to extract modified file names
       List<String> modifiedFiles = result.stdout
@@ -118,7 +125,9 @@ class ModifiedFiles extends GgGitBase<void> {
         var parts = line.trim().split(RegExp(r'\s+'));
         return parts.last;
       }).toList();
-      return modifiedFiles;
+      return modifiedFiles
+          .where((element) => !ignoreFiles.contains(element))
+          .toList();
     } else {
       // Handle the error case where the git command fails
       throw Exception('Could not retrieve modified files: ${result.stderr}');
@@ -126,7 +135,9 @@ class ModifiedFiles extends GgGitBase<void> {
   }
 
   // ...........................................................................
-  Future<bool> _hasCommits({required Directory directory}) async {
+  Future<bool> _hasCommits({
+    required Directory directory,
+  }) async {
     final result = await processWrapper.run(
       'git',
       ['rev-list', '-n', '1', '--all'],

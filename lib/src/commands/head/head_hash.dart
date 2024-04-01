@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:gg_git/gg_git.dart';
-import 'package:gg_git/src/commands/commit_count.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart' as mocktail;
 

@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart';
 
 /// Returns a 64bit hash summarizing the changes since the last commit.
 class LastChangesHash extends GgGitBase<void> {
@@ -21,11 +22,7 @@ class LastChangesHash extends GgGitBase<void> {
     super.description =
         'Returns a 64bit hash summarizing the changes since the last commit.',
     ModifiedFiles? modifiedFiles,
-    HeadHash? headHash,
-    IsCommitted? isCommitted,
-  })  : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog),
-        _headHash = headHash ?? HeadHash(ggLog: ggLog),
-        _isCommitted = isCommitted ?? IsCommitted(ggLog: ggLog);
+  }) : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog);
 
   // ...........................................................................
   @override
@@ -41,36 +38,33 @@ class LastChangesHash extends GgGitBase<void> {
   }
 
   // ...........................................................................
-  /// Returns the modified files in the current git repository.
+  /// Returns the hash of the changes since the last commit.
   Future<int> get({
     required GgLog ggLog,
     required Directory directory,
+    List<String> ignoreFiles = const [],
   }) async {
     // Get the list of modified files
     final modifiedFiles = (await _modifiedFiles.get(
       ggLog: ggLog,
       directory: directory,
       force: true,
+      ignoreFiles: ignoreFiles,
     ))
+        .where((element) => !ignoreFiles.contains(element))
+        .toList()
       ..sort();
 
-    // Is everything committed?
-    final isCommitted = await _isCommitted.get(
-      ggLog: ggLog,
-      directory: directory,
+    // Get the content of the modified files
+    final modifiedFileFutures = modifiedFiles.map(
+      (file) => File(join(directory.path, file)).readAsString(),
     );
 
-    // Get the last commit hash
-    final lastHash = await _headHash.get(
-      ggLog: ggLog,
-      directory: directory,
-      force: true,
-      offset: isCommitted ? 1 : 0,
-    );
+    final modifiedFileContents = await Future.wait(modifiedFileFutures);
 
     // Calculate the hash
-    final hash = modifiedFiles.fold<int>(
-      lastHash.hashCode,
+    final hash = modifiedFileContents.fold<int>(
+      3849023480203,
       (int previousValue, element) => previousValue ^ element.hashCode,
     );
 
@@ -78,8 +72,6 @@ class LastChangesHash extends GgGitBase<void> {
   }
 
   final ModifiedFiles _modifiedFiles;
-  final HeadHash _headHash;
-  final IsCommitted _isCommitted;
 }
 
 /// Mocktail mock

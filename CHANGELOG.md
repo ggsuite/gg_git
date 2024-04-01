@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.6.2
+
+- Add `ignoreFiles` option to several functions
+
 ## 1.6.1
 
 - Add `--force` option to `modified-files` & `head hash`
