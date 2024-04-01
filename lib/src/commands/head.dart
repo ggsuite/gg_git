@@ -6,6 +6,7 @@
 
 import 'package:args/command_runner.dart';
 import 'package:gg_git/gg_git.dart';
+import 'package:gg_git/src/commands/head/head_time_stamp.dart';
 import 'package:gg_log/gg_log.dart';
 
 /// Commands for retrieving information about the head revision.
@@ -19,6 +20,7 @@ class Head extends Command<void> {
   }) {
     addSubcommand(HeadHash(ggLog: ggLog));
     addSubcommand(HeadMessage(ggLog: ggLog));
+    addSubcommand(HeadTimeStamp(ggLog: ggLog));
   }
 
   /// The log function

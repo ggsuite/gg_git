@@ -28,7 +28,7 @@ class HeadHash extends GgGitBase<void> {
           name: 'hash',
           description: 'Returns the commit hash of the head revision.',
         ) {
-    _addParams();
+    addParams(argParser);
   }
 
   // ...........................................................................
@@ -125,7 +125,8 @@ class HeadHash extends GgGitBase<void> {
   final IsCommitted _isCommitted;
 
   // ...........................................................................
-  void _addParams() {
+  /// Adds necessary parameters.
+  static void addParams(ArgParser argParser) {
     argParser.addOption(
       'offset',
       abbr: 'o',

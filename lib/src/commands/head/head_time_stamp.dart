@@ -8,13 +8,13 @@ import 'dart:io';
 
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:mocktail/mocktail.dart' as mocktail;
 
-/// Reads the commit message of the head revision.
-class HeadMessage extends GgGitBase<void> {
-  // ...........................................................................
+// #############################################################################
+/// Returns the unix timestamp of the head revision.
+class HeadTimeStamp extends GgGitBase<void> {
   /// Constructor
-  HeadMessage({
+  HeadTimeStamp({
     required super.ggLog,
     super.processWrapper,
     IsCommitted? isCommitted,
@@ -24,13 +24,14 @@ class HeadMessage extends GgGitBase<void> {
               processWrapper: processWrapper,
             ),
         super(
-          name: 'message',
-          description: 'Returns the commit message of the head revision.',
+          name: 'time-stamp',
+          description: 'Returns the unix timestamp of the head revision.',
         ) {
     HeadHash.addParams(argParser);
   }
 
   // ...........................................................................
+  /// Logs the unix timestamp of the head revision in seconds.
   @override
   Future<void> exec({
     required Directory directory,
@@ -44,20 +45,22 @@ class HeadMessage extends GgGitBase<void> {
       ggLog: ggLog,
       offset: offset,
     );
-    ggLog(result);
+    ggLog('$result');
   }
 
   // ...........................................................................
-  /// Returns the commit message of the head revision in the given directory.
-  Future<String> get({
+  /// Returns the unix timestamp of the head revision in seconds.
+  Future<int> get({
     required GgLog ggLog,
     required Directory directory,
     int offset = 0,
   }) async {
     HeadHash.checkOffset(offset);
 
+    // Directory is a git repo?
     await check(directory: directory);
 
+    // Everything is commited?
     final isCommited =
         await _isCommitted.get(directory: directory, ggLog: ggLog);
 
@@ -65,27 +68,29 @@ class HeadMessage extends GgGitBase<void> {
       throw Exception('Not everything is commited.');
     }
 
-    // To get the commit message, the command is adjusted to use `git log`
-    final offsetString = offset == 0 ? '' : '~$offset';
+    // Read the hash
+    final head = 'HEAD${offset == 0 ? '' : '~$offset'}';
+
     final result = await processWrapper.run(
       'git',
-      ['log', '-1', '--pretty=format:%B', 'HEAD$offsetString'],
+      ['show', '-s', '--format=%ct', head],
       workingDirectory: directory.path,
     );
 
     if (result.exitCode == 0) {
-      return result.stdout.toString().trim();
+      final timeStampString = result.stdout.toString().trim();
+      final timeStamp = int.parse(timeStampString);
+      return timeStamp;
     } else {
-      throw Exception('Could not read the head message: ${result.stderr}');
+      throw Exception(
+        'Could not read the timestamp from head hash: ${result.stderr}',
+      );
     }
   }
 
-  // ######################
-  // Private
-  // ######################
-
+  // ...........................................................................
   final IsCommitted _isCommitted;
 }
 
 /// Mocktail mock
-class MockHeadMessage extends Mock implements HeadMessage {}
+class MockHeadTimeStamp extends mocktail.Mock implements HeadTimeStamp {}
