@@ -1,8 +1,9 @@
 # Change Log
 
-## 1.6.0
+## 1.6.1
 
-- Add `--force` option to `modified-files`.
+- Add `--force` option to `modified-files` & `head hash`
+- Add `last-changes-hash`
 
 ## 1.5.0
 

@@ -43,24 +43,27 @@ void main() {
             ),
           );
         });
-        test('when not everything is commited', () async {
-          // Init git
-          await initGit(d);
+        group('when not everything is committed', () {
+          test('and --force is false', () async {
+            // Init git
+            await initGit(d);
 
-          // Add an uncommitted file
-          await initUncommittedFile(d);
+            // Add an uncommitted file
+            await initUncommittedFile(d);
 
-          // Getting the head hash should throw
-          await expectLater(
-            () => headHash.get(directory: d, ggLog: messages.add),
-            throwsA(
-              isA<Exception>().having(
-                (e) => e.toString(),
-                'toString()',
-                contains('Exception: Not everything is commited.'),
+            // Getting the head hash should throw
+            await expectLater(
+              () =>
+                  headHash.get(directory: d, ggLog: messages.add, force: false),
+              throwsA(
+                isA<Exception>().having(
+                  (e) => e.toString(),
+                  'toString()',
+                  contains('Exception: Not everything is committed.'),
+                ),
               ),
-            ),
-          );
+            );
+          });
         });
 
         test('when the offset has a wrong format', () async {
@@ -133,7 +136,13 @@ void main() {
       });
 
       group('should return the head hash', () {
-        test('when everything is commited', () async {
+        test('when nothing is committed at all', () async {
+          await initGit(d);
+          final hash = await headHash.get(directory: d, ggLog: messages.add);
+          expect(hash, HeadHash.initialHash);
+        });
+
+        test('when everything is committed', () async {
           // Init git
           await initGit(d);
           await addAndCommitSampleFile(d);
@@ -141,6 +150,29 @@ void main() {
           // Getting the head hash should work
           final hash = await headHash.get(directory: d, ggLog: messages.add);
           expect(hash, isNotEmpty);
+        });
+
+        test('when not everything is committed but --force is true', () async {
+          // Init git
+          await initGit(d);
+          await addAndCommitSampleFile(d);
+
+          // Getting the head hash should work
+          final hash = await headHash.get(directory: d, ggLog: messages.add);
+          expect(hash, isNotEmpty);
+
+          // Now let's add an uncommitted file
+          await initUncommittedFile(d);
+
+          // Getting the head with --force should return the hash of the
+          // last commit no matter if everything is committed or not
+          final hash2 = await headHash.get(
+            directory: d,
+            ggLog: messages.add,
+            force: true,
+          );
+
+          expect(hash2, hash);
         });
       });
 

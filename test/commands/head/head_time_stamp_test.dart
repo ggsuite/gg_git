@@ -44,7 +44,7 @@ void main() {
             ),
           );
         });
-        test('when not everything is commited', () async {
+        test('when not everything is committed', () async {
           // Init git
           await initGit(d);
 
@@ -58,7 +58,7 @@ void main() {
               isA<Exception>().having(
                 (e) => e.toString(),
                 'toString()',
-                contains('Exception: Not everything is commited.'),
+                contains('Exception: Not everything is committed.'),
               ),
             ),
           );
@@ -135,7 +135,7 @@ void main() {
       });
 
       group('should return the head commit message', () {
-        test('when everything is commited', () async {
+        test('when everything is committed', () async {
           // Init git
           await initGit(d);
           await addAndCommitSampleFile(d);

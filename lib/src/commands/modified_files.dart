@@ -64,7 +64,7 @@ class ModifiedFiles extends GgGitBase<void> {
       return [];
     }
 
-    return await _getFilesModifiedLast(
+    return await _getFilesModifiedInLastCommit(
       ggLog: ggLog,
       directory: directory,
     );
@@ -89,14 +89,14 @@ class ModifiedFiles extends GgGitBase<void> {
   }
 
   // ...........................................................................
-  Future<List<String>> _getFilesModifiedLast({
+  Future<List<String>> _getFilesModifiedInLastCommit({
     required GgLog ggLog,
     required Directory directory,
   }) async {
     // Use git status -s to get the status in a short format
     final result = await processWrapper.run(
       'git',
-      ['diff', '--name-only', 'HEAD^', 'HEAD'],
+      ['show', '--name-only', 'HEAD', '--pretty='],
       workingDirectory: directory.path,
     );
 

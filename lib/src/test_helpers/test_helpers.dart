@@ -223,8 +223,9 @@ Future<void> updateAndCommitSampleFile(
 Future<void> initUncommittedFile(
   Directory testDir, {
   String fileName = 'uncommitted.txt',
+  String content = 'uncommitted',
 }) =>
-    initFile(testDir, fileName, 'uncommitted');
+    initFile(testDir, fileName, content);
 
 // ## pubspect.yaml
 

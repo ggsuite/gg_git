@@ -60,12 +60,12 @@ class HeadTimeStamp extends GgGitBase<void> {
     // Directory is a git repo?
     await check(directory: directory);
 
-    // Everything is commited?
+    // Everything is committed?
     final isCommited =
         await _isCommitted.get(directory: directory, ggLog: ggLog);
 
     if (!isCommited) {
-      throw Exception('Not everything is commited.');
+      throw Exception('Not everything is committed.');
     }
 
     // Read the hash

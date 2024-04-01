@@ -62,7 +62,7 @@ class HeadMessage extends GgGitBase<void> {
         await _isCommitted.get(directory: directory, ggLog: ggLog);
 
     if (!isCommited) {
-      throw Exception('Not everything is commited.');
+      throw Exception('Not everything is committed.');
     }
 
     // To get the commit message, the command is adjusted to use `git log`

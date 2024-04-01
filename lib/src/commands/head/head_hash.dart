@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:gg_git/gg_git.dart';
+import 'package:gg_git/src/commands/commit_count.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart' as mocktail;
 
@@ -19,11 +20,13 @@ class HeadHash extends GgGitBase<void> {
     required super.ggLog,
     super.processWrapper,
     IsCommitted? isCommitted,
+    CommitCount? commitCount,
   })  : _isCommitted = isCommitted ??
             IsCommitted(
               ggLog: ggLog,
               processWrapper: processWrapper,
             ),
+        _commitCount = commitCount ?? CommitCount(ggLog: ggLog),
         super(
           name: 'hash',
           description: 'Returns the commit hash of the head revision.',
@@ -37,13 +40,16 @@ class HeadHash extends GgGitBase<void> {
     required Directory directory,
     required GgLog ggLog,
     int? offset,
+    bool? force,
   }) async {
     offset = readOffset(offset, argResults);
+    force = argResults?['force'] as bool? ?? force ?? false;
 
     final result = await get(
       directory: directory,
       ggLog: ggLog,
       offset: offset,
+      force: force,
     );
     ggLog(result);
   }
@@ -54,18 +60,29 @@ class HeadHash extends GgGitBase<void> {
     required GgLog ggLog,
     required Directory directory,
     int offset = 0,
+    bool force = false,
   }) async {
     checkOffset(offset);
 
     // Directory is a git repo?
     await check(directory: directory);
 
-    // Everything is commited?
+    // Everything is committed?
     final isCommited =
         await _isCommitted.get(directory: directory, ggLog: ggLog);
 
-    if (!isCommited) {
-      throw Exception('Not everything is commited.');
+    if (!isCommited && !force) {
+      throw Exception('Not everything is committed.');
+    }
+
+    // No commits available? -> Return a default hash
+    final commitCount = await _commitCount.get(
+      directory: directory,
+      ggLog: ggLog,
+    );
+
+    if (commitCount <= offset) {
+      return initialHash;
     }
 
     // Read the hash
@@ -121,8 +138,16 @@ class HeadHash extends GgGitBase<void> {
     return offsetInt;
   }
 
+  /// The inital hash returned when the repo has no commits yet.
+  static const initialHash = '943a702d06f34599aee1f8da8ef9f7296031d699';
+
+  // ######################
+  // Private
+  // ######################
+
   // ...........................................................................
   final IsCommitted _isCommitted;
+  final CommitCount _commitCount;
 
   // ...........................................................................
   /// Adds necessary parameters.
@@ -132,6 +157,15 @@ class HeadHash extends GgGitBase<void> {
       abbr: 'o',
       help: 'E.g. 1 to get one commit before the head hash.',
       mandatory: false,
+    );
+
+    argParser.addFlag(
+      'force',
+      abbr: 'f',
+      help: 'Returns the hash of the last commit, '
+          'if currently not everything is committed.',
+      defaultsTo: false,
+      negatable: true,
     );
   }
 }
