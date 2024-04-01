@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.6.0
+
+- Add `--force` option to `modified-files`.
+
 ## 1.5.0
 
 - Add `gg_git head message|hash`
