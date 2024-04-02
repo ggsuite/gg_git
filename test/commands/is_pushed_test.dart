@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:gg_git/gg_git_test_helpers.dart';
 import 'package:gg_git/src/commands/is_pushed.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,7 +18,7 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
-  late IsPushed ggIsPushed;
+  late IsPushed isPushed;
   late Directory d;
   late Directory remoteDir;
   late Directory localDir;
@@ -106,11 +107,11 @@ void main() {
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
-    ggIsPushed = IsPushed(
+    isPushed = IsPushed(
       ggLog: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
     );
-    runner.addCommand(ggIsPushed);
+    runner.addCommand(isPushed);
   }
 
   // ...........................................................................
@@ -218,7 +219,7 @@ void main() {
               );
 
               expect(
-                () => ggIsPushed.get(directory: localDir, ggLog: messages.add),
+                () => isPushed.get(directory: localDir, ggLog: messages.add),
                 throwsA(
                   isA<Exception>().having(
                     (e) => e.toString(),
@@ -318,6 +319,60 @@ void main() {
           pull();
           await runner.run(['is-pushed', '--input', localDir.path]);
           expect(messages.last, contains('Everything is pushed.'));
+        });
+      });
+
+      group('should return true', () {
+        test('when everything is committed and the state is pushed', () async {
+          await initTestDir();
+          await initLocalGit();
+          await initRemoteGit();
+          initCommand();
+          await addAndCommitSampleFile(localDir, fileName: 'test.txt');
+          await addRemoteToLocal();
+
+          // Make a change without pushing
+          await updateAndCommitSampleFile(localDir, fileName: 'test.txt');
+
+          expect(
+            await isPushed.get(directory: localDir, ggLog: messages.add),
+            isFalse,
+          );
+
+          // Push the change
+          pushFile();
+
+          expect(
+            await isPushed.get(directory: localDir, ggLog: messages.add),
+            isTrue,
+          );
+        });
+
+        group('when not everything is committed and the state is pushed', () {
+          test('but ignoreUnCommittedChanges is true', () async {
+            await initTestDir();
+            await initLocalGit();
+            await initRemoteGit();
+            initCommand();
+            await addAndCommitSampleFile(localDir, fileName: 'test.txt');
+            await addRemoteToLocal();
+
+            // Push the change
+            pushFile();
+
+            // Make a change without committing
+            File('${localDir.path}/test.txt').writeAsStringSync('uncommitted');
+
+            // Ask if it is pushed with ignoreUnCommittedChanges = true
+            expect(
+              await isPushed.get(
+                directory: localDir,
+                ggLog: messages.add,
+                ignoreUnCommittedChanges: true,
+              ),
+              isTrue,
+            );
+          });
         });
       });
     });

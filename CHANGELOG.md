@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.8.3
+
+- `IsPushed.get` has an option `ignoreUnCommittedChanges` which allows to ignore uncommitted changes.
+
 ## 1.8.2
 
 - `HeadMessage`: Allow to return head message also when not everything is committed.

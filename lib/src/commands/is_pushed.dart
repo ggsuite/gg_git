@@ -52,6 +52,7 @@ class IsPushed extends GgGitBase<void> {
   Future<bool> get({
     required GgLog ggLog,
     required Directory directory,
+    bool ignoreUnCommittedChanges = false,
   }) async {
     // Is everything pushed?
     final result = await processWrapper.run(
@@ -74,13 +75,13 @@ class IsPushed extends GgGitBase<void> {
       return false;
     } else if (stdout.contains('Untracked files')) {
       ggLog('There are untracked files.');
-      return false;
+      return ignoreUnCommittedChanges || false;
     } else if (stdout.contains('Changes to be committed')) {
       ggLog('There are staged but uncommitted changes.');
-      return false;
+      return ignoreUnCommittedChanges || false;
     } else if (stdout.contains('Changes not staged for commit')) {
       ggLog('There are not-added files.');
-      return false;
+      return ignoreUnCommittedChanges || false;
     } else if (stdout.contains('Your branch is up to date')) {
       ggLog('Everything is pushed.');
       return true;

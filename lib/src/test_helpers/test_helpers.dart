@@ -248,8 +248,9 @@ Future<void> addAndCommitSampleFile(
 Future<void> updateAndCommitSampleFile(
   Directory testDir, {
   String message = 'Commit Message',
+  String fileName = 'sample.txt',
 }) async {
-  final file = File('${testDir.path}/sample.txt');
+  final file = File('${testDir.path}/$fileName');
   final content = await file.exists() ? file.readAsString() : '';
   final newContent = '${content}updated';
   await File('${testDir.path}/sample.txt').writeAsString(newContent);
