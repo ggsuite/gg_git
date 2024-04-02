@@ -43,24 +43,26 @@ void main() {
             ),
           );
         });
-        test('when not everything is committed', () async {
-          // Init git
-          await initGit(d);
+        group('when not everything is committed', () {
+          test('and throwIfNotEverythingIsCommitted = true', () async {
+            // Init git
+            await initGit(d);
 
-          // Add an uncommitted file
-          await initUncommittedFile(d);
+            // Add an uncommitted file
+            await initUncommittedFile(d);
 
-          // Getting the head commit message should throw
-          await expectLater(
-            () => headMessage.get(directory: d, ggLog: messages.add),
-            throwsA(
-              isA<Exception>().having(
-                (e) => e.toString(),
-                'toString()',
-                contains('Exception: Not everything is committed.'),
+            // Getting the head commit message should throw
+            await expectLater(
+              () => headMessage.get(directory: d, ggLog: messages.add),
+              throwsA(
+                isA<Exception>().having(
+                  (e) => e.toString(),
+                  'toString()',
+                  contains('Exception: Not everything is committed.'),
+                ),
               ),
-            ),
-          );
+            );
+          });
         });
 
         test('when the offset has a wrong format', () async {
@@ -143,6 +145,34 @@ void main() {
           final message =
               await headMessage.get(directory: d, ggLog: messages.add);
           expect(message, isNotEmpty);
+        });
+
+        group('when not everything is committed', () {
+          test('but throwIfNotEverythingIsCommitted = false', () async {
+            // Init git
+            await initGit(d);
+
+            // Add an uncommitted file
+            await addAndCommitSampleFile(
+              d,
+              fileName: 'test.txt',
+              message: 'Last message',
+            );
+
+            // Modify the file
+            await initUncommittedFile(d, fileName: 'test.txt', content: 'xyz');
+
+            // Getting the head commit message should work,
+            // also when not everything is committed
+            // because throwIfNotEverythingIsCommitted = false
+            final message = await headMessage.get(
+              directory: d,
+              ggLog: messages.add,
+              throwIfNotEverythingIsCommitted: false,
+            );
+
+            expect(message, 'Last message');
+          });
         });
       });
 

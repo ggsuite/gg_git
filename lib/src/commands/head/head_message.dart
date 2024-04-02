@@ -53,6 +53,7 @@ class HeadMessage extends GgGitBase<void> {
     required GgLog ggLog,
     required Directory directory,
     int offset = 0,
+    bool throwIfNotEverythingIsCommitted = true,
   }) async {
     HeadHash.checkOffset(offset);
 
@@ -61,7 +62,7 @@ class HeadMessage extends GgGitBase<void> {
     final isCommited =
         await _isCommitted.get(directory: directory, ggLog: ggLog);
 
-    if (!isCommited) {
+    if (!isCommited && throwIfNotEverythingIsCommitted) {
       throw Exception('Not everything is committed.');
     }
 

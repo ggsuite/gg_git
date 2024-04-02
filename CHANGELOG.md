@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.8.2
+
+- `HeadMessage`: Allow to return head message also when not everything is committed.
+
 ## 1.8.1
 
 - ModifiedFiles: Skip commits that only contain ignored files
