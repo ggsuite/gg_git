@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.8.0
+
+- Add `HasRemote` command
+
 ## 1.7.0
 
 - Add `ammend` option for `Commit`

@@ -16,4 +16,5 @@ export 'src/commands/modified_files.dart';
 export 'src/commands/commit.dart';
 export 'src/commands/commit_count.dart';
 export 'src/commands/last_changes_hash.dart';
+export 'src/commands/has_remote.dart';
 export 'src/base/gg_git_base.dart';

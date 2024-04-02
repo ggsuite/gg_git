@@ -8,21 +8,17 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:gg_git/gg_git.dart';
+import 'package:gg_git/gg_git_test_helpers.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
-import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 
 void main() {
   final messages = <String>[];
   late CommandRunner<void> runner;
   late IsCommitted isCommitted;
-  late Directory testDir;
-
-  // ...........................................................................
-  Future<void> initTestDir() async => testDir = await h.initTestDir();
-  Future<void> initGit() => h.initGit(testDir);
-  Future<void> initUncommittedFile() => h.initUncommittedFile(testDir);
+  late Directory tmp;
+  late Directory d;
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
@@ -35,8 +31,14 @@ void main() {
 
   // ...........................................................................
   setUp(() {
+    tmp = Directory.systemTemp.createTempSync('gg_test');
+    d = Directory('${tmp.path}/test')..createSync();
     runner = CommandRunner<void>('test', 'test');
     messages.clear();
+  });
+
+  tearDown(() {
+    tmp.deleteSync(recursive: true);
   });
 
   group('IsCommitted', () {
@@ -44,16 +46,14 @@ void main() {
     group('run(), get()', () {
       test('should throw if "git status" fails', () async {
         final failingProcessWrapper = MockGgProcessWrapper();
-
-        await initTestDir();
-        await initGit();
+        await initGit(d);
         initCommand(processWrapper: failingProcessWrapper);
 
         when(
           () => failingProcessWrapper.run(
-            any(),
-            any(),
-            workingDirectory: testDir.path,
+            'git',
+            ['status', '--porcelain'],
+            workingDirectory: d.path,
           ),
         ).thenAnswer(
           (_) async => ProcessResult(
@@ -64,16 +64,21 @@ void main() {
           ),
         );
 
+        late String exception;
+
+        try {
+          await isCommitted.get(
+            directory: d,
+            ggLog: messages.add,
+          );
+        } catch (e) {
+          exception = e.toString();
+        }
+
         expect(
-          () async =>
-              await runner.run(['is-committed', '--input', testDir.path]),
-          throwsA(
-            isA<Exception>().having(
-              (e) => e.toString(),
-              'message',
-              'Exception: Could not run "git status" in "test".',
-            ),
-          ),
+          exception,
+          'Exception: Could not run "git status" in "test": '
+          'git status failed',
         );
       });
 
@@ -81,13 +86,12 @@ void main() {
       group('should return', () {
         group('false', () {
           test('if there are uncommitted changes', () async {
-            await initTestDir();
-            await initGit();
-            await initUncommittedFile();
+            await initGit(d);
+            await initUncommittedFile(d);
             initCommand();
 
             await expectLater(
-              runner.run(['is-committed', '--input', testDir.path]),
+              runner.run(['is-committed', '--input', d.path]),
               throwsA(
                 isA<Exception>().having(
                   (e) => e.toString(),
@@ -103,19 +107,17 @@ void main() {
         group('true', () {
           group('if everything is committed', () {
             test('with inputDir from --input args', () async {
-              await initTestDir();
-              await initGit();
+              await initGit(d);
               initCommand();
-              await runner.run(['is-committed', '--input', testDir.path]);
+              await runner.run(['is-committed', '--input', d.path]);
               expect(messages.last, contains('✅ Everything is committed.'));
             });
 
             test('with inputDir taken from constructor', () async {
-              await initTestDir();
-              await initGit();
+              await initGit(d);
               initCommand();
               final result = await isCommitted.get(
-                directory: testDir,
+                directory: d,
                 ggLog: messages.add,
               );
               expect(result, isTrue);

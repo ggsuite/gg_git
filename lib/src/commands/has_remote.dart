@@ -13,16 +13,15 @@ import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
-/// Checks if eyerything in the current working directory is committed.
-class IsCommitted extends GgGitBase<void> {
+/// Checks if the local git repo has a remote
+class HasRemote extends GgGitBase<void> {
   /// Constructor
-  IsCommitted({
+  HasRemote({
     required super.ggLog,
     super.processWrapper,
   }) : super(
-          name: 'is-committed',
-          description:
-              'Is everything in the current working directory committed?',
+          name: 'has-remote',
+          description: 'Checks if local git repo has a remote.',
         );
 
   // ...........................................................................
@@ -34,7 +33,7 @@ class IsCommitted extends GgGitBase<void> {
     final messages = <String>[];
 
     final printer = GgStatusPrinter<bool>(
-      message: 'Everything is committed.',
+      message: 'Has a remote.',
       ggLog: ggLog,
     );
 
@@ -45,7 +44,7 @@ class IsCommitted extends GgGitBase<void> {
 
     if (!result) {
       if (messages.isEmpty) {
-        messages.add('There are uncommmited changes.');
+        messages.add('Repo has no remote.');
       }
 
       throw Exception(brightBlack(messages.join('\n')));
@@ -53,7 +52,7 @@ class IsCommitted extends GgGitBase<void> {
   }
 
   // ...........................................................................
-  /// Returns true if everything in the directory is committed.
+  /// Returns true if the local git repo has a remote
   Future<bool> get({
     required GgLog ggLog,
     required Directory directory,
@@ -63,17 +62,17 @@ class IsCommitted extends GgGitBase<void> {
     // Is everything committed?
     final result = await processWrapper.run(
       'git',
-      ['status', '--porcelain'],
+      ['remote'],
       workingDirectory: directory.path,
     );
     if (result.exitCode != 0) {
-      throw Exception('Could not run "git status" in "${dirName(directory)}": '
+      throw Exception('Could not run "git remote" in "${dirName(directory)}": '
           '${result.stderr}');
     }
 
-    return (result.stdout as String).isEmpty;
+    return (result.stdout as String).isNotEmpty;
   }
 }
 
 /// Mocktail mock
-class MockIsCommitted extends mocktail.Mock implements IsCommitted {}
+class MockHasRemote extends mocktail.Mock implements HasRemote {}

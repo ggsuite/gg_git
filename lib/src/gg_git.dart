@@ -8,13 +8,8 @@
 
 // #############################################################################
 import 'package:args/command_runner.dart';
-import 'package:gg_git/src/commands/commit_count.dart';
-import 'package:gg_git/src/commands/get_tags.dart';
+import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/src/commands/head.dart';
-import 'package:gg_git/src/commands/is_committed.dart';
-import 'package:gg_git/src/commands/is_pushed.dart';
-import 'package:gg_git/src/commands/last_changes_hash.dart';
-import 'package:gg_git/src/commands/modified_files.dart';
 import 'package:gg_log/gg_log.dart';
 
 // #############################################################################
@@ -29,6 +24,7 @@ class GgGit extends Command<dynamic> {
     addSubcommand(LastChangesHash(ggLog: ggLog));
     addSubcommand(Head(ggLog: ggLog));
     addSubcommand(CommitCount(ggLog: ggLog));
+    addSubcommand(HasRemote(ggLog: ggLog));
   }
 
   /// The log function

@@ -114,6 +114,46 @@ Future<Directory> initLocalGit(Directory testDir) async {
   return localDir;
 }
 
+// ...........................................................................
+/// Adds a remote git repo to a local git repo
+Future<void> addRemoteToLocal({
+  required Directory local,
+  required Directory remote,
+}) async {
+  // Add remote
+  final result2 = await Process.run(
+    'git',
+    [
+      'remote',
+      'add',
+      'origin',
+      remote.path,
+    ],
+    workingDirectory: local.path,
+  );
+
+  if (result2.exitCode != 0) {
+    throw Exception(
+      'Could not add remote to local git repository. ${result2.stderr}',
+    );
+  }
+
+  final result3 = await Process.run(
+    'git',
+    [
+      'push',
+      '--set-upstream',
+      'origin',
+      'main',
+    ],
+    workingDirectory: local.path,
+  );
+
+  if (result3.exitCode != 0) {
+    throw Exception('Could not set up-stream. ${result3.stderr}');
+  }
+}
+
 // #############
 // # Tag helpers
 // #############

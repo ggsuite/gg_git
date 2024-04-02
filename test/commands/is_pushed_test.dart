@@ -29,40 +29,8 @@ void main() {
   Future<void> initLocalGit() async => localDir = await h.initLocalGit(d);
 
   // ...........................................................................
-  void addRemoteToLocal() {
-    // Add remote
-    final result2 = Process.runSync(
-      'git',
-      [
-        'remote',
-        'add',
-        'origin',
-        remoteDir.path,
-      ],
-      workingDirectory: localDir.path,
-    );
-
-    if (result2.exitCode != 0) {
-      throw Exception(
-        'Could not add remote to local git repository. ${result2.stderr}',
-      );
-    }
-
-    final result3 = Process.runSync(
-      'git',
-      [
-        'push',
-        '--set-upstream',
-        'origin',
-        'main',
-      ],
-      workingDirectory: localDir.path, // HIER WEITER!!!
-    );
-
-    if (result3.exitCode != 0) {
-      throw Exception('Could not set up-stream. ${result3.stderr}');
-    }
-  }
+  Future<void> addRemoteToLocal() =>
+      h.addRemoteToLocal(local: localDir, remote: remoteDir);
 
   // ...........................................................................
   void createFile() {
@@ -318,7 +286,7 @@ void main() {
 
           // Add a remote
           await initRemoteGit();
-          addRemoteToLocal();
+          await addRemoteToLocal();
 
           // Push state
           await runner.run(['is-pushed', '--input', localDir.path]);
@@ -368,7 +336,7 @@ void main() {
 
         // Add a remote
         await initRemoteGit();
-        addRemoteToLocal();
+        await addRemoteToLocal();
 
         // Push state
         pushFile();
