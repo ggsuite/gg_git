@@ -100,14 +100,21 @@ class ModifiedFiles extends GgGitBase<void> {
     required Directory directory,
     required List<String> ignoreFiles,
   }) async {
-    // Use git status -s to get the status in a short format
-    final result = await processWrapper.run(
-      'git',
-      ['show', '--name-only', 'HEAD', '--pretty='],
-      workingDirectory: directory.path,
-    );
+    var offset = 0;
+    var result = <String>[];
 
-    return _parseResult(result, ignoreFiles);
+    while (result.isEmpty) {
+      final processResult = await processWrapper.run(
+        'git',
+        ['show', '--name-only', 'HEAD~$offset', '--pretty='],
+        workingDirectory: directory.path,
+      );
+
+      result = _parseResult(processResult, ignoreFiles);
+      offset++;
+    }
+
+    return result;
   }
 
   // ...........................................................................

@@ -66,100 +66,141 @@ void main() {
           expect(result, isEmpty);
         });
 
-        test('with force = true', () async {
-          // Initially no files are modified
-          var result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-          );
-          expect(result, isEmpty);
+        group('with force = true', () {
+          test('and multiple files ignored', () async {
+            // Initially no files are modified
+            var result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+            );
+            expect(result, isEmpty);
 
-          // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+            // Let's modify a file
+            await initUncommittedFile(d, fileName: 'file1.txt');
 
-          // Now we should have one modified file
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-          );
-          expect(result, ['file1.txt']);
+            // Now we should have one modified file
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+            );
+            expect(result, ['file1.txt']);
 
-          // Request again, but with file1.txt ignored
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-            ignoreFiles: ['file1.txt'],
-          );
-          expect(result, isEmpty);
+            // Request again, but with file1.txt ignored
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+              ignoreFiles: ['file1.txt'],
+            );
+            expect(result, isEmpty);
 
-          // Let's modify another file
-          await initUncommittedFile(d, fileName: 'file2.txt');
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-          );
-          expect(result, ['file1.txt', 'file2.txt']);
+            // Let's modify another file
+            await initUncommittedFile(d, fileName: 'file2.txt');
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+            );
+            expect(result, ['file1.txt', 'file2.txt']);
 
-          // Ignore the other file
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-            ignoreFiles: ['file2.txt'],
-          );
-          expect(result, ['file1.txt']);
+            // Ignore the other file
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+              ignoreFiles: ['file2.txt'],
+            );
+            expect(result, ['file1.txt']);
 
-          // Commit the first file
-          await commitFile(d, 'file1.txt', message: 'Commit message');
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-          );
-          expect(result, ['file2.txt']);
+            // Commit the first file
+            await commitFile(d, 'file1.txt', message: 'Commit message');
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+            );
+            expect(result, ['file2.txt']);
 
-          // Stage the second file -> Should still be shown as modified
-          await stageFile(d, 'file2.txt');
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-          );
-          expect(result, ['file2.txt']);
+            // Stage the second file -> Should still be shown as modified
+            await stageFile(d, 'file2.txt');
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+            );
+            expect(result, ['file2.txt']);
 
-          // Commit the second file
-          // With force = false, the file should not be shown anymore
-          await commitFile(d, 'file2.txt', message: 'Commit message');
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: false,
-          );
-          expect(result, isEmpty);
+            // Commit the second file
+            // With force = false, the file should not be shown anymore
+            await commitFile(d, 'file2.txt', message: 'Commit message');
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: false,
+            );
+            expect(result, isEmpty);
 
-          // Get the modified files
-          // with force = true,
-          // the files changed in the last commit should be shown
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-          );
-          expect(result, ['file2.txt']);
+            // Get the modified files
+            // with force = true,
+            // the files changed in the last commit should be shown
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+            );
+            expect(result, ['file2.txt']);
 
-          // Try again with force = true
-          // and ignore file2.txt
-          result = await modifiedFiles.get(
-            directory: d,
-            ggLog: messages.add,
-            force: true,
-            ignoreFiles: ['file2.txt'],
-          );
-          expect(result, isEmpty);
+            // Try again with force = true
+            // and ignore file2.txt
+            // The changes of the previous commit should be returned.
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+              ignoreFiles: ['file2.txt'],
+            );
+            expect(result, ['file1.txt']);
+          });
+
+          test('and only ignored files modified', () async {
+            // Make an initial commit
+            await addAndCommitSampleFile(d, fileName: 'file1.txt');
+
+            // Asking for modified files should give the modified file
+            var result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+            );
+            expect(result, ['file1.txt']);
+
+            // Add another ignored file and commit it
+            await addAndCommitSampleFile(d, fileName: 'ignore.txt');
+
+            // Asking for modified files should give the modified file
+            // when not added to ignored files
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+              ignoreFiles: [],
+            );
+            expect(result, ['ignore.txt']);
+
+            // Asking for modified files
+            // should give the previous modified files
+            // when a commit only contains ignored files
+            // and force is true
+            result = await modifiedFiles.get(
+              directory: d,
+              ggLog: messages.add,
+              force: true,
+              ignoreFiles: ['ignore.txt'],
+            );
+            expect(result, ['file1.txt']);
+          });
         });
       });
 

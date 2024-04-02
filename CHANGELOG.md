@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.8.1
+
+- ModifiedFiles: Skip commits that only contain ignored files
+
 ## 1.8.0
 
 - Add `HasRemote` command
