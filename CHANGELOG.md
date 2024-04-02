@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.7.0
+
+- Add `ammend` option for `Commit`
+
 ## 1.6.2
 
 - Add `ignoreFiles` option to several functions

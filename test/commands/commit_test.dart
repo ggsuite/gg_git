@@ -7,8 +7,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/gg_git_test_helpers.dart';
-import 'package:gg_git/src/commands/commit.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -16,6 +16,7 @@ import 'package:test/test.dart';
 void main() {
   late Directory d;
   late Commit commit;
+  late CommitCount commitCount;
   final messages = <String>[];
   const commitMessage = 'My commit message';
 
@@ -23,6 +24,7 @@ void main() {
     messages.clear();
     d = await initTestDir();
     commit = Commit(ggLog: messages.add);
+    commitCount = CommitCount(ggLog: messages.add);
     await initGit(d);
   });
 
@@ -31,7 +33,7 @@ void main() {
   });
 
   group('Commit', () {
-    group('commit', () {
+    group('commit(directory, message, doStage, ammend)', () {
       group('should throw', () {
         test('if there is nothing to commit', () async {
           // At the beginning, there is nothing to commit
@@ -174,7 +176,7 @@ void main() {
       });
 
       group('should commit files', () {
-        test('with doStage = true', () async {
+        test('and doStage = true', () async {
           // Let's modify a file
           await initUncommittedFile(d, fileName: 'file1.txt');
 
@@ -216,23 +218,115 @@ void main() {
           expect(await modifiedFiles(d), ['file2.txt']);
         });
       });
+
+      group('should ammend files', () {
+        test('when ammend = true', () async {
+          //
+
+          // Let's modify a file
+          await addAndCommitSampleFile(d, fileName: 'file1.txt');
+
+          // Count the number of commits
+          final count0 = await commitCount.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          // Modify the file again
+          File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
+
+          // Commit the file again with ammend = false
+          await commit.commit(
+            directory: d,
+            message: commitMessage,
+            doStage: true,
+            ammend: false,
+            ggLog: messages.add,
+          );
+
+          // Commit count should have increased
+          final count1 = await commitCount.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+          expect(count1, count0 + 1);
+
+          // Make another change
+          File('${d.path}/file1.txt').writeAsStringSync('Change 3!');
+
+          // Commit the file again with ammend = true
+          await commit.commit(
+            directory: d,
+            message: commitMessage,
+            doStage: true,
+            ammend: true,
+            ggLog: messages.add,
+          );
+
+          // Commit count should be the same
+          final count2 = await commitCount.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          expect(count2, count1);
+        });
+      });
     });
 
     group('exec(directory, ggLog)', () {
-      test('should call commit', () async {
-        final runner = CommandRunner<void>('gg', 'Test');
-        runner.addCommand(commit);
+      group('with ammend=false', () {
+        test('should call commit', () async {
+          final runner = CommandRunner<void>('gg', 'Test');
+          runner.addCommand(commit);
 
-        // Let's modify a file
-        await initUncommittedFile(d, fileName: 'file1.txt');
-        expect(await modifiedFiles(d), ['file1.txt']);
+          // Let's modify a file
+          await initUncommittedFile(d, fileName: 'file1.txt');
+          expect(await modifiedFiles(d), ['file1.txt']);
 
-        // Commit the file
-        await runner.run(
-          ['commit', '-i', d.path, '-m', 'Commit message', '-s'],
-        );
+          // Commit the file
+          await runner.run(
+            ['commit', '-i', d.path, '-m', 'Commit message', '-s'],
+          );
 
-        expect(await modifiedFiles(d), <String>[]);
+          expect(await modifiedFiles(d), <String>[]);
+        });
+      });
+
+      group('with ammend=true', () {
+        test('should call commit --ammend', () async {
+          final runner = CommandRunner<void>('gg', 'Test');
+          runner.addCommand(commit);
+
+          // Make first commit
+          await addAndCommitSampleFile(d, fileName: 'file1.txt');
+
+          // Count the commits
+          final count0 = await commitCount.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+          expect(count0, 1);
+
+          // Let's modify a file
+          await initUncommittedFile(d, fileName: 'file1.txt');
+          expect(await modifiedFiles(d), ['file1.txt']);
+
+          // Commit the file
+          await runner.run(
+            ['commit', '-i', d.path, '-m', 'Commit message', '-s', '-a'],
+          );
+
+          // Everything is committed
+          expect(await modifiedFiles(d), <String>[]);
+
+          // Commit count should be the same
+          final count1 = await commitCount.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+          expect(count1, count0);
+        });
       });
     });
   });

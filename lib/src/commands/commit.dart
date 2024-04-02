@@ -32,12 +32,14 @@ class Commit extends GgGitBase<void> {
   }) async {
     final stage = argResults!['stage'] as bool;
     final message = argResults!['message'] as String;
+    final ammend = argResults!['ammend'] as bool;
 
     await commit(
       directory: directory,
       message: message,
       doStage: stage,
       ggLog: ggLog,
+      ammend: ammend,
     );
   }
 
@@ -48,6 +50,7 @@ class Commit extends GgGitBase<void> {
     required Directory directory,
     required bool doStage,
     required String message,
+    bool ammend = false,
   }) async {
     await check(directory: directory);
 
@@ -55,6 +58,7 @@ class Commit extends GgGitBase<void> {
       directory: directory,
       message: message,
       doStage: doStage,
+      ammend: ammend,
     );
   }
 
@@ -77,6 +81,7 @@ class Commit extends GgGitBase<void> {
     required Directory directory,
     required String message,
     required bool doStage,
+    required bool ammend,
   }) async {
     await _checkModifiedFiles(directory, ggLog);
 
@@ -86,7 +91,7 @@ class Commit extends GgGitBase<void> {
 
     final result = await processWrapper.run(
       'git',
-      ['commit', '-m', message],
+      ['commit', '-m', message, if (ammend) '--amend'],
       workingDirectory: directory.path,
     );
     if (result.exitCode != 0) {
@@ -131,6 +136,12 @@ class Commit extends GgGitBase<void> {
         abbr: 'm',
         help: 'The commit message.',
         mandatory: true,
+      )
+      ..addFlag(
+        'ammend',
+        abbr: 'a',
+        help: 'Ammend the commit to the previous one.',
+        defaultsTo: false,
       );
   }
 }
