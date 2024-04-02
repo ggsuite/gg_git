@@ -311,7 +311,8 @@ Future<void> setChangeLog(
 
 // .............................................................................
 /// Commit the changelog file
-void commitChangeLog(Directory testDir) => commitFile(testDir, 'CHANGELOG.md');
+Future<void> commitChangeLog(Directory testDir) =>
+    commitFile(testDir, 'CHANGELOG.md');
 
 // ## Version files
 
@@ -326,7 +327,7 @@ Future<void> setupVersions(
   await setPubspec(testDir, version: pubspec);
   await commitPubspec(testDir);
   await setChangeLog(testDir, version: changeLog);
-  commitChangeLog(testDir);
+  await commitChangeLog(testDir);
 
   if (gitHead != null) {
     await addTag(testDir, gitHead);

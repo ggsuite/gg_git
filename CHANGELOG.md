@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.8.4
+
+- Fix a small bug in test helpers
+
 ## 1.8.3
 
 - `IsPushed.get` has an option `ignoreUnCommittedChanges` which allows to ignore uncommitted changes.
