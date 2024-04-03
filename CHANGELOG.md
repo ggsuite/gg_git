@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.0.0
+
+- Breaking changes: Renamed various test helpers
+
 ## 1.8.4
 
 - Fix a small bug in test helpers

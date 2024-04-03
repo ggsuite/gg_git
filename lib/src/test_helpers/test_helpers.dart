@@ -29,68 +29,20 @@ Future<Directory> initTestDir() async {
   return testDir;
 }
 
+// ######################
+// Init Git Repos
+// ######################
+
 // .............................................................................
 /// Init git repository in test directory
-Future<void> initGit(Directory testDir) async {
-  final result =
-      await Process.run('git', ['init'], workingDirectory: testDir.path);
-  if (result.exitCode != 0) {
-    throw Exception('Could not initialize git repository. ${result.stderr}');
-  }
-
-  if (isGitHub) {
-    final result2 = await Process.run(
-      'git',
-      ['config', '--global', 'user.email', 'githubaction@inlavigo.com'],
-      workingDirectory: testDir.path,
-    );
-
-    if (result.exitCode != 0) {
-      throw Exception('Could not set mail. ${result2.stderr}');
-    }
-
-    final result3 = await Process.run(
-      'git',
-      ['config', '--global', 'user.name', 'Github Action'],
-      workingDirectory: testDir.path,
-    );
-
-    if (result.exitCode != 0) {
-      throw Exception('Could not set mail. ${result3.stderr}');
-    }
-  }
-}
-
-// .............................................................................
-/// Adds a gitignore file to the test directory
-Future<void> addAndCommitGitIgnoreFile(
-  Directory d, {
-  String content = '',
-}) =>
-    addAndCommitSampleFile(d, fileName: '.gitignore', content: content);
-
-// .............................................................................
-/// Init remote git repository in directory
-Future<Directory> initRemoteGit(Directory testDir) async {
-  final remoteDir = Directory('${testDir.path}/remote');
-  await remoteDir.create(recursive: true);
-  final result = await Process.run(
-    'git',
-    ['init', '--bare', '--initial-branch=main'],
-    workingDirectory: remoteDir.path,
-  );
-  if (result.exitCode != 0) {
-    throw Exception('Could not initialize remote git repository.');
-  }
-
-  return remoteDir;
-}
+Future<void> initGit(Directory testDir) async => initLocalGit(testDir);
 
 // .............................................................................
 /// Init local git repository in directory
-Future<Directory> initLocalGit(Directory testDir) async {
-  final localDir = Directory('${testDir.path}/local');
-  await localDir.create(recursive: true);
+Future<void> initLocalGit(Directory testDir) async {
+  _setupGitHub(testDir);
+
+  final localDir = testDir;
 
   final result = await Process.run(
     'git',
@@ -110,8 +62,21 @@ Future<Directory> initLocalGit(Directory testDir) async {
   if (result2.exitCode != 0) {
     throw Exception('Could not create main branch.');
   }
+}
 
-  return localDir;
+// .............................................................................
+/// Init remote git repository in directory
+Future<void> initRemoteGit(Directory testDir) async {
+  final remoteDir = testDir;
+  await remoteDir.create(recursive: true);
+  final result = await Process.run(
+    'git',
+    ['init', '--bare', '--initial-branch=main'],
+    workingDirectory: remoteDir.path,
+  );
+  if (result.exitCode != 0) {
+    throw Exception('Could not initialize remote git repository.');
+  }
 }
 
 // ...........................................................................
@@ -154,6 +119,43 @@ Future<void> addRemoteToLocal({
   }
 }
 
+// .............................................................................
+void _setupGitHub(Directory testDir) async {
+  if (isGitHub) {
+    final result2 = await Process.run(
+      'git',
+      ['config', '--global', 'user.email', 'githubaction@inlavigo.com'],
+      workingDirectory: testDir.path,
+    );
+
+    if (result2.exitCode != 0) {
+      throw Exception('Could not set mail. ${result2.stderr}');
+    }
+
+    final result3 = await Process.run(
+      'git',
+      ['config', '--global', 'user.name', 'Github Action'],
+      workingDirectory: testDir.path,
+    );
+
+    if (result3.exitCode != 0) {
+      throw Exception('Could not set mail. ${result3.stderr}');
+    }
+  }
+}
+
+// ######################
+// Git Ignore
+// ######################
+
+// .............................................................................
+/// Adds a gitignore file to the test directory
+Future<void> addAndCommitGitIgnoreFile(
+  Directory d, {
+  String content = '',
+}) =>
+    addAndCommitSampleFile(d, fileName: '.gitignore', content: content);
+
 // #############
 // # Tag helpers
 // #############
@@ -183,17 +185,24 @@ Future<void> addTags(Directory testDir, List<String> tags) async {
 
 // .............................................................................
 /// Init a file with a name in the test directory
-Future<void> initFile(Directory testDir, String name, String content) =>
-    File('${testDir.path}/$name').writeAsString(content);
+Future<File> addFileWithoutCommitting(
+  Directory testDir, {
+  String fileName = 'test.txt',
+  String content = 'Content',
+}) async {
+  final result = File('${testDir.path}/$fileName');
+  await result.writeAsString(content);
+  return result;
+}
 
 // .............................................................................
 /// Commit the file with a name in the test directory
 Future<void> commitFile(
   Directory testDir,
-  String name, {
+  String fileName, {
   String message = 'Commit Message',
 }) async {
-  await stageFile(testDir, name);
+  await stageFile(testDir, fileName);
 
   final result2 = await Process.run(
     'git',
@@ -201,7 +210,7 @@ Future<void> commitFile(
     workingDirectory: testDir.path,
   );
   if (result2.exitCode != 0) {
-    throw Exception('Could not commit $name.');
+    throw Exception('Could not commit $fileName.');
   }
 }
 
@@ -209,15 +218,15 @@ Future<void> commitFile(
 /// Commit the file with a name in the test directory
 Future<void> stageFile(
   Directory testDir,
-  String name,
+  String fileName,
 ) async {
   final result = await Process.run(
     'git',
-    ['add', name],
+    ['add', fileName],
     workingDirectory: testDir.path,
   );
   if (result.exitCode != 0) {
-    throw Exception('Could not add $name.');
+    throw Exception('Could not add $fileName.');
   }
 }
 
@@ -231,16 +240,37 @@ Future<List<String>> modifiedFiles(Directory directory) {
 
 // ## sample.txt
 
+/// The name of the sample file
+const String sampleFileName = 'test.txt';
+
 // .............................................................................
 /// Add and commit sample file
-Future<void> addAndCommitSampleFile(
+Future<File> addAndCommitSampleFile(
   Directory testDir, {
-  String fileName = 'sample.txt',
+  String fileName = sampleFileName,
   String content = 'sample',
   String message = 'Commit Message',
 }) async {
-  await initFile(testDir, fileName, content);
+  final file = await addFileWithoutCommitting(
+    testDir,
+    fileName: fileName,
+    content: content,
+  );
   await commitFile(testDir, fileName, message: message);
+  return file;
+}
+
+// .............................................................................
+/// Update and commit sample file
+Future<void> updateSampleFileWithoutCommitting(
+  Directory testDir, {
+  String fileName = sampleFileName,
+  String message = 'Commit Message',
+}) async {
+  final file = File('${testDir.path}/$fileName');
+  final content = await file.exists() ? file.readAsString() : '';
+  final newContent = '${content}updated';
+  await File('${testDir.path}/sample.txt').writeAsString(newContent);
 }
 
 // .............................................................................
@@ -248,13 +278,13 @@ Future<void> addAndCommitSampleFile(
 Future<void> updateAndCommitSampleFile(
   Directory testDir, {
   String message = 'Commit Message',
-  String fileName = 'sample.txt',
+  String fileName = sampleFileName,
 }) async {
   final file = File('${testDir.path}/$fileName');
   final content = await file.exists() ? file.readAsString() : '';
   final newContent = '${content}updated';
   await File('${testDir.path}/sample.txt').writeAsString(newContent);
-  await commitFile(testDir, 'sample.txt', message: message);
+  await commitFile(testDir, sampleFileName, message: message);
 }
 
 // ## uncommitted.txt
@@ -266,7 +296,7 @@ Future<void> initUncommittedFile(
   String fileName = 'uncommitted.txt',
   String content = 'uncommitted',
 }) =>
-    initFile(testDir, fileName, content);
+    addFileWithoutCommitting(testDir, fileName, content);
 
 // ## pubspect.yaml
 
@@ -306,7 +336,7 @@ Future<void> setChangeLog(
     content += '## $version\n\n';
   }
 
-  await initFile(testDir, 'CHANGELOG.md', content);
+  await addFileWithoutCommitting(testDir, 'CHANGELOG.md', content);
 }
 
 // .............................................................................

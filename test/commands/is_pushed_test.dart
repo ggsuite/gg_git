@@ -16,26 +16,20 @@ import 'package:test/test.dart';
 import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 
 void main() {
+  late Directory dRemote;
+  late Directory dLocal;
   final messages = <String>[];
   late CommandRunner<void> runner;
   late IsPushed isPushed;
-  late Directory d;
-  late Directory remoteDir;
-  late Directory localDir;
   late File file;
 
   // ...........................................................................
-  Future<void> initTestDir() async => d = await h.initTestDir();
-  Future<void> initRemoteGit() async => remoteDir = await h.initRemoteGit(d);
-  Future<void> initLocalGit() async => localDir = await h.initLocalGit(d);
-
-  // ...........................................................................
   Future<void> addRemoteToLocal() =>
-      h.addRemoteToLocal(local: localDir, remote: remoteDir);
+      h.addRemoteToLocal(local: dLocal, remote: dRemote);
 
   // ...........................................................................
   void createFile() {
-    file = File('${localDir.path}/file.txt');
+    file = File('${dLocal.path}/file.txt');
     file.writeAsStringSync('uncommitted');
   }
 
@@ -44,7 +38,7 @@ void main() {
     final result = Process.runSync(
       'git',
       ['add', basename(file.path)],
-      workingDirectory: localDir.path,
+      workingDirectory: dLocal.path,
     );
     if (result.exitCode != 0) {
       throw Exception('Could not add file to local git repository.');
@@ -56,7 +50,7 @@ void main() {
     final result = Process.runSync(
       'git',
       ['commit', '-m', 'Initial commit'],
-      workingDirectory: localDir.path,
+      workingDirectory: dLocal.path,
     );
     if (result.exitCode != 0) {
       throw Exception(
@@ -70,7 +64,7 @@ void main() {
     final result = Process.runSync(
       'git',
       ['push', '-u', 'origin', 'main'],
-      workingDirectory: localDir.path,
+      workingDirectory: dLocal.path,
     );
     if (result.exitCode != 0) {
       throw Exception(
@@ -84,7 +78,7 @@ void main() {
     final result = Process.runSync(
       'git',
       ['pull'],
-      workingDirectory: localDir.path,
+      workingDirectory: dLocal.path,
     );
     if (result.exitCode != 0) {
       throw Exception(
@@ -98,7 +92,7 @@ void main() {
     final result = Process.runSync(
       'git',
       ['reset', '--hard', 'HEAD~1'],
-      workingDirectory: localDir.path,
+      workingDirectory: dLocal.path,
     );
     if (result.exitCode != 0) {
       throw Exception('Could remove last commit. ${result.stderr}');
@@ -117,7 +111,7 @@ void main() {
   // ...........................................................................
   Future<void> expectException(String message) async {
     await expectLater(
-      runner.run(['is-pushed', '--input', localDir.path]),
+      runner.run(['is-pushed', '--input', dLocal.path]),
       throwsA(
         isA<Exception>().having(
           (e) => e.toString(),
@@ -129,13 +123,19 @@ void main() {
   }
 
   // ...........................................................................
-  setUp(() {
+  setUp(() async {
+    dLocal = await initTestDir();
+    dRemote = await initTestDir();
+
     runner = CommandRunner<void>('test', 'test');
     messages.clear();
   });
 
   // ...........................................................................
-  tearDown(() {});
+  tearDown(() {
+    dLocal.deleteSync(recursive: true);
+    dRemote.deleteSync(recursive: true);
+  });
 
   group('IsPushed', () {
     // #########################################################################
@@ -147,16 +147,14 @@ void main() {
           group('with inputDir', () {
             test('taken from --input arg', () async {
               final failingProcessWrapper = MockGgProcessWrapper();
-
-              await initTestDir();
-              await initLocalGit();
+              await initLocalGit(dLocal);
               initCommand(processWrapper: failingProcessWrapper);
 
               when(
                 () => failingProcessWrapper.run(
                   any(),
                   any(),
-                  workingDirectory: localDir.path,
+                  workingDirectory: dLocal.path,
                 ),
               ).thenAnswer(
                 (_) async => ProcessResult(
@@ -168,12 +166,12 @@ void main() {
               );
 
               await expectLater(
-                runner.run(['is-pushed', '--input', localDir.path]),
+                runner.run(['is-pushed', '--input', dLocal.path]),
                 throwsA(
                   isA<Exception>().having(
                     (e) => e.toString(),
                     'message',
-                    'Exception: Could not run "git push" in "local".',
+                    'Exception: Could not run "git push" in "test".',
                   ),
                 ),
               );
@@ -181,9 +179,7 @@ void main() {
 
             test('taken from constructor', () async {
               final failingProcessWrapper = MockGgProcessWrapper();
-
-              await initTestDir();
-              await initLocalGit();
+              await initLocalGit(dLocal);
               initCommand(
                 processWrapper: failingProcessWrapper,
               );
@@ -192,7 +188,7 @@ void main() {
                 () => failingProcessWrapper.run(
                   any(),
                   any(),
-                  workingDirectory: localDir.path,
+                  workingDirectory: dLocal.path,
                 ),
               ).thenAnswer(
                 (_) async => ProcessResult(
@@ -207,7 +203,7 @@ void main() {
                 () => failingProcessWrapper.run(
                   any(),
                   any(),
-                  workingDirectory: localDir.path,
+                  workingDirectory: dLocal.path,
                 ),
               ).thenAnswer(
                 (_) async => ProcessResult(
@@ -219,12 +215,12 @@ void main() {
               );
 
               expect(
-                () => isPushed.get(directory: localDir, ggLog: messages.add),
+                () => isPushed.get(directory: dLocal, ggLog: messages.add),
                 throwsA(
                   isA<Exception>().having(
                     (e) => e.toString(),
                     'message',
-                    'Exception: Could not run "git push" in "local".',
+                    'Exception: Could not run "git push" in "test".',
                   ),
                 ),
               );
@@ -235,16 +231,14 @@ void main() {
         // .....................................................................
         test('if "git returns an unknown status"', () async {
           final failingProcessWrapper = MockGgProcessWrapper();
-
-          await initTestDir();
-          await initLocalGit();
+          await initLocalGit(dLocal);
           initCommand(processWrapper: failingProcessWrapper);
 
           when(
             () => failingProcessWrapper.run(
               any(),
               any(),
-              workingDirectory: localDir.path,
+              workingDirectory: dLocal.path,
             ),
           ).thenAnswer(
             (_) async => ProcessResult(
@@ -256,12 +250,12 @@ void main() {
           );
 
           await expectLater(
-            runner.run(['is-pushed', '--input', localDir.path]),
+            runner.run(['is-pushed', '--input', dLocal.path]),
             throwsA(
               isA<Exception>().having(
                 (e) => e.toString(),
                 'message',
-                'Exception: Unknown status of "git push" in "local".',
+                'Exception: Unknown status of "git push" in "test".',
               ),
             ),
           );
@@ -269,8 +263,7 @@ void main() {
 
         // .....................................................................
         test('if not everything is pushed', () async {
-          await initTestDir();
-          await initLocalGit();
+          await initLocalGit(dLocal);
           initCommand();
 
           // Not yet added file?
@@ -286,11 +279,11 @@ void main() {
           await expectException('The branch has no remote.');
 
           // Add a remote
-          await initRemoteGit();
+          await initRemoteGit(dRemote);
           await addRemoteToLocal();
 
           // Push state
-          await runner.run(['is-pushed', '--input', localDir.path]);
+          await runner.run(['is-pushed', '--input', dLocal.path]);
           expect(messages.last, contains('✅ Everything is pushed.'));
 
           // .............
@@ -308,7 +301,7 @@ void main() {
 
           // Push state
           pushFile();
-          await runner.run(['is-pushed', '--input', localDir.path]);
+          await runner.run(['is-pushed', '--input', dLocal.path]);
           expect(messages.last, contains('Everything is pushed.'));
 
           // ..................
@@ -317,25 +310,24 @@ void main() {
           await expectException('Local branch is behind remote branch.');
 
           pull();
-          await runner.run(['is-pushed', '--input', localDir.path]);
+          await runner.run(['is-pushed', '--input', dLocal.path]);
           expect(messages.last, contains('Everything is pushed.'));
         });
       });
 
       group('should return true', () {
         test('when everything is committed and the state is pushed', () async {
-          await initTestDir();
-          await initLocalGit();
-          await initRemoteGit();
+          await initLocalGit(dLocal);
+          await initRemoteGit(dRemote);
           initCommand();
-          await addAndCommitSampleFile(localDir, fileName: 'test.txt');
+          await addAndCommitSampleFile(dLocal, fileName: 'test.txt');
           await addRemoteToLocal();
 
           // Make a change without pushing
-          await updateAndCommitSampleFile(localDir, fileName: 'test.txt');
+          await updateAndCommitSampleFile(dLocal, fileName: 'test.txt');
 
           expect(
-            await isPushed.get(directory: localDir, ggLog: messages.add),
+            await isPushed.get(directory: dLocal, ggLog: messages.add),
             isFalse,
           );
 
@@ -343,30 +335,29 @@ void main() {
           pushFile();
 
           expect(
-            await isPushed.get(directory: localDir, ggLog: messages.add),
+            await isPushed.get(directory: dLocal, ggLog: messages.add),
             isTrue,
           );
         });
 
         group('when not everything is committed and the state is pushed', () {
           test('but ignoreUnCommittedChanges is true', () async {
-            await initTestDir();
-            await initLocalGit();
-            await initRemoteGit();
+            await initLocalGit(dLocal);
+            await initRemoteGit(dRemote);
             initCommand();
-            await addAndCommitSampleFile(localDir, fileName: 'test.txt');
+            await addAndCommitSampleFile(dLocal, fileName: 'test.txt');
             await addRemoteToLocal();
 
             // Push the change
             pushFile();
 
             // Make a change without committing
-            File('${localDir.path}/test.txt').writeAsStringSync('uncommitted');
+            File('${dLocal.path}/test.txt').writeAsStringSync('uncommitted');
 
             // Ask if it is pushed with ignoreUnCommittedChanges = true
             expect(
               await isPushed.get(
-                directory: localDir,
+                directory: dLocal,
                 ggLog: messages.add,
                 ignoreUnCommittedChanges: true,
               ),
@@ -380,8 +371,7 @@ void main() {
     group('should print »Everything is pushed.«', () {
       // .....................................................................
       test('when everything is pushed', () async {
-        await initTestDir();
-        await initLocalGit();
+        await initLocalGit(dLocal);
         initCommand();
 
         // Create a pushed file
@@ -390,12 +380,12 @@ void main() {
         commitFile();
 
         // Add a remote
-        await initRemoteGit();
+        await initRemoteGit(dRemote);
         await addRemoteToLocal();
 
         // Push state
         pushFile();
-        await runner.run(['is-pushed', '--input', localDir.path]);
+        await runner.run(['is-pushed', '--input', dLocal.path]);
         expect(messages.last, contains('Everything is pushed.'));
 
         // .............
@@ -404,14 +394,14 @@ void main() {
         addFile();
         commitFile();
         pushFile();
-        await runner.run(['is-pushed', '--input', localDir.path]);
+        await runner.run(['is-pushed', '--input', dLocal.path]);
         expect(messages.last, contains('Everything is pushed.'));
 
         // ..................
         // Remove last commit
         removeLastCommit();
         pull();
-        await runner.run(['is-pushed', '--input', localDir.path]);
+        await runner.run(['is-pushed', '--input', dLocal.path]);
         expect(messages.last, contains('Everything is pushed.'));
       });
     });

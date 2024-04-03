@@ -14,11 +14,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 void main() {
+  late Directory dLocal;
+  late Directory dRemote;
+
   final messages = <String>[];
   late CommandRunner<void> runner;
   late HasRemote hasRemote;
-  late Directory tmp;
-  late Directory local;
 
   // ...........................................................................
   void initCommand({GgProcessWrapper? processWrapper}) {
@@ -31,20 +32,22 @@ void main() {
 
   // ...........................................................................
   setUp(() async {
-    tmp = await Directory.systemTemp.createTemp('gg_test');
-    local = await initLocalGit(tmp);
+    dLocal = await initTestDir();
+    dRemote = await initTestDir();
     runner = CommandRunner<void>('test', 'test');
     messages.clear();
   });
 
   tearDown(() {
-    tmp.deleteSync(recursive: true);
+    dLocal.deleteSync(recursive: true);
+    dRemote.deleteSync(recursive: true);
   });
 
   group('HasRemote', () {
     // #########################################################################
     group('get()', () {
       test('should throw if "git remote" fails', () async {
+        await initGit(dLocal);
         final failingProcessWrapper = MockGgProcessWrapper();
 
         initCommand(processWrapper: failingProcessWrapper);
@@ -53,7 +56,7 @@ void main() {
           () => failingProcessWrapper.run(
             'git',
             ['remote'],
-            workingDirectory: local.path,
+            workingDirectory: dLocal.path,
           ),
         ).thenAnswer(
           (_) async => ProcessResult(
@@ -68,7 +71,7 @@ void main() {
 
         try {
           await hasRemote.get(
-            directory: local,
+            directory: dLocal,
             ggLog: messages.add,
           );
         } catch (e) {
@@ -77,7 +80,7 @@ void main() {
 
         expect(
           exception,
-          'Exception: Could not run "git remote" in "local": '
+          'Exception: Could not run "git remote" in "test": '
           'git remote failed',
         );
       });
@@ -86,10 +89,11 @@ void main() {
       group('should return', () {
         group('false', () {
           test('when repo has no remote', () async {
+            await initGit(dLocal);
             initCommand();
 
             final result = await hasRemote.get(
-              directory: local,
+              directory: dLocal,
               ggLog: messages.add,
             );
 
@@ -100,14 +104,15 @@ void main() {
         // .....................................................................
         group('true', () {
           test('when repo has a remote', () async {
-            await addAndCommitSampleFile(local);
+            await initGit(dLocal);
+            await addAndCommitSampleFile(dLocal);
 
             initCommand();
-            final remote = await initRemoteGit(tmp);
-            await addRemoteToLocal(local: local, remote: remote);
+            await initRemoteGit(dRemote);
+            await addRemoteToLocal(local: dLocal, remote: dRemote);
 
             final result = await hasRemote.get(
-              directory: local,
+              directory: dLocal,
               ggLog: messages.add,
             );
 
@@ -120,12 +125,13 @@ void main() {
     group('exec(directory, ggLog)', () {
       group('should print ❌ and throw', () {
         test('when repo has no remote', () async {
+          await initGit(dLocal);
           initCommand();
 
           late String exception;
 
           try {
-            await runner.run(['has-remote', '-i', local.path]);
+            await runner.run(['has-remote', '-i', dLocal.path]);
           } catch (e) {
             exception = e.toString();
           }
@@ -142,13 +148,14 @@ void main() {
 
       group('should print ✅ when repo has a remote', () {
         test('when repo has a remote', () async {
-          await addAndCommitSampleFile(local);
+          await initGit(dLocal);
+          await addAndCommitSampleFile(dLocal);
 
           initCommand();
-          final remote = await initRemoteGit(tmp);
-          await addRemoteToLocal(local: local, remote: remote);
+          await initRemoteGit(dRemote);
+          await addRemoteToLocal(local: dLocal, remote: dRemote);
 
-          await runner.run(['has-remote', '-i', local.path]);
+          await runner.run(['has-remote', '-i', dLocal.path]);
 
           expect(messages[0], contains('⌛️ Has a remote.'));
           expect(messages[1], contains('✅ Has a remote.'));
