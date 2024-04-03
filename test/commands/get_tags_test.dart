@@ -95,8 +95,8 @@ void main() {
 
           test('but not tags of previous commits', () async {
             await initGit(d);
-            await setPubspec(d, version: '1.0.0');
-            await commitPubspec(d);
+            await addPubspecFileWithoutCommitting(d, version: '1.0.0');
+            await commitPubspecFile(d);
             await addTag(d, 'T0');
             expect(
               await getTags.fromHead(
@@ -107,8 +107,8 @@ void main() {
             );
 
             // Commit a new change -> No tags should be returned
-            await setPubspec(d, version: '2.0.0');
-            await commitPubspec(d);
+            await addPubspecFileWithoutCommitting(d, version: '2.0.0');
+            await commitPubspecFile(d);
             expect(
               await getTags.fromHead(
                 directory: d,

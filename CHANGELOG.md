@@ -61,7 +61,7 @@
 ## 1.0.18
 
 - Replace gg_check by gg
-- Turn initUncommittedFile into Future
+- Turn addFileWithoutCommitting into Future
 
 ## 1.0.17
 

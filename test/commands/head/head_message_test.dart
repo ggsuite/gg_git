@@ -49,7 +49,7 @@ void main() {
             await initGit(d);
 
             // Add an uncommitted file
-            await initUncommittedFile(d);
+            await addFileWithoutCommitting(d);
 
             // Getting the head commit message should throw
             await expectLater(
@@ -160,7 +160,11 @@ void main() {
             );
 
             // Modify the file
-            await initUncommittedFile(d, fileName: 'test.txt', content: 'xyz');
+            await addFileWithoutCommitting(
+              d,
+              fileName: 'test.txt',
+              content: 'xyz',
+            );
 
             // Getting the head commit message should work,
             // also when not everything is committed

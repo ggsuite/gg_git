@@ -87,7 +87,7 @@ void main() {
         group('false', () {
           test('if there are uncommitted changes', () async {
             await initGit(d);
-            await initUncommittedFile(d);
+            await addFileWithoutCommitting(d);
             initCommand();
 
             await expectLater(

@@ -39,14 +39,14 @@ void main() {
           expect(result, isEmpty);
 
           // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
           // Now we should have one modified file
           result = await modifiedFiles.get(directory: d, ggLog: messages.add);
           expect(result, ['file1.txt']);
 
           // Let's modify another file
-          await initUncommittedFile(d, fileName: 'file2.txt');
+          await addFileWithoutCommitting(d, fileName: 'file2.txt');
           result = await modifiedFiles.get(directory: d, ggLog: messages.add);
           expect(result, ['file1.txt', 'file2.txt']);
 
@@ -77,7 +77,7 @@ void main() {
             expect(result, isEmpty);
 
             // Let's modify a file
-            await initUncommittedFile(d, fileName: 'file1.txt');
+            await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
             // Now we should have one modified file
             result = await modifiedFiles.get(
@@ -97,7 +97,7 @@ void main() {
             expect(result, isEmpty);
 
             // Let's modify another file
-            await initUncommittedFile(d, fileName: 'file2.txt');
+            await addFileWithoutCommitting(d, fileName: 'file2.txt');
             result = await modifiedFiles.get(
               directory: d,
               ggLog: messages.add,
@@ -299,14 +299,14 @@ void main() {
         expect(messages, ['']);
 
         // Let's modify a file
-        await initUncommittedFile(d, fileName: 'file1.txt');
+        await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
         // Now we should have one modified file
         await runner.run(['modified-files', '-i', d.path]);
         expect(messages.last, 'file1.txt');
 
         // Let's modify another file
-        await initUncommittedFile(d, fileName: 'file2.txt');
+        await addFileWithoutCommitting(d, fileName: 'file2.txt');
         await runner.run(['modified-files', '-i', d.path]);
         expect(messages.last, 'file1.txt\nfile2.txt');
 

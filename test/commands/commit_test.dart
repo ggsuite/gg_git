@@ -58,7 +58,7 @@ void main() {
 
         test('if doStage == false and no staged files exist', () async {
           // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
           // Commit the file without staging before
           late String exception;
@@ -99,7 +99,7 @@ void main() {
           );
 
           // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
           // Stage the file
           late String exception;
@@ -152,7 +152,7 @@ void main() {
           );
 
           // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
           // Stage the file
           late String exception;
@@ -178,7 +178,7 @@ void main() {
       group('should commit files', () {
         test('and doStage = true', () async {
           // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
           // Commit the file
           await commit.commit(
@@ -200,8 +200,8 @@ void main() {
 
         test('with doStage = false', () async {
           // Let's modify two files
-          await initUncommittedFile(d, fileName: 'file1.txt');
-          await initUncommittedFile(d, fileName: 'file2.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file2.txt');
 
           // Let's stage only one file
           await stageFile(d, 'file1.txt');
@@ -281,7 +281,7 @@ void main() {
           runner.addCommand(commit);
 
           // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
           expect(await modifiedFiles(d), ['file1.txt']);
 
           // Commit the file
@@ -309,7 +309,7 @@ void main() {
           expect(count0, 1);
 
           // Let's modify a file
-          await initUncommittedFile(d, fileName: 'file1.txt');
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
           expect(await modifiedFiles(d), ['file1.txt']);
 
           // Commit the file

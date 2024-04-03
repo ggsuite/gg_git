@@ -49,7 +49,7 @@ void main() {
             await initGit(d);
 
             // Add an uncommitted file
-            await initUncommittedFile(d);
+            await addFileWithoutCommitting(d);
 
             // Getting the head hash should throw
             await expectLater(
@@ -162,7 +162,7 @@ void main() {
           expect(hash, isNotEmpty);
 
           // Now let's add an uncommitted file
-          await initUncommittedFile(d);
+          await addFileWithoutCommitting(d);
 
           // Getting the head with --force should return the hash of the
           // last commit no matter if everything is committed or not

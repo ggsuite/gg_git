@@ -29,6 +29,18 @@ Future<Directory> initTestDir() async {
   return testDir;
 }
 
+// .............................................................................
+void _throw(
+  String message,
+  ProcessResult result,
+) {
+  if (result.exitCode != 0) {
+    throw Exception(
+      '$message: ${result.stderr}',
+    );
+  }
+}
+
 // ######################
 // Init Git Repos
 // ######################
@@ -49,9 +61,8 @@ Future<void> initLocalGit(Directory testDir) async {
     ['init', '--initial-branch=main'],
     workingDirectory: localDir.path,
   );
-  if (result.exitCode != 0) {
-    throw Exception('Could not initialize local git repository.');
-  }
+
+  _throw('Could not initialize local git repository', result);
 
   final result2 = await Process.run(
     'git',
@@ -59,9 +70,7 @@ Future<void> initLocalGit(Directory testDir) async {
     workingDirectory: localDir.path,
   );
 
-  if (result2.exitCode != 0) {
-    throw Exception('Could not create main branch.');
-  }
+  _throw('Could not create main branch', result2);
 }
 
 // .............................................................................
@@ -74,9 +83,8 @@ Future<void> initRemoteGit(Directory testDir) async {
     ['init', '--bare', '--initial-branch=main'],
     workingDirectory: remoteDir.path,
   );
-  if (result.exitCode != 0) {
-    throw Exception('Could not initialize remote git repository.');
-  }
+
+  _throw('Could not initialize remote git repository', result);
 }
 
 // ...........................................................................
@@ -97,11 +105,7 @@ Future<void> addRemoteToLocal({
     workingDirectory: local.path,
   );
 
-  if (result2.exitCode != 0) {
-    throw Exception(
-      'Could not add remote to local git repository. ${result2.stderr}',
-    );
-  }
+  _throw('Could not add remote to local git repository', result2);
 
   final result3 = await Process.run(
     'git',
@@ -114,9 +118,7 @@ Future<void> addRemoteToLocal({
     workingDirectory: local.path,
   );
 
-  if (result3.exitCode != 0) {
-    throw Exception('Could not set up-stream. ${result3.stderr}');
-  }
+  _throw('Could not set up-stream', result3);
 }
 
 // .............................................................................
@@ -128,9 +130,7 @@ void _setupGitHub(Directory testDir) async {
       workingDirectory: testDir.path,
     );
 
-    if (result2.exitCode != 0) {
-      throw Exception('Could not set mail. ${result2.stderr}');
-    }
+    _throw('Could not set mail', result2);
 
     final result3 = await Process.run(
       'git',
@@ -138,9 +138,7 @@ void _setupGitHub(Directory testDir) async {
       workingDirectory: testDir.path,
     );
 
-    if (result3.exitCode != 0) {
-      throw Exception('Could not set mail. ${result3.stderr}');
-    }
+    _throw('Could not set mail', result3);
   }
 }
 
@@ -167,9 +165,8 @@ Future<void> addTag(Directory testDir, String tag) async {
     ['tag', tag],
     workingDirectory: testDir.path,
   );
-  if (result.exitCode != 0) {
-    throw Exception('Could not add tag $tag.');
-  }
+
+  _throw('Could not add tag $tag', result);
 }
 
 /// Add tags to test directory
@@ -187,7 +184,7 @@ Future<void> addTags(Directory testDir, List<String> tags) async {
 /// Init a file with a name in the test directory
 Future<File> addFileWithoutCommitting(
   Directory testDir, {
-  String fileName = 'test.txt',
+  String fileName = sampleFileName,
   String content = 'Content',
 }) async {
   final result = File('${testDir.path}/$fileName');
@@ -209,9 +206,8 @@ Future<void> commitFile(
     ['commit', '-m', message],
     workingDirectory: testDir.path,
   );
-  if (result2.exitCode != 0) {
-    throw Exception('Could not commit $fileName.');
-  }
+
+  _throw('Could not commit $fileName', result2);
 }
 
 // .............................................................................
@@ -225,9 +221,8 @@ Future<void> stageFile(
     ['add', fileName],
     workingDirectory: testDir.path,
   );
-  if (result.exitCode != 0) {
-    throw Exception('Could not add $fileName.');
-  }
+
+  _throw('Could not stage $fileName', result);
 }
 
 // .............................................................................
@@ -262,47 +257,41 @@ Future<File> addAndCommitSampleFile(
 
 // .............................................................................
 /// Update and commit sample file
-Future<void> updateSampleFileWithoutCommitting(
+Future<File> updateSampleFileWithoutCommitting(
   Directory testDir, {
   String fileName = sampleFileName,
   String message = 'Commit Message',
 }) async {
   final file = File('${testDir.path}/$fileName');
-  final content = await file.exists() ? file.readAsString() : '';
+  final content = await file.exists() ? await file.readAsString() : '';
   final newContent = '${content}updated';
-  await File('${testDir.path}/sample.txt').writeAsString(newContent);
+  await File('${testDir.path}/$sampleFileName').writeAsString(newContent);
+  return file;
 }
 
 // .............................................................................
 /// Update and commit sample file
-Future<void> updateAndCommitSampleFile(
+Future<File> updateAndCommitSampleFile(
   Directory testDir, {
   String message = 'Commit Message',
   String fileName = sampleFileName,
 }) async {
-  final file = File('${testDir.path}/$fileName');
-  final content = await file.exists() ? file.readAsString() : '';
-  final newContent = '${content}updated';
-  await File('${testDir.path}/sample.txt').writeAsString(newContent);
+  final file = await updateSampleFileWithoutCommitting(
+    testDir,
+    fileName: fileName,
+  );
   await commitFile(testDir, sampleFileName, message: message);
+  return file;
 }
-
-// ## uncommitted.txt
-
-// .............................................................................
-/// Init uncommitted file
-Future<void> initUncommittedFile(
-  Directory testDir, {
-  String fileName = 'uncommitted.txt',
-  String content = 'uncommitted',
-}) =>
-    addFileWithoutCommitting(testDir, fileName, content);
 
 // ## pubspect.yaml
 
 // .............................................................................
 /// Create a pubspec.yaml file with a version
-Future<void> setPubspec(Directory testDir, {required String? version}) async {
+Future<File> addPubspecFileWithoutCommitting(
+  Directory testDir, {
+  required String? version,
+}) async {
   final file = File('${testDir.path}/pubspec.yaml');
 
   var content = await file.exists()
@@ -316,27 +305,32 @@ Future<void> setPubspec(Directory testDir, {required String? version}) async {
   }
 
   await file.writeAsString(content);
+  return file;
 }
 
 // .............................................................................
 /// Commit the pubspec file
-Future<void> commitPubspec(Directory testDir) =>
+Future<void> commitPubspecFile(Directory testDir) =>
     commitFile(testDir, 'pubspec.yaml');
 
 // ## CHANGELOG.md
 
 // .............................................................................
 /// Create a CHANGELOG.md file with a version
-Future<void> setChangeLog(
+Future<void> addChangeLogWithoutCommitting(
   Directory testDir, {
-  required String? version,
+  String? version = '1.0.0',
 }) async {
   var content = '# Change log\n\n';
   if (version != null) {
     content += '## $version\n\n';
   }
 
-  await addFileWithoutCommitting(testDir, 'CHANGELOG.md', content);
+  await addFileWithoutCommitting(
+    testDir,
+    fileName: 'CHANGELOG.md',
+    content: content,
+  );
 }
 
 // .............................................................................
@@ -348,15 +342,15 @@ Future<void> commitChangeLog(Directory testDir) =>
 
 // .............................................................................
 /// Write version into pubspec.yaml, Changelog.md and add a tag
-Future<void> setupVersions(
+Future<void> addAndCommitVersions(
   Directory testDir, {
   required String? pubspec,
   required String? changeLog,
   required String? gitHead,
 }) async {
-  await setPubspec(testDir, version: pubspec);
-  await commitPubspec(testDir);
-  await setChangeLog(testDir, version: changeLog);
+  await addPubspecFileWithoutCommitting(testDir, version: pubspec);
+  await commitPubspecFile(testDir);
+  await addChangeLogWithoutCommitting(testDir, version: changeLog);
   await commitChangeLog(testDir);
 
   if (gitHead != null) {

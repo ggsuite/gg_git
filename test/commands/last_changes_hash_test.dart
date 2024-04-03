@@ -43,7 +43,7 @@ void main() {
         expect(hash0, isNot(0));
 
         // Add some modifications
-        await initUncommittedFile(
+        await addFileWithoutCommitting(
           d,
           fileName: 'file1.txt',
           content: 'content1',
@@ -77,7 +77,7 @@ void main() {
         expect(hash2, hash1);
 
         // Modify 'file1.txt' again
-        await initUncommittedFile(
+        await addFileWithoutCommitting(
           d,
           fileName: 'file1.txt',
           content: 'content2',
@@ -92,7 +92,7 @@ void main() {
         expect(hash3, isNot(hash2));
 
         // Revert the last change
-        await initUncommittedFile(
+        await addFileWithoutCommitting(
           d,
           fileName: 'file1.txt',
           content: 'content1',
