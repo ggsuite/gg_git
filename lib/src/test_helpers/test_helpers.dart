@@ -356,6 +356,17 @@ Future<File> addPubspecFileWithoutCommitting(
 Future<void> commitPubspecFile(Directory testDir) =>
     commitFile(testDir, 'pubspec.yaml');
 
+// .............................................................................
+/// Adds and commits a pubspec file
+Future<File> addAndCommitPubspecFile(
+  Directory testDir, {
+  String? version = '1.0.0',
+}) async {
+  final file = await addPubspecFileWithoutCommitting(testDir, version: version);
+  await commitPubspecFile(testDir);
+  return file;
+}
+
 // ## CHANGELOG.md
 
 // .............................................................................

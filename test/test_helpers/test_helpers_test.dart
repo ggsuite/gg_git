@@ -10,6 +10,17 @@ import 'package:gg_git/src/test_helpers/test_helpers.dart';
 import 'package:test/test.dart';
 
 void main() {
+  late Directory d;
+
+  setUp(() async {
+    d = await Directory.systemTemp.createTemp('test');
+    await initGit(d);
+  });
+
+  tearDown(() async {
+    await d.delete(recursive: true);
+  });
+
   group('TestHelpers', () {
     test('should work fine', () async {
       // const TestHelpers();
@@ -84,6 +95,16 @@ void main() {
         final (dLocal, _) = await initLocalAndRemoteGit();
         await addAndCommitSampleFile(dLocal);
         await pushLocalChanges(dLocal);
+      });
+    });
+
+    group('addAndCommitPubspecFile(dir, version)', () {
+      test('should add and commit a pubspec file', () async {
+        await addAndCommitPubspecFile(d);
+        final pubspecFile = File('${d.path}/pubspec.yaml');
+        expect(await pubspecFile.exists(), isTrue);
+        final content = pubspecFile.readAsStringSync();
+        expect(content.contains('version: 1.0.0'), isTrue);
       });
     });
   });

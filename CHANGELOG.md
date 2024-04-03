@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.3.0
+
+- Add `addAndCommitPubspecFile`
+
 ## 2.2.0
 
 - Add `pushLocalChanges`
