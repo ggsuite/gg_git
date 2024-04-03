@@ -264,6 +264,18 @@ Future<void> revertLocalChanges(Directory directory) async {
   _throw('Could not restore all changes', result);
 }
 
+// .............................................................................
+/// Reverts all local changes in the directory
+Future<void> hardReset(Directory directory) async {
+  final result = await Process.run(
+    'git',
+    ['reset', '--hard', 'origin/main'],
+    workingDirectory: directory.path,
+  );
+
+  _throw('Could not run "git reset --hard origin main"', result);
+}
+
 // ## sample.txt
 
 /// The name of the sample file

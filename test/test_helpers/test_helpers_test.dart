@@ -55,6 +55,30 @@ void main() {
       });
     });
 
+    group('resetHard(directory)', () {
+      test('should reset local branch to match remote branch', () async {
+        final (dLocal, _) = await initLocalAndRemoteGit();
+
+        // Create an initial commit
+        await addAndCommitSampleFile(dLocal);
+        final contentBefore =
+            File('${dLocal.path}/$sampleFileName').readAsStringSync();
+        await pushLocalChanges(dLocal);
+
+        // Make and commit a change, but do not push
+        await updateAndCommitSampleFile(dLocal);
+        final contentAfter =
+            File('${dLocal.path}/$sampleFileName').readAsStringSync();
+        expect(contentBefore, isNot(contentAfter));
+
+        // Make a hard reset
+        await hardReset(dLocal);
+        final contentReverted =
+            File('${dLocal.path}/$sampleFileName').readAsStringSync();
+        expect(contentBefore, contentReverted);
+      });
+    });
+
     group('initLocalAndRemoteGit()', () {
       test('should create and connect a local and remote git repo', () async {
         final (dLocal, _) = await initLocalAndRemoteGit();
