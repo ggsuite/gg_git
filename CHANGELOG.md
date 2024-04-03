@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.0.1
+
+- Add `revertLocalChanges` test helper
+
 ## 2.0.0
 
 - Breaking changes: Renamed various test helpers

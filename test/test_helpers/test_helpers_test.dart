@@ -30,4 +30,29 @@ void main() {
       testDir.deleteSync(recursive: true);
     });
   });
+
+  group('revertAll(directory)', () {
+    test('should revert all local changes', () async {
+      // Create a git repo
+      final testDir = Directory.systemTemp.createTempSync('test');
+      await initGit(testDir);
+
+      // Create an initial commit
+      await addAndCommitSampleFile(testDir);
+      final contentBefore =
+          File('${testDir.path}/$sampleFileName').readAsStringSync();
+
+      // Make a change
+      await updateSampleFileWithoutCommitting(testDir);
+      final contentAfter =
+          File('${testDir.path}/$sampleFileName').readAsStringSync();
+      expect(contentBefore, isNot(contentAfter));
+
+      // Revert all changes
+      await revertLocalChanges(testDir);
+      final contentReverted =
+          File('${testDir.path}/$sampleFileName').readAsStringSync();
+      expect(contentBefore, contentReverted);
+    });
+  });
 }

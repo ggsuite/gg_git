@@ -233,6 +233,18 @@ Future<List<String>> modifiedFiles(Directory directory) {
   ).get(directory: directory, ggLog: print);
 }
 
+// .............................................................................
+/// Reverts all local changes in the directory
+Future<void> revertLocalChanges(Directory directory) async {
+  final result = await Process.run(
+    'git',
+    ['restore', '.'],
+    workingDirectory: directory.path,
+  );
+
+  _throw('Could not restore all changes', result);
+}
+
 // ## sample.txt
 
 /// The name of the sample file
