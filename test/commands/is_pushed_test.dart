@@ -24,10 +24,6 @@ void main() {
   late File file;
 
   // ...........................................................................
-  Future<void> addRemoteToLocal() =>
-      h.addRemoteToLocal(local: dLocal, remote: dRemote);
-
-  // ...........................................................................
   void createFile() {
     file = File('${dLocal.path}/file.txt');
     file.writeAsStringSync('uncommitted');
@@ -280,7 +276,7 @@ void main() {
 
           // Add a remote
           await initRemoteGit(dRemote);
-          await addRemoteToLocal();
+          await h.addRemoteToLocal(local: dLocal, remote: dRemote);
 
           // Push state
           await runner.run(['is-pushed', '--input', dLocal.path]);
@@ -321,7 +317,7 @@ void main() {
           await initRemoteGit(dRemote);
           initCommand();
           await addAndCommitSampleFile(dLocal, fileName: 'test.txt');
-          await addRemoteToLocal();
+          await addRemoteToLocal(local: dLocal, remote: dRemote);
 
           // Make a change without pushing
           await updateAndCommitSampleFile(dLocal, fileName: 'test.txt');
@@ -346,7 +342,7 @@ void main() {
             await initRemoteGit(dRemote);
             initCommand();
             await addAndCommitSampleFile(dLocal, fileName: 'test.txt');
-            await addRemoteToLocal();
+            await addRemoteToLocal(local: dLocal, remote: dRemote);
 
             // Push the change
             pushFile();
@@ -381,7 +377,7 @@ void main() {
 
         // Add a remote
         await initRemoteGit(dRemote);
-        await addRemoteToLocal();
+        await addRemoteToLocal(local: dLocal, remote: dRemote);
 
         // Push state
         pushFile();

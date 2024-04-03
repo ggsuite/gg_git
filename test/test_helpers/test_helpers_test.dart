@@ -29,30 +29,38 @@ void main() {
       expect(await gitIgnoreFile.exists(), isTrue);
       testDir.deleteSync(recursive: true);
     });
-  });
 
-  group('revertAll(directory)', () {
-    test('should revert all local changes', () async {
-      // Create a git repo
-      final testDir = Directory.systemTemp.createTempSync('test');
-      await initGit(testDir);
+    group('revertLocalChanges(directory)', () {
+      test('should revert all local changes', () async {
+        // Create a git repo
+        final testDir = Directory.systemTemp.createTempSync('test');
+        await initGit(testDir);
 
-      // Create an initial commit
-      await addAndCommitSampleFile(testDir);
-      final contentBefore =
-          File('${testDir.path}/$sampleFileName').readAsStringSync();
+        // Create an initial commit
+        await addAndCommitSampleFile(testDir);
+        final contentBefore =
+            File('${testDir.path}/$sampleFileName').readAsStringSync();
 
-      // Make a change
-      await updateSampleFileWithoutCommitting(testDir);
-      final contentAfter =
-          File('${testDir.path}/$sampleFileName').readAsStringSync();
-      expect(contentBefore, isNot(contentAfter));
+        // Make a change
+        await updateSampleFileWithoutCommitting(testDir);
+        final contentAfter =
+            File('${testDir.path}/$sampleFileName').readAsStringSync();
+        expect(contentBefore, isNot(contentAfter));
 
-      // Revert all changes
-      await revertLocalChanges(testDir);
-      final contentReverted =
-          File('${testDir.path}/$sampleFileName').readAsStringSync();
-      expect(contentBefore, contentReverted);
+        // Revert all changes
+        await revertLocalChanges(testDir);
+        final contentReverted =
+            File('${testDir.path}/$sampleFileName').readAsStringSync();
+        expect(contentBefore, contentReverted);
+      });
+    });
+
+    group('initLocalAndRemoteGit()', () {
+      test('should create and connect a local and remote git repo', () async {
+        final (dLocal, _) = await initLocalAndRemoteGit();
+        await addAndCommitSampleFile(dLocal);
+        await pushLocalChanges(dLocal);
+      });
     });
   });
 }

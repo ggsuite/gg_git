@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.1.0
+
+- Add `initLocalAndRemoteGit`
+
 ## 2.0.1
 
 - Add `revertLocalChanges` test helper

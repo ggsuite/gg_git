@@ -107,6 +107,13 @@ Future<void> addRemoteToLocal({
 
   _throw('Could not add remote to local git repository', result2);
 
+  // Add a initial commit, otherwise no pushing is possible
+  await addAndCommitSampleFile(
+    local,
+    fileName: 'init',
+    content: 'Initial commit',
+  );
+
   final result3 = await Process.run(
     'git',
     [
@@ -119,6 +126,18 @@ Future<void> addRemoteToLocal({
   );
 
   _throw('Could not set up-stream', result3);
+}
+
+// .............................................................................
+/// Creates a local and a remote git repository and connects them
+Future<(Directory local, Directory remote)> initLocalAndRemoteGit() async {
+  final local = await initTestDir();
+  await initLocalGit(local);
+
+  final remote = await initTestDir();
+  await initRemoteGit(remote);
+  await addRemoteToLocal(local: local, remote: remote);
+  return (local, remote);
 }
 
 // .............................................................................
@@ -368,4 +387,25 @@ Future<void> addAndCommitVersions(
   if (gitHead != null) {
     await addTag(testDir, gitHead);
   }
+}
+
+// .............................................................................
+/// Adds and pushes local changes
+Future<void> pushLocalChanges(Directory d) async {
+  // Add local changes
+  final result0 = await Process.run(
+    'git',
+    ['add', '.'],
+    workingDirectory: d.path,
+  );
+
+  _throw('Could not add local changes', result0);
+
+  final result1 = await Process.run(
+    'git',
+    ['push'],
+    workingDirectory: d.path,
+  );
+
+  _throw('Could not push local changes', result1);
 }
