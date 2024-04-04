@@ -15,6 +15,7 @@ import 'package:test/test.dart';
 
 void main() {
   late Directory d;
+  late Directory dRemote;
   late Commit commit;
   late CommitCount commitCount;
   final messages = <String>[];
@@ -22,14 +23,14 @@ void main() {
 
   setUp(() async {
     messages.clear();
-    d = await initTestDir();
+    (d, dRemote) = await initLocalAndRemoteGit();
     commit = Commit(ggLog: messages.add);
     commitCount = CommitCount(ggLog: messages.add);
-    await initGit(d);
   });
 
-  tearDown(() {
-    d.deleteSync(recursive: true);
+  tearDown(() async {
+    await d.delete(recursive: true);
+    await dRemote.delete(recursive: true);
   });
 
   group('Commit', () {
@@ -173,10 +174,38 @@ void main() {
             'Exception: Could not commit files: My commit error.',
           );
         });
+
+        test('if ammand and ammendWhenNotPushed is true at the same time',
+            () async {
+          // Let's modify a file
+          await addFileWithoutCommitting(d, fileName: 'file1.txt');
+
+          // Commit the file
+          late String exception;
+
+          try {
+            await commit.commit(
+              directory: d,
+              message: commitMessage,
+              doStage: true,
+              ammend: true,
+              ammendWhenNotPushed: true,
+              ggLog: messages.add,
+            );
+          } catch (e) {
+            exception = e.toString();
+          }
+
+          expect(
+            exception,
+            'Exception: You cannot use --ammend and --ammend-when-not-pushed '
+            'at the same time.',
+          );
+        });
       });
 
       group('should commit files', () {
-        test('and doStage = true', () async {
+        test('with doStage = true', () async {
           // Let's modify a file
           await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
@@ -221,8 +250,6 @@ void main() {
 
       group('should ammend files', () {
         test('when ammend = true', () async {
-          //
-
           // Let's modify a file
           await addAndCommitSampleFile(d, fileName: 'file1.txt');
 
@@ -271,6 +298,64 @@ void main() {
 
           expect(count2, count1);
         });
+
+        test(
+          'when ammendWhenNotPushed is true and state is not yet pushed',
+          () async {
+            // Let's modify a file
+            await addAndCommitSampleFile(d, fileName: 'file1.txt');
+
+            // Count the number of commits
+            final count0 = await commitCount.get(
+              ggLog: messages.add,
+              directory: d,
+            );
+
+            // Modify the file again
+            File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
+
+            // Commit the file again with ammendWhenNotPushed = true
+            await commit.commit(
+              directory: d,
+              message: commitMessage,
+              doStage: true,
+              ammendWhenNotPushed: true,
+              ggLog: messages.add,
+            );
+
+            // Commit count should not have increased
+            // because we did not push yet.
+            final count1 = await commitCount.get(
+              ggLog: messages.add,
+              directory: d,
+            );
+            expect(count1, count0);
+
+            // Push the current state
+            await pushLocalChanges(d);
+
+            // Make another change
+            File('${d.path}/file1.txt').writeAsStringSync('Change 3!');
+
+            // Commit the file again with ammend = true
+            await commit.commit(
+              directory: d,
+              message: commitMessage,
+              doStage: true,
+              ammendWhenNotPushed: true,
+              ggLog: messages.add,
+            );
+
+            // Commit count should have increased
+            // because we did push the previous release
+            final count2 = await commitCount.get(
+              ggLog: messages.add,
+              directory: d,
+            );
+
+            expect(count2, count1 + 1);
+          },
+        );
       });
     });
 
@@ -306,7 +391,7 @@ void main() {
             ggLog: messages.add,
             directory: d,
           );
-          expect(count0, 1);
+          expect(count0, 2);
 
           // Let's modify a file
           await addFileWithoutCommitting(d, fileName: 'file1.txt');

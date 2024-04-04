@@ -20,7 +20,9 @@ class Commit extends GgGitBase<void> {
     super.name = 'commit',
     super.description = 'Commits everything in a given directory.',
     ModifiedFiles? modifiedFiles,
-  }) : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog) {
+    IsPushed? isPushed,
+  })  : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog),
+        _isPushed = isPushed ?? IsPushed(ggLog: ggLog) {
     _addArgs();
   }
 
@@ -33,6 +35,7 @@ class Commit extends GgGitBase<void> {
     final stage = argResults!['stage'] as bool;
     final message = argResults!['message'] as String;
     final ammend = argResults!['ammend'] as bool;
+    final ammendWhenNotPushed = argResults!['ammend-when-not-pushed'] as bool;
 
     await commit(
       directory: directory,
@@ -40,6 +43,7 @@ class Commit extends GgGitBase<void> {
       doStage: stage,
       ggLog: ggLog,
       ammend: ammend,
+      ammendWhenNotPushed: ammendWhenNotPushed,
     );
   }
 
@@ -51,6 +55,7 @@ class Commit extends GgGitBase<void> {
     required bool doStage,
     required String message,
     bool ammend = false,
+    bool ammendWhenNotPushed = false,
   }) async {
     await check(directory: directory);
 
@@ -59,6 +64,7 @@ class Commit extends GgGitBase<void> {
       message: message,
       doStage: doStage,
       ammend: ammend,
+      ammendWhenNotPushed: ammendWhenNotPushed,
     );
   }
 
@@ -67,6 +73,7 @@ class Commit extends GgGitBase<void> {
   // ######################
 
   final ModifiedFiles _modifiedFiles;
+  final IsPushed _isPushed;
 
   // ...........................................................................
   Future<void> _checkModifiedFiles(Directory directory, GgLog ggLog) async {
@@ -82,12 +89,24 @@ class Commit extends GgGitBase<void> {
     required String message,
     required bool doStage,
     required bool ammend,
+    required bool ammendWhenNotPushed,
   }) async {
     await _checkModifiedFiles(directory, ggLog);
+
+    if (ammendWhenNotPushed && ammend) {
+      throw Exception(
+        'You cannot use --ammend and --ammend-when-not-pushed '
+        'at the same time.',
+      );
+    }
 
     if (doStage) {
       await _stage(directory);
     }
+
+    ammend = ammend ||
+        ammendWhenNotPushed &&
+            !await _isPushed.get(directory: directory, ggLog: ggLog);
 
     final result = await processWrapper.run(
       'git',
@@ -141,6 +160,12 @@ class Commit extends GgGitBase<void> {
         'ammend',
         abbr: 'a',
         help: 'Ammend the commit to the previous one.',
+        defaultsTo: false,
+      )
+      ..addFlag(
+        'ammend-when-not-pushed',
+        abbr: 'w',
+        help: 'Ammend the commit when the last commit is not yet pushed.',
         defaultsTo: false,
       );
   }
