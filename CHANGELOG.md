@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.4.1
+
+- Fix: `LastChangesHash` was broken when files were deleted
+
 ## 2.4.0
 
 - Add `deleteFileAndCommit`

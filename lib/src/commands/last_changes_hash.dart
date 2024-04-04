@@ -50,6 +50,7 @@ class LastChangesHash extends GgGitBase<void> {
       directory: directory,
       force: true,
       ignoreFiles: ignoreFiles,
+      returnDeleted: true,
     ))
         .where((element) => !ignoreFiles.contains(element))
         .toList()
@@ -57,7 +58,7 @@ class LastChangesHash extends GgGitBase<void> {
 
     // Get the content of the modified files
     final modifiedFileFutures = modifiedFiles.map(
-      (file) => File(join(directory.path, file)).readAsString(),
+      (file) => _readFile(directory, file),
     );
 
     final modifiedFileContents = await Future.wait(modifiedFileFutures);
@@ -72,6 +73,14 @@ class LastChangesHash extends GgGitBase<void> {
   }
 
   final ModifiedFiles _modifiedFiles;
+}
+
+// .............................................................................
+Future<String> _readFile(Directory directory, String fileName) async {
+  final file = File(join(directory.path, fileName));
+  return await file.exists()
+      ? await file.readAsString()
+      : '$fileName was deleted';
 }
 
 /// Mocktail mock

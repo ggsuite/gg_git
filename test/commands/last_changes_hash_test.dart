@@ -103,8 +103,19 @@ void main() {
           ggLog: messages.add,
           directory: d,
         );
-
         expect(hash4, hash2);
+
+        // Delete the file
+        await deleteFileAndCommit(d, 'file1.txt');
+
+        // Calculate the hash
+        final hash5 = await lastChangesHahs.get(
+          ggLog: messages.add,
+          directory: d,
+        );
+
+        // The hash should be different
+        expect(hash5, isNot(hash4));
       });
     });
 
