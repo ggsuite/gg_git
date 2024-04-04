@@ -217,12 +217,16 @@ Future<void> commitFile(
   Directory testDir,
   String fileName, {
   String message = 'Commit Message',
+  bool stage = true,
+  bool ammend = false,
 }) async {
-  await stageFile(testDir, fileName);
+  if (stage) {
+    await stageFile(testDir, fileName);
+  }
 
   final result2 = await Process.run(
     'git',
-    ['commit', '-m', message],
+    ['commit', '-m', message, if (ammend) '--amend'],
     workingDirectory: testDir.path,
   );
 
@@ -308,7 +312,7 @@ Future<File> updateSampleFileWithoutCommitting(
   final file = File('${testDir.path}/$fileName');
   final content = await file.exists() ? await file.readAsString() : '';
   final newContent = '${content}updated';
-  await File('${testDir.path}/$sampleFileName').writeAsString(newContent);
+  await File('${testDir.path}/$fileName').writeAsString(newContent);
   return file;
 }
 
@@ -318,12 +322,13 @@ Future<File> updateAndCommitSampleFile(
   Directory testDir, {
   String message = 'Commit Message',
   String fileName = sampleFileName,
+  bool ammend = false,
 }) async {
   final file = await updateSampleFileWithoutCommitting(
     testDir,
     fileName: fileName,
   );
-  await commitFile(testDir, sampleFileName, message: message);
+  await commitFile(testDir, fileName, message: message, ammend: ammend);
   return file;
 }
 
@@ -365,6 +370,28 @@ Future<File> addAndCommitPubspecFile(
   final file = await addPubspecFileWithoutCommitting(testDir, version: version);
   await commitPubspecFile(testDir);
   return file;
+}
+
+// .............................................................................
+/// Deletes and commits a file
+Future<void> deleteFileAndCommit(Directory testDir, String fileName) async {
+  // Delete the file
+  final file = File('${testDir.path}/$fileName');
+  if (await file.exists()) {
+    await file.delete();
+  }
+
+  // Stage deletion
+  final result0 = await Process.run(
+    'git',
+    ['rm', fileName],
+    workingDirectory: testDir.path,
+  );
+
+  _throw('Could execute »git rm $fileName«', result0);
+
+  // Commit deletion
+  await commitFile(testDir, fileName, stage: false);
 }
 
 // ## CHANGELOG.md

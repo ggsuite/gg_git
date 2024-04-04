@@ -201,6 +201,41 @@ void main() {
             );
             expect(result, ['file1.txt']);
           });
+
+          for (final returnDeleted in [true, false]) {
+            group('and deletedFiles', () {
+              test('with ignoreDeleted = $returnDeleted', () async {
+                // Commit two files
+                await addAndCommitSampleFile(d, fileName: 'file1.txt');
+                await addAndCommitSampleFile(d, fileName: 'file2.txt');
+
+                // Delete one of the files and commit
+                await deleteFileAndCommit(d, 'file1.txt');
+
+                // Modify the other file and ammend
+                await updateAndCommitSampleFile(
+                  d,
+                  fileName: 'file2.txt',
+                  ammend: true,
+                );
+
+                // Get the modified files with ignoreDeleted = true|false
+                final files = await modifiedFiles.get(
+                  directory: d,
+                  ggLog: messages.add,
+                  force: true,
+                  returnDeleted: returnDeleted,
+                );
+
+                // Check, if the right files were returned
+                if (returnDeleted) {
+                  expect(files, ['file1.txt', 'file2.txt']);
+                } else {
+                  expect(files, ['file2.txt']);
+                }
+              });
+            });
+          }
         });
       });
 

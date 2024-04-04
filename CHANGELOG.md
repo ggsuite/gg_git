@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.4.0
+
+- Add `deleteFileAndCommit`
+- `ModifiedFiles:` Allow to ignore files that were deleted
+- Fix some small errors
+
 ## 2.3.0
 
 - Add `addAndCommitPubspecFile`

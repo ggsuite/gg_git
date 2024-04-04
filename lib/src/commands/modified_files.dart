@@ -45,6 +45,7 @@ class ModifiedFiles extends GgGitBase<void> {
   Future<List<String>> get({
     required GgLog ggLog,
     required Directory directory,
+    bool returnDeleted = false,
     bool force = false,
     List<String> ignoreFiles = const [],
   }) async {
@@ -71,6 +72,7 @@ class ModifiedFiles extends GgGitBase<void> {
     return await _getFilesModifiedInLastCommit(
       ggLog: ggLog,
       directory: directory,
+      returnDeleted: returnDeleted,
       ignoreFiles: ignoreFiles,
     );
   }
@@ -99,6 +101,7 @@ class ModifiedFiles extends GgGitBase<void> {
     required GgLog ggLog,
     required Directory directory,
     required List<String> ignoreFiles,
+    required bool returnDeleted,
   }) async {
     var offset = 0;
     var result = <String>[];
@@ -114,7 +117,28 @@ class ModifiedFiles extends GgGitBase<void> {
       offset++;
     }
 
+    if (!returnDeleted) {
+      result = await _removeNonExistingFiles(directory, result);
+    }
+
     return result;
+  }
+
+  // ...........................................................................
+  Future<List<String>> _removeNonExistingFiles(
+    Directory directory,
+    List<String> files,
+  ) async {
+    // Filter the list based on the existence of files
+    List<String> existingFiles = [];
+    for (int i = 0; i < files.length; i++) {
+      final filePath = '${directory.path}/${files[i]}';
+      if (await File(filePath).exists()) {
+        existingFiles.add(files[i]);
+      }
+    }
+
+    return existingFiles;
   }
 
   // ...........................................................................
