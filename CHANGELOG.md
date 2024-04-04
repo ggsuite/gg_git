@@ -2,8 +2,6 @@
 
 ## 2.5.1
 
-## 2.5.0
-
 - Add option `--ammend-when-not-pushed` to `Commit`
 
 ## 2.4.1

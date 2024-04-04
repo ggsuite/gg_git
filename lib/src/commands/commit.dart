@@ -106,7 +106,11 @@ class Commit extends GgGitBase<void> {
 
     ammend = ammend ||
         ammendWhenNotPushed &&
-            !await _isPushed.get(directory: directory, ggLog: ggLog);
+            !await _isPushed.get(
+              directory: directory,
+              ggLog: ggLog,
+              ignoreUnCommittedChanges: true,
+            );
 
     final result = await processWrapper.run(
       'git',

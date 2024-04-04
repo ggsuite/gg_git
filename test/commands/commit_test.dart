@@ -337,7 +337,7 @@ void main() {
             // Make another change
             File('${d.path}/file1.txt').writeAsStringSync('Change 3!');
 
-            // Commit the file again with ammend = true
+            // Commit the file again with ammendWhenNotPushed = true
             await commit.commit(
               directory: d,
               message: commitMessage,
