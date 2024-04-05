@@ -1,10 +1,11 @@
-# Change Log
+# Changelog
 
 ## [Unreleased]
 
 ### Changed
 
 - Kidney: Auto check all repos
+- Rework changelog
 
 ## [2.5.4] - 2024-04-05
 
