@@ -21,8 +21,10 @@ class Commit extends GgGitBase<void> {
     super.description = 'Commits everything in a given directory.',
     ModifiedFiles? modifiedFiles,
     IsPushed? isPushed,
+    HeadMessage? headMessage,
   })  : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog),
-        _isPushed = isPushed ?? IsPushed(ggLog: ggLog) {
+        _isPushed = isPushed ?? IsPushed(ggLog: ggLog),
+        _headMessage = headMessage ?? HeadMessage(ggLog: ggLog) {
     _addArgs();
   }
 
@@ -74,6 +76,7 @@ class Commit extends GgGitBase<void> {
 
   final ModifiedFiles _modifiedFiles;
   final IsPushed _isPushed;
+  final HeadMessage _headMessage;
 
   // ...........................................................................
   Future<void> _checkModifiedFiles(Directory directory, GgLog ggLog) async {
@@ -108,9 +111,18 @@ class Commit extends GgGitBase<void> {
         ammendWhenNotPushed &&
             !await _isPushed.get(
               directory: directory,
-              ggLog: ggLog,
+              ggLog: (_) {}, // ignore-line
               ignoreUnCommittedChanges: true,
             );
+
+    // If ammendWhenNotPushed, don't overwrite last message
+    if ((ammend && ammendWhenNotPushed)) {
+      message = await _headMessage.get(
+        ggLog: ggLog,
+        directory: directory,
+        throwIfNotEverythingIsCommitted: false,
+      );
+    }
 
     final result = await processWrapper.run(
       'git',

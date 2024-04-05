@@ -18,6 +18,7 @@ void main() {
   late Directory dRemote;
   late Commit commit;
   late CommitCount commitCount;
+  late HeadMessage headMessage;
   final messages = <String>[];
   const commitMessage = 'My commit message';
 
@@ -26,6 +27,7 @@ void main() {
     (d, dRemote) = await initLocalAndRemoteGit();
     commit = Commit(ggLog: messages.add);
     commitCount = CommitCount(ggLog: messages.add);
+    headMessage = HeadMessage(ggLog: messages.add);
   });
 
   tearDown(() async {
@@ -299,63 +301,85 @@ void main() {
           expect(count2, count1);
         });
 
-        test(
-          'when ammendWhenNotPushed is true and state is not yet pushed',
-          () async {
-            // Let's modify a file
-            await addAndCommitSampleFile(d, fileName: 'file1.txt');
+        group('when ammendWhenNotPushed is true and state is not yet pushed',
+            () {
+          test(
+            'and it should not overwrite the last commit message',
+            () async {
+              // Let's modify a file
+              await addAndCommitSampleFile(
+                d,
+                fileName: 'file1.txt',
+                message: 'Commit message 0',
+              );
 
-            // Count the number of commits
-            final count0 = await commitCount.get(
-              ggLog: messages.add,
-              directory: d,
-            );
+              // Count the number of commits
+              final count0 = await commitCount.get(
+                ggLog: messages.add,
+                directory: d,
+              );
 
-            // Modify the file again
-            File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
+              // Modify the file again
+              File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
 
-            // Commit the file again with ammendWhenNotPushed = true
-            await commit.commit(
-              directory: d,
-              message: commitMessage,
-              doStage: true,
-              ammendWhenNotPushed: true,
-              ggLog: messages.add,
-            );
+              // Commit the file again with ammendWhenNotPushed = true
+              await commit.commit(
+                directory: d,
+                message: 'Commit message 1',
+                doStage: true,
+                ammendWhenNotPushed: true,
+                ggLog: messages.add,
+              );
 
-            // Commit count should not have increased
-            // because we did not push yet.
-            final count1 = await commitCount.get(
-              ggLog: messages.add,
-              directory: d,
-            );
-            expect(count1, count0);
+              // Commit count should not have increased
+              // because we did not push yet.
+              final count1 = await commitCount.get(
+                ggLog: messages.add,
+                directory: d,
+              );
+              expect(count1, count0);
 
-            // Push the current state
-            await pushLocalChanges(d);
+              // Commit message should be the previous one.
+              // because the commit was ammended
+              final commitMessage1 = await headMessage.get(
+                ggLog: messages.add,
+                directory: d,
+              );
+              expect(commitMessage1, 'Commit message 0');
 
-            // Make another change
-            File('${d.path}/file1.txt').writeAsStringSync('Change 3!');
+              // Push the current state
+              await pushLocalChanges(d);
 
-            // Commit the file again with ammendWhenNotPushed = true
-            await commit.commit(
-              directory: d,
-              message: commitMessage,
-              doStage: true,
-              ammendWhenNotPushed: true,
-              ggLog: messages.add,
-            );
+              // Make another change
+              File('${d.path}/file1.txt').writeAsStringSync('Change 3!');
 
-            // Commit count should have increased
-            // because we did push the previous release
-            final count2 = await commitCount.get(
-              ggLog: messages.add,
-              directory: d,
-            );
+              // Commit the file again with ammendWhenNotPushed = true
+              await commit.commit(
+                directory: d,
+                message: 'Commit message 2',
+                doStage: true,
+                ammendWhenNotPushed: true,
+                ggLog: messages.add,
+              );
 
-            expect(count2, count1 + 1);
-          },
-        );
+              // Commit count should have increased
+              // because we did push the previous release
+              final count2 = await commitCount.get(
+                ggLog: messages.add,
+                directory: d,
+              );
+              expect(count2, count1 + 1);
+
+              // Commit message should be the new one,
+              // because we did add an additional commit
+              final commitMessage2 = await headMessage.get(
+                ggLog: messages.add,
+                directory: d,
+              );
+              expect(commitMessage2, 'Commit message 2');
+            },
+          );
+        });
       });
     });
 
