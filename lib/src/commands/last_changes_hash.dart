@@ -6,7 +6,6 @@
 
 import 'dart:io';
 
-import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
@@ -65,16 +64,9 @@ class LastChangesHash extends GgGitBase<void> {
     final modifiedFileContents = await Future.wait(modifiedFileFutures);
 
     // Calculate the hash
-    var index = 0;
     final hash = modifiedFileContents.fold<int>(
       3849023480203,
-      (int previousValue, element) {
-        print(blue(modifiedFiles[index]));
-        print(yellow('${element.hashCode}'));
-        print(darkGray(element));
-        index++;
-        return previousValue ^ element.hashCode;
-      },
+      (int previousValue, element) => previousValue ^ element.hashCode,
     );
 
     return hash;
