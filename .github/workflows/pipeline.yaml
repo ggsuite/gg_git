@@ -78,11 +78,11 @@ jobs:
       # - name: Activate gg
       #  run: dart pub global activate gg
 
-      # - name: gg did push
-      #   run: dart run gg did push
+      # - name: Run tests
+      #   run: dart test
 
-      - name: Run tests
-        run: dart test
+      - name: gg did push
+        run: dart run gg did push
 
       # - name: Run Script
       #   run: dart run gg can commit

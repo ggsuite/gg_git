@@ -1,5 +1,11 @@
 # Change Log
 
+## [Unreleased]
+
+### Added
+
+- Add output to fix github hash error
+
 ## [2.5.2] - 2024-04-05
 
 ### Fixed
@@ -23,4 +29,5 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[Unreleased]: https://github.com/inlavigo/gg_git/compare/2.5.2...HEAD
 [2.5.2]: https://github.com/inlavigo/gg_git.git/compare/2.5.1...2.5.2
