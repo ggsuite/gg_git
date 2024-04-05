@@ -1,12 +1,20 @@
 name: Dart Script Execution
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Setup git user
+        run: |
+          git config --global user.email "githubaction@inlavigo.com"
+          git config --global user.name "Github Action"
+
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -25,39 +33,39 @@ jobs:
             echo "is_flutter=false" >> "$GITHUB_ENV"
           fi
 
-      - name: Cache Flutter Dependencies
-        if: env.is_flutter == 'true'
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            **/pubspec.lock
-          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-flutter-
-
-      - name: Cache Dart Dependencies
-        if: env.is_flutter == 'false'
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            **/pubspec.lock
-          key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-dart-
+      # - name: Cache Flutter Dependencies
+      #   if: env.is_flutter == 'true'
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.pub-cache
+      #       **/pubspec.lock
+      #     key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-flutter-
+      #
+      # - name: Cache Dart Dependencies
+      #   if: env.is_flutter == 'false'
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.pub-cache
+      #       **/pubspec.lock
+      #     key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.yaml') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-dart-
 
       - name: Set up Flutter
         if: env.is_flutter == 'true'
         uses: subosito/flutter-action@v2
         with:
-          channel: "master"
+          channel: "stable"
 
       - name: Set up Dart SDK
         if: env.is_flutter == 'false'
-        uses: dart-lang/setup-dart@v1
+        uses: dart-lang/setup-dart@v1.6.2
         with:
-          sdk: "dev"
+          sdk: "stable"
 
       - name: Install dependencies
         run: |
@@ -67,8 +75,14 @@ jobs:
             dart pub get
           fi
 
-      - name: Make Script Executable
-        run: chmod +x ./check
+      # - name: Activate gg
+      #  run: dart pub global activate gg
 
-      - name: Run Script
-        run: ./check --verbose
+      # - name: gg did push
+      #   run: dart run gg did push
+
+      - name: Run tests
+        run: dart test
+
+      # - name: Run Script
+      #   run: dart run gg can commit
