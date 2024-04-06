@@ -7,6 +7,7 @@
 - Kidney: Auto check all repos
 - Rework changelog
 - 'Github Actions Pipeline'
+- 'Github Actions Pipeline: Add SDK file containing flutter into .github/workflows to make github installing flutter and not dart SDK'
 
 ## [2.5.4] - 2024-04-05
 
