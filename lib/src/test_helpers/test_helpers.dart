@@ -339,6 +339,7 @@ Future<File> updateAndCommitSampleFile(
 Future<File> addPubspecFileWithoutCommitting(
   Directory testDir, {
   required String? version,
+  String? additionalContent,
 }) async {
   final file = File('${testDir.path}/pubspec.yaml');
 
@@ -350,6 +351,10 @@ Future<File> addPubspecFileWithoutCommitting(
     content = content.replaceAll(RegExp(r'version: .*'), '');
   } else {
     content = content.replaceAll(RegExp(r'version: .*'), 'version: $version');
+  }
+
+  if (additionalContent != null) {
+    content += additionalContent;
   }
 
   await file.writeAsString(content);
@@ -428,8 +433,14 @@ Future<void> addAndCommitVersions(
   required String? pubspec,
   required String? changeLog,
   required String? gitHead,
+  String? appendToPubspec,
 }) async {
-  await addPubspecFileWithoutCommitting(testDir, version: pubspec);
+  await addPubspecFileWithoutCommitting(
+    testDir,
+    version: pubspec,
+    additionalContent: appendToPubspec,
+  );
+
   await commitPubspecFile(testDir);
   await addChangeLogWithoutCommitting(testDir, version: changeLog);
   await commitChangeLog(testDir);
