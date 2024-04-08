@@ -107,5 +107,26 @@ void main() {
         expect(content.contains('version: 1.0.0'), isTrue);
       });
     });
+
+    group('addAndCommitVersions', () {
+      test(
+        'should create a pubspec.yaml and a CHANGELOG.md file '
+        'containing the version',
+        () async {
+          await addAndCommitVersions(
+            d,
+            pubspec: '1.0.0',
+            changeLog: '1.0.0',
+            gitHead: null,
+            appendToPubspec: 'publish_to: none',
+          );
+
+          expect(
+            await File('${d.path}/pubspec.yaml').readAsString(),
+            contains('name: test\nversion: 1.0.0\npublish_to: none'),
+          );
+        },
+      );
+    });
   });
 }
