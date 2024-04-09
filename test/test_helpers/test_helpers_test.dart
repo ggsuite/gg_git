@@ -113,6 +113,7 @@ void main() {
         'should create a pubspec.yaml and a CHANGELOG.md file '
         'containing the version',
         () async {
+          // Add additioanl content the first time
           await addAndCommitVersions(
             d,
             pubspec: '1.0.0',
@@ -121,10 +122,26 @@ void main() {
             appendToPubspec: 'publish_to: none',
           );
 
-          expect(
-            await File('${d.path}/pubspec.yaml').readAsString(),
-            contains('name: test\nversion: 1.0.0\npublish_to: none'),
+          var content = await File('${d.path}/pubspec.yaml').readAsString();
+          int occurrences =
+              RegExp('publish_to: none').allMatches(content).length;
+
+          expect(occurrences, 1);
+
+          // Add additioanl content the the second time
+          await addAndCommitVersions(
+            d,
+            pubspec: '1.0.0',
+            changeLog: '1.0.0',
+            gitHead: null,
+            appendToPubspec: 'publish_to: none',
           );
+
+          // Should not be added a second time
+          content = await File('${d.path}/pubspec.yaml').readAsString();
+          occurrences = RegExp('publish_to: none').allMatches(content).length;
+
+          expect(occurrences, 1);
         },
       );
     });

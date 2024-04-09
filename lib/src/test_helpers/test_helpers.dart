@@ -220,6 +220,11 @@ Future<void> commitFile(
   bool stage = true,
   bool ammend = false,
 }) async {
+  final nothingHasChanged = (await modifiedFiles(testDir)).isEmpty;
+  if (nothingHasChanged) {
+    return;
+  }
+
   if (stage) {
     await stageFile(testDir, fileName);
   }
@@ -353,8 +358,11 @@ Future<File> addPubspecFileWithoutCommitting(
     content = content.replaceAll(RegExp(r'version: .*'), 'version: $version');
   }
 
+  // Add additional content
   if (additionalContent != null) {
-    content += additionalContent;
+    if (!content.contains(additionalContent)) {
+      content += additionalContent;
+    }
   }
 
   await file.writeAsString(content);
