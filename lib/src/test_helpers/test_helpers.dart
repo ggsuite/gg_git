@@ -417,7 +417,7 @@ Future<void> addChangeLogWithoutCommitting(
 }) async {
   var content = '# Change log\n\n';
   if (version != null) {
-    content += '## $version\n\n';
+    content += '## $version - 2024-04-09\n\n';
   }
 
   await addFileWithoutCommitting(
