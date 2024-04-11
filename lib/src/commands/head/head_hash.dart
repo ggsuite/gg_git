@@ -7,13 +7,13 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
-import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Returns the commit hash of the head revision.
-class HeadHash extends GgGitBase<void> {
+class HeadHash extends GgGitBase<String> {
   /// Constructor
   HeadHash({
     required super.ggLog,
@@ -35,7 +35,7 @@ class HeadHash extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<String> exec({
     required Directory directory,
     required GgLog ggLog,
     int? offset,
@@ -51,10 +51,12 @@ class HeadHash extends GgGitBase<void> {
       force: force,
     );
     ggLog(result);
+    return result;
   }
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
+  @override
   Future<String> get({
     required GgLog ggLog,
     required Directory directory,
@@ -170,4 +172,4 @@ class HeadHash extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockHeadHash extends mocktail.Mock implements HeadHash {}
+class MockHeadHash extends MockDirCommand<String> implements HeadHash {}

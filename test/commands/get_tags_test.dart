@@ -129,9 +129,10 @@ void main() {
 
           // Initially we should get no tags
           expect(
-            await getTags.all(
+            await getTags.get(
               directory: d,
               ggLog: messages.add,
+              headOnly: false,
             ),
             <String>[],
           );
@@ -139,9 +140,10 @@ void main() {
           // Add a first two tags
           await addTags(d, ['0a', '0b']);
           expect(
-            await getTags.all(
+            await getTags.get(
               directory: d,
               ggLog: messages.add,
+              headOnly: false,
             ),
             ['0b', '0a'],
           );
@@ -150,18 +152,20 @@ void main() {
           await updateAndCommitSampleFile(d);
           await addTags(d, ['1a', '1b']);
           expect(
-            await getTags.all(
+            await getTags.get(
               directory: d,
               ggLog: messages.add,
+              headOnly: false,
             ),
             ['1b', '1a', '0b', '0a'],
           );
 
           // From head should still work
           expect(
-            await getTags.fromHead(
+            await getTags.get(
               directory: d,
               ggLog: messages.add,
+              headOnly: true,
             ),
             ['1b', '1a'],
           );

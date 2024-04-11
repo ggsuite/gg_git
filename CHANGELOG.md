@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.9] - 2024-04-11
+
+### Changed
+
+- Improve mocks
+
 ## [2.5.8] - 2024-04-09
 
 ### Removed
@@ -66,6 +72,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[2.5.9]: https://github.com/inlavigo/gg_git/compare/2.5.8...2.5.9
 [2.5.8]: https://github.com/inlavigo/gg_git/compare/2.5.7...2.5.8
 [2.5.7]: https://github.com/inlavigo/gg_git/compare/2.5.6...2.5.7
 [2.5.6]: https://github.com/inlavigo/gg_git/compare/2.5.5...2.5.6

@@ -12,7 +12,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
 
 /// Returns a 64bit hash summarizing the changes since the last commit.
-class LastChangesHash extends GgGitBase<void> {
+class LastChangesHash extends GgGitBase<int> {
   // ...........................................................................
   /// Constructor
   LastChangesHash({
@@ -26,7 +26,7 @@ class LastChangesHash extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<int> exec({
     required Directory directory,
     required GgLog ggLog,
   }) async {
@@ -35,10 +35,13 @@ class LastChangesHash extends GgGitBase<void> {
       ggLog: ggLog,
     );
     ggLog(result.toString());
+
+    return result;
   }
 
   // ...........................................................................
   /// Returns the hash of the changes since the last commit.
+  @override
   Future<int> get({
     required GgLog ggLog,
     required Directory directory,

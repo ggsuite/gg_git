@@ -6,9 +6,9 @@
 
 import 'dart:io';
 
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
-import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Checks if eyerything in the current working directory is committed.
@@ -188,4 +188,4 @@ class Commit extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockCommit extends mocktail.Mock implements Commit {}
+class MockCommit extends MockDirCommand<void> implements Commit {}

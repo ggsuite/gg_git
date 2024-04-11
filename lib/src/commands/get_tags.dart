@@ -6,13 +6,13 @@
 
 import 'dart:io';
 
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_log/gg_log.dart';
-import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Provides "ggGit current-version-tag <dir>" command
-class GetTags extends GgGitBase<void> {
+class GetTags extends GgGitBase<List<String>> {
   /// Constructor
   GetTags({
     required super.ggLog,
@@ -26,22 +26,36 @@ class GetTags extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<List<String>> exec({
     required Directory directory,
     required GgLog ggLog,
   }) async {
     final headOnly = argResults!['head-only'] as bool;
+    late List<String> result;
 
     if (headOnly) {
-      final result = await fromHead(directory: directory, ggLog: ggLog);
+      result = await fromHead(directory: directory, ggLog: ggLog);
 
       ggLog(result.isNotEmpty ? result.join('\n') : 'No head tags found.');
     } else {
-      final result = await all(directory: directory, ggLog: ggLog);
+      result = await all(directory: directory, ggLog: ggLog);
 
       ggLog(result.isNotEmpty ? result.join('\n') : 'No tags found.');
     }
+
+    return result;
   }
+
+  // ...........................................................................
+  @override
+  Future<List<String>> get({
+    required GgLog ggLog,
+    required Directory directory,
+    bool headOnly = false,
+  }) =>
+      headOnly
+          ? fromHead(ggLog: ggLog, directory: directory)
+          : all(ggLog: ggLog, directory: directory);
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
@@ -107,4 +121,4 @@ class GetTags extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockGetTags extends mocktail.Mock implements GetTags {}
+class MockGetTags extends MockDirCommand<List<String>> implements GetTags {}

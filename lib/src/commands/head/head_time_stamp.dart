@@ -6,13 +6,13 @@
 
 import 'dart:io';
 
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
-import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Returns the unix timestamp of the head revision.
-class HeadTimeStamp extends GgGitBase<void> {
+class HeadTimeStamp extends GgGitBase<int> {
   /// Constructor
   HeadTimeStamp({
     required super.ggLog,
@@ -33,7 +33,7 @@ class HeadTimeStamp extends GgGitBase<void> {
   // ...........................................................................
   /// Logs the unix timestamp of the head revision in seconds.
   @override
-  Future<void> exec({
+  Future<int> exec({
     required Directory directory,
     required GgLog ggLog,
     int? offset,
@@ -46,10 +46,12 @@ class HeadTimeStamp extends GgGitBase<void> {
       offset: offset,
     );
     ggLog('$result');
+    return result;
   }
 
   // ...........................................................................
   /// Returns the unix timestamp of the head revision in seconds.
+  @override
   Future<int> get({
     required GgLog ggLog,
     required Directory directory,
@@ -93,4 +95,4 @@ class HeadTimeStamp extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockHeadTimeStamp extends mocktail.Mock implements HeadTimeStamp {}
+class MockHeadTimeStamp extends MockDirCommand<int> implements HeadTimeStamp {}

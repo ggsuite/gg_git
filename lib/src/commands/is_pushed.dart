@@ -6,15 +6,15 @@
 
 import 'dart:io';
 
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
-import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Provides "ggGit pushed <dir>" command
-class IsPushed extends GgGitBase<void> {
+class IsPushed extends GgGitBase<bool> {
   /// Constructor
   IsPushed({
     required super.ggLog,
@@ -26,7 +26,7 @@ class IsPushed extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<bool> exec({
     required Directory directory,
     required GgLog ggLog,
   }) async {
@@ -45,10 +45,13 @@ class IsPushed extends GgGitBase<void> {
     if (!result) {
       throw Exception(brightBlack(messages.join('\n')));
     }
+
+    return result;
   }
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
+  @override
   Future<bool> get({
     required GgLog ggLog,
     required Directory directory,
@@ -95,4 +98,4 @@ class IsPushed extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockIsPushed extends mocktail.Mock implements IsPushed {}
+class MockIsPushed extends MockDirCommand<bool> implements IsPushed {}

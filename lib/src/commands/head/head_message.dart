@@ -11,7 +11,7 @@ import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Reads the commit message of the head revision.
-class HeadMessage extends GgGitBase<void> {
+class HeadMessage extends GgGitBase<String> {
   // ...........................................................................
   /// Constructor
   HeadMessage({
@@ -32,7 +32,7 @@ class HeadMessage extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<String> exec({
     required Directory directory,
     required GgLog ggLog,
     int? offset,
@@ -45,10 +45,12 @@ class HeadMessage extends GgGitBase<void> {
       offset: offset,
     );
     ggLog(result);
+    return result;
   }
 
   // ...........................................................................
   /// Returns the commit message of the head revision in the given directory.
+  @override
   Future<String> get({
     required GgLog ggLog,
     required Directory directory,

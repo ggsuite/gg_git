@@ -11,7 +11,7 @@ import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Returns the modified files in the current Git repository.
-class ModifiedFiles extends GgGitBase<void> {
+class ModifiedFiles extends GgGitBase<List<String>> {
   // ...........................................................................
   /// Constructor
   ModifiedFiles({
@@ -25,7 +25,7 @@ class ModifiedFiles extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<List<String>> exec({
     required Directory directory,
     required GgLog ggLog,
     bool? force,
@@ -38,10 +38,13 @@ class ModifiedFiles extends GgGitBase<void> {
       force: force,
     );
     ggLog(result.join('\n'));
+
+    return result;
   }
 
   // ...........................................................................
   /// Returns the modified files in the current Git repository.
+  @override
   Future<List<String>> get({
     required GgLog ggLog,
     required Directory directory,

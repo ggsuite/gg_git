@@ -6,13 +6,13 @@
 
 import 'dart:io';
 
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_log/gg_log.dart';
-import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Checks if eyerything in the current working directory is committed.
-class CommitCount extends GgGitBase<void> {
+class CommitCount extends GgGitBase<int> {
   /// Constructor
   CommitCount({
     required super.ggLog,
@@ -24,16 +24,18 @@ class CommitCount extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<int> exec({
     required Directory directory,
     required GgLog ggLog,
   }) async {
     final result = await get(directory: directory, ggLog: ggLog);
     ggLog(result.toString());
+    return result;
   }
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
+  @override
   Future<int> get({
     required GgLog ggLog,
     required Directory directory,
@@ -59,4 +61,4 @@ class CommitCount extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockCommitCount extends mocktail.Mock implements CommitCount {}
+class MockCommitCount extends MockDirCommand<int> implements CommitCount {}

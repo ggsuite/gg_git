@@ -6,15 +6,15 @@
 
 import 'dart:io';
 
+import 'package:gg_args/gg_args.dart';
 import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
-import 'package:mocktail/mocktail.dart' as mocktail;
 
 // #############################################################################
 /// Checks if eyerything in the current working directory is committed.
-class IsCommitted extends GgGitBase<void> {
+class IsCommitted extends GgGitBase<bool> {
   /// Constructor
   IsCommitted({
     required super.ggLog,
@@ -27,7 +27,7 @@ class IsCommitted extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<bool> exec({
     required Directory directory,
     required GgLog ggLog,
   }) async {
@@ -50,10 +50,13 @@ class IsCommitted extends GgGitBase<void> {
 
       throw Exception(brightBlack(messages.join('\n')));
     }
+
+    return result;
   }
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
+  @override
   Future<bool> get({
     required GgLog ggLog,
     required Directory directory,
@@ -76,4 +79,4 @@ class IsCommitted extends GgGitBase<void> {
 }
 
 /// Mocktail mock
-class MockIsCommitted extends mocktail.Mock implements IsCommitted {}
+class MockIsCommitted extends MockDirCommand<bool> implements IsCommitted {}
