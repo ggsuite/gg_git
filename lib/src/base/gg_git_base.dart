@@ -45,7 +45,7 @@ abstract class GgGitBase<T> extends DirCommand<T> {
 
 // #############################################################################
 /// Example git command implementation
-class GgGitCommandExample extends GgGitBase<void> {
+class GgGitCommandExample extends GgGitBase<String> {
   /// Constructor
   GgGitCommandExample({
     super.processWrapper,
@@ -57,11 +57,11 @@ class GgGitCommandExample extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({
+  Future<String> get({
     required Directory directory,
     required GgLog ggLog,
   }) async {
     await check(directory: directory);
-    ggLog('Example executed for "${dirName(directory)}".');
+    return 'Example executed for "${dirName(directory)}".';
   }
 }
