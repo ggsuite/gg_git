@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.11] - 2024-04-12
+
+### Removed
+
+- dependency to gg\_install\_gg, remove ./check script
+
 ## [2.5.10] - 2024-04-11
 
 ### Changed
@@ -78,6 +84,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[2.5.11]: https://github.com/inlavigo/gg_git/compare/2.5.10...2.5.11
 [2.5.10]: https://github.com/inlavigo/gg_git/compare/2.5.9...2.5.10
 [2.5.9]: https://github.com/inlavigo/gg_git/compare/2.5.8...2.5.9
 [2.5.8]: https://github.com/inlavigo/gg_git/compare/2.5.7...2.5.8
