@@ -4,6 +4,7 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:gg_git/gg_git.dart';
@@ -81,8 +82,28 @@ class LastChangesHash extends GgGitBase<int> {
 // .............................................................................
 Future<String> _readFile(Directory directory, String fileName) async {
   final file = File(join(directory.path, fileName));
+  const textFormats = [
+    '.txt',
+    '.md',
+    '.yaml',
+    '.yml',
+    '.json',
+    '.dart',
+    '.sh',
+    '.bat',
+    '.xml',
+    '.html',
+    '.css',
+    '.scss',
+    '.js',
+  ];
+
+  final isBinaryFile = !textFormats.contains(extension(file.path));
+
   return await file.exists()
-      ? await file.readAsString()
+      ? isBinaryFile
+          ? base64Encode(await file.readAsBytes())
+          : await file.readAsString()
       : '$fileName was deleted';
 }
 

@@ -117,6 +117,20 @@ void main() {
 
         // The hash should be different
         expect(hash5, isNot(hash4));
+
+        // Add a binary file
+        await addFileWithoutCommitting(
+          d,
+          fileName: 'file2.bin',
+          content: 'content2',
+        );
+
+        // We should get a diferent hash
+        final hash6 = await lastChangesHahs.get(
+          ggLog: messages.add,
+          directory: d,
+        );
+        expect(hash6, isNot(hash5));
       });
     });
 
