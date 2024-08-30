@@ -1,6 +1,6 @@
 name: gg_git
 description: A collection of git helper scripts for repository checks and other utilities.
-version: 2.5.15
+version: 2.5.16
 repository: https://github.com/inlavigo/gg_git.git
 
 environment:
