@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.15] - 2024-08-30
+
+### Changed
+
+- LastChangesHash will be the same independent of carriage return resp. line breaks
+
 ## [2.5.14] - 2024-08-30
 
 ### Changed
@@ -102,6 +108,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[2.5.15]: https://github.com/inlavigo/gg_git/compare/2.5.14...2.5.15
 [2.5.14]: https://github.com/inlavigo/gg_git/compare/2.5.13...2.5.14
 [2.5.13]: https://github.com/inlavigo/gg_git/compare/2.5.12...2.5.13
 [2.5.12]: https://github.com/inlavigo/gg_git/compare/2.5.11...2.5.12

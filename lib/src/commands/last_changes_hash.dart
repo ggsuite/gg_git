@@ -65,12 +65,14 @@ class LastChangesHash extends GgGitBase<int> {
       (file) => _readFile(directory, file),
     );
 
-    final modifiedFileContents = await Future.wait(modifiedFileFutures);
+    final modifiedFileContents = (await Future.wait(modifiedFileFutures));
 
     // Calculate the hash
     final hash = modifiedFileContents.fold<int>(
       3849023480203,
-      (int previousValue, element) => previousValue ^ element.hashCode,
+      (int previousValue, element) =>
+          previousValue ^
+          element.replaceAll('\n', '').replaceAll('\r', '').hashCode,
     );
 
     return hash;

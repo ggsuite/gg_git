@@ -81,7 +81,7 @@ void main() {
         await addFileWithoutCommitting(
           d,
           fileName: 'file1.txt',
-          content: 'content2',
+          content: 'line1\nline2\n',
         );
 
         // Whe should get a different hash
@@ -91,6 +91,21 @@ void main() {
         );
 
         expect(hash3, isNot(hash2));
+
+        // Check the file in with different line endings
+        await addFileWithoutCommitting(
+          d,
+          fileName: 'file1.txt',
+          content: 'line1\r\nline2\r\n',
+        );
+
+        // Whe should get the same hash again
+        final hash3a = await lastChangesHahs.get(
+          ggLog: messages.add,
+          directory: d,
+        );
+
+        expect(hash3a, hash3);
 
         // Revert the last change
         await addFileWithoutCommitting(
