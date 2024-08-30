@@ -27,14 +27,14 @@ void main() {
 
       // Execute bin/gg_git.dart and check if it prints help
       final result = await Process.run(
-        './bin/gg_git.dart',
-        ['get-tags', '--head-only', '--input', d.path],
+        'dart',
+        ['./bin/gg_git.dart', 'get-tags', '--head-only', '--input', d.path],
         stdoutEncoding: utf8,
         stderrEncoding: utf8,
       );
 
       final expectedMessages = [
-        'No head tags found.\n',
+        'No head tags found.',
       ];
 
       final stdout = result.stdout as String;
