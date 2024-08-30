@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.14] - 2024-08-30
+
+### Changed
+
+- Make unit tests work on windows
+
 ## [2.5.13] - 2024-08-20
 
 ### Fixed
@@ -96,6 +102,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[2.5.14]: https://github.com/inlavigo/gg_git/compare/2.5.13...2.5.14
 [2.5.13]: https://github.com/inlavigo/gg_git/compare/2.5.12...2.5.13
 [2.5.12]: https://github.com/inlavigo/gg_git/compare/2.5.11...2.5.12
 [2.5.11]: https://github.com/inlavigo/gg_git/compare/2.5.10...2.5.11
