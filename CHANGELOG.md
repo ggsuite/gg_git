@@ -6,6 +6,10 @@
 
 - Add createBranch and branchName to test\_helpers.dart
 
+### Changed
+
+- Improved error output when a sub command is not listed in commands
+
 ## [2.5.15] - 2024-08-30
 
 ### Changed
