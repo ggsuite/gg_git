@@ -5,6 +5,7 @@
 ### Added
 
 - Add createBranch and branchName to test\_helpers.dart
+- Add command UpstreamBranch
 
 ### Changed
 

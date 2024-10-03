@@ -25,6 +25,7 @@ class GgGit extends Command<dynamic> {
     addSubcommand(Head(ggLog: ggLog));
     addSubcommand(CommitCount(ggLog: ggLog));
     addSubcommand(HasRemote(ggLog: ggLog));
+    addSubcommand(UpstreamBranch(ggLog: ggLog));
   }
 
   /// The log function
