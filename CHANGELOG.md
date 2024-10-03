@@ -10,6 +10,7 @@
 ### Changed
 
 - Improved error output when a sub command is not listed in commands
+- When commit with ammendWhenNotPushed = true is called and no upstream branch is set, changes will be ammended
 
 ## [2.5.15] - 2024-08-30
 

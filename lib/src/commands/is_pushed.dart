@@ -8,7 +8,7 @@ import 'dart:io';
 
 import 'package:gg_args/gg_args.dart';
 import 'package:gg_console_colors/gg_console_colors.dart';
-import 'package:gg_git/src/base/gg_git_base.dart';
+import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
 
@@ -19,7 +19,9 @@ class IsPushed extends GgGitBase<bool> {
   IsPushed({
     required super.ggLog,
     super.processWrapper,
-  }) : super(
+    UpstreamBranch? upstreamBranch,
+  })  : _upstreamBranch = upstreamBranch ?? UpstreamBranch(ggLog: ggLog),
+        super(
           name: 'is-pushed',
           description: 'Is everything in the current working directory pushed?',
         );
@@ -57,6 +59,15 @@ class IsPushed extends GgGitBase<bool> {
     required Directory directory,
     bool ignoreUnCommittedChanges = false,
   }) async {
+    // Does branch have an upstream branch?
+    final upstreamBranch = await _upstreamBranch.get(
+      ggLog: ggLog,
+      directory: directory,
+    );
+    if (upstreamBranch.isEmpty) {
+      return false;
+    }
+
     // Is everything pushed?
     final result = await processWrapper.run(
       'git',
@@ -95,6 +106,9 @@ class IsPushed extends GgGitBase<bool> {
 
     throw Exception('Unknown status of "git push" in "${dirName(directory)}".');
   }
+
+  // ...........................................................................
+  final UpstreamBranch _upstreamBranch;
 }
 
 /// Mocktail mock

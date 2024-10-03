@@ -7,8 +7,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/gg_git_test_helpers.dart';
-import 'package:gg_git/src/commands/is_pushed.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart';
@@ -16,6 +16,9 @@ import 'package:test/test.dart';
 import 'package:gg_git/src/test_helpers/test_helpers.dart' as h;
 
 void main() {
+  registerFallbackValue(MockUpstreamBranch());
+  registerFallbackValue(Directory.systemTemp);
+
   late Directory dRemote;
   late Directory dLocal;
   final messages = <String>[];
@@ -96,10 +99,14 @@ void main() {
   }
 
   // ...........................................................................
-  void initCommand({GgProcessWrapper? processWrapper}) {
+  void initCommand({
+    GgProcessWrapper? processWrapper,
+    MockUpstreamBranch? upstreamBranch,
+  }) {
     isPushed = IsPushed(
       ggLog: messages.add,
       processWrapper: processWrapper ?? const GgProcessWrapper(),
+      upstreamBranch: upstreamBranch,
     );
     runner.addCommand(isPushed);
   }
@@ -138,14 +145,33 @@ void main() {
     group('run(), get()', () {
       // #######################################################################
       group('should throw', () {
+        late MockUpstreamBranch upstreamBranch;
+
+        setUpAll(() {
+          upstreamBranch = MockUpstreamBranch();
+
+          // Mock an given upstream branch
+          when(
+            () => upstreamBranch.get(
+              ggLog: any(named: 'ggLog'),
+              directory: any(named: 'directory'),
+            ),
+          ).thenAnswer((_) async => 'origin/main');
+        });
+
         // .....................................................................
         group('if "git status" fails', () {
           group('with inputDir', () {
             test('taken from --input arg', () async {
               final failingProcessWrapper = MockGgProcessWrapper();
               await initLocalGit(dLocal);
-              initCommand(processWrapper: failingProcessWrapper);
 
+              initCommand(
+                processWrapper: failingProcessWrapper,
+                upstreamBranch: upstreamBranch,
+              );
+
+              // Mock a failing git status
               when(
                 () => failingProcessWrapper.run(
                   any(),
@@ -178,6 +204,7 @@ void main() {
               await initLocalGit(dLocal);
               initCommand(
                 processWrapper: failingProcessWrapper,
+                upstreamBranch: upstreamBranch,
               );
 
               when(
@@ -228,7 +255,10 @@ void main() {
         test('if "git returns an unknown status"', () async {
           final failingProcessWrapper = MockGgProcessWrapper();
           await initLocalGit(dLocal);
-          initCommand(processWrapper: failingProcessWrapper);
+          initCommand(
+            processWrapper: failingProcessWrapper,
+            upstreamBranch: upstreamBranch,
+          );
 
           when(
             () => failingProcessWrapper.run(
@@ -260,7 +290,9 @@ void main() {
         // .....................................................................
         test('if not everything is pushed', () async {
           await initLocalGit(dLocal);
-          initCommand();
+          initCommand(
+            upstreamBranch: upstreamBranch,
+          );
 
           // Not yet added file?
           createFile();
@@ -360,6 +392,44 @@ void main() {
               isTrue,
             );
           });
+        });
+      });
+
+      group('should return false', () {
+        test('if local git has no remote', () async {
+          // Make sure the branch has no upstream branch
+          await initLocalGit(dLocal);
+          expect(await upstreamBranchName(dLocal), isEmpty);
+
+          // IsPushed should return false
+          initCommand();
+          expect(
+            await isPushed.get(directory: dLocal, ggLog: messages.add),
+            isFalse,
+          );
+        });
+
+        test('if the branch has no upstream branch', () async {
+          initCommand();
+
+          // No remote
+          await initLocalGit(dLocal);
+          expect(await upstreamBranchName(dLocal), isEmpty);
+
+          // Remote with main branch
+          await initRemoteGit(dRemote);
+          await addRemoteToLocal(local: dLocal, remote: dRemote);
+          expect(await upstreamBranchName(dLocal), 'origin/main');
+
+          // Feature branch without upstream
+          await createBranch(dLocal, 'feature');
+          expect(await upstreamBranchName(dLocal), isEmpty);
+
+          // => isPushed should return false
+          expect(
+            await isPushed.get(directory: dLocal, ggLog: messages.add),
+            isFalse,
+          );
         });
       });
     });
