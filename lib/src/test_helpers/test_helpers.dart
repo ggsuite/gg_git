@@ -161,6 +161,35 @@ void _setupGitHub(Directory testDir) async {
   }
 }
 
+// #############
+// branches
+
+// .............................................................................
+/// Creates a branch in the git repo in testDir
+Future<void> createBranch(Directory testDir, String branchName) async {
+  final result = await Process.run(
+    'git',
+    ['checkout', '-b', branchName],
+    workingDirectory: testDir.path,
+  );
+
+  _throw('Could not create branch $branchName', result);
+}
+
+// .............................................................................
+/// Returns the name of the current branch in testDir
+Future<String> branchName(Directory testDir) async {
+  final result = await Process.run(
+    'git',
+    ['branch', '--show-current'],
+    workingDirectory: testDir.path,
+  );
+
+  _throw('Could not get current branch name', result);
+
+  return result.stdout.toString().trim();
+}
+
 // ######################
 // Git Ignore
 // ######################

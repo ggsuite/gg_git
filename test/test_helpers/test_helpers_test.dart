@@ -145,5 +145,25 @@ void main() {
         },
       );
     });
+
+    group('createBranch', () {
+      test('should create a new branch', () async {
+        await createBranch(d, 'testBranch');
+        final result = await branchName(d);
+        expect(result, 'testBranch');
+      });
+
+      test('should throw if branch could not be created', () async {
+        late String error;
+
+        try {
+          await createBranch(Directory('fzudifz'), 'testBranch');
+        } catch (e) {
+          error = e.toString();
+        }
+
+        expect(error, contains('ProcessException'));
+      });
+    });
   });
 }
