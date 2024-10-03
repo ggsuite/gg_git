@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.5.16] - 2024-10-03
 
 ### Added
 
@@ -120,7 +120,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
-[Unreleased]: https://github.com/inlavigo/gg_git/compare/2.5.15...HEAD
+[2.5.16]: https://github.com/inlavigo/gg_git/compare/2.5.15...2.5.16
 [2.5.15]: https://github.com/inlavigo/gg_git/compare/2.5.14...2.5.15
 [2.5.14]: https://github.com/inlavigo/gg_git/compare/2.5.13...2.5.14
 [2.5.13]: https://github.com/inlavigo/gg_git/compare/2.5.12...2.5.13
