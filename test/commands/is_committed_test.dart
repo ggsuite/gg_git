@@ -50,27 +50,19 @@ void main() {
         initCommand(processWrapper: failingProcessWrapper);
 
         when(
-          () => failingProcessWrapper.run(
-            'git',
-            ['status', '--porcelain'],
-            workingDirectory: d.path,
-          ),
+          () => failingProcessWrapper.run('git', [
+            'status',
+            '--porcelain',
+          ], workingDirectory: d.path),
         ).thenAnswer(
-          (_) async => ProcessResult(
-            1,
-            1,
-            'git status failed',
-            'git status failed',
-          ),
+          (_) async =>
+              ProcessResult(1, 1, 'git status failed', 'git status failed'),
         );
 
         late String exception;
 
         try {
-          await isCommitted.get(
-            directory: d,
-            ggLog: messages.add,
-          );
+          await isCommitted.get(directory: d, ggLog: messages.add);
         } catch (e) {
           exception = e.toString();
         }

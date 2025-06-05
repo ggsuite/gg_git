@@ -16,13 +16,11 @@ import 'package:gg_status_printer/gg_status_printer.dart';
 /// Checks if the local git repo has a remote
 class HasRemote extends GgGitBase<bool> {
   /// Constructor
-  HasRemote({
-    required super.ggLog,
-    super.processWrapper,
-  }) : super(
-          name: 'has-remote',
-          description: 'Checks if local git repo has a remote.',
-        );
+  HasRemote({required super.ggLog, super.processWrapper})
+    : super(
+        name: 'has-remote',
+        description: 'Checks if local git repo has a remote.',
+      );
 
   // ...........................................................................
   @override
@@ -56,21 +54,18 @@ class HasRemote extends GgGitBase<bool> {
   // ...........................................................................
   /// Returns true if the local git repo has a remote
   @override
-  Future<bool> get({
-    required GgLog ggLog,
-    required Directory directory,
-  }) async {
+  Future<bool> get({required GgLog ggLog, required Directory directory}) async {
     await check(directory: directory);
 
     // Is everything committed?
-    final result = await processWrapper.run(
-      'git',
-      ['remote'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'remote',
+    ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
-      throw Exception('Could not run "git remote" in "${dirName(directory)}": '
-          '${result.stderr}');
+      throw Exception(
+        'Could not run "git remote" in "${dirName(directory)}": '
+        '${result.stderr}',
+      );
     }
 
     return (result.stdout as String).isNotEmpty;

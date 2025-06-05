@@ -20,16 +20,14 @@ class HeadHash extends GgGitBase<String> {
     super.processWrapper,
     IsCommitted? isCommitted,
     CommitCount? commitCount,
-  })  : _isCommitted = isCommitted ??
-            IsCommitted(
-              ggLog: ggLog,
-              processWrapper: processWrapper,
-            ),
-        _commitCount = commitCount ?? CommitCount(ggLog: ggLog),
-        super(
-          name: 'hash',
-          description: 'Returns the commit hash of the head revision.',
-        ) {
+  }) : _isCommitted =
+           isCommitted ??
+           IsCommitted(ggLog: ggLog, processWrapper: processWrapper),
+       _commitCount = commitCount ?? CommitCount(ggLog: ggLog),
+       super(
+         name: 'hash',
+         description: 'Returns the commit hash of the head revision.',
+       ) {
     addParams(argParser);
   }
 
@@ -69,8 +67,10 @@ class HeadHash extends GgGitBase<String> {
     await check(directory: directory);
 
     // Everything is committed?
-    final isCommited =
-        await _isCommitted.get(directory: directory, ggLog: ggLog);
+    final isCommited = await _isCommitted.get(
+      directory: directory,
+      ggLog: ggLog,
+    );
 
     if (!isCommited && !force) {
       throw Exception('Not everything is committed.');
@@ -89,11 +89,10 @@ class HeadHash extends GgGitBase<String> {
     // Read the hash
     final head = 'HEAD${offset == 0 ? '' : '~$offset'}';
 
-    final result = await processWrapper.run(
-      'git',
-      ['rev-parse', head],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'rev-parse',
+      head,
+    ], workingDirectory: directory.path);
 
     if (result.exitCode == 0) {
       return result.stdout.toString().trim();
@@ -111,9 +110,7 @@ class HeadHash extends GgGitBase<String> {
   /// Checks if the offset is valid.
   static void checkOffset(int offset) {
     if (offset < 0) {
-      throw Exception(
-        invalidOffsetMessage('$offset'),
-      );
+      throw Exception(invalidOffsetMessage('$offset'));
     }
   }
 
@@ -131,9 +128,7 @@ class HeadHash extends GgGitBase<String> {
 
     final offsetInt = int.tryParse(offset);
     if (offsetInt == null) {
-      throw Exception(
-        invalidOffsetMessage(offset),
-      );
+      throw Exception(invalidOffsetMessage(offset));
     }
 
     return offsetInt;
@@ -163,7 +158,8 @@ class HeadHash extends GgGitBase<String> {
     argParser.addFlag(
       'force',
       abbr: 'f',
-      help: 'Returns the hash of the last commit, '
+      help:
+          'Returns the hash of the last commit, '
           'if currently not everything is committed.',
       defaultsTo: false,
       negatable: true,

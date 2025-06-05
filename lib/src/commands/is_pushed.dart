@@ -20,11 +20,11 @@ class IsPushed extends GgGitBase<bool> {
     required super.ggLog,
     super.processWrapper,
     UpstreamBranch? upstreamBranch,
-  })  : _upstreamBranch = upstreamBranch ?? UpstreamBranch(ggLog: ggLog),
-        super(
-          name: 'is-pushed',
-          description: 'Is everything in the current working directory pushed?',
-        );
+  }) : _upstreamBranch = upstreamBranch ?? UpstreamBranch(ggLog: ggLog),
+       super(
+         name: 'is-pushed',
+         description: 'Is everything in the current working directory pushed?',
+       );
 
   // ...........................................................................
   @override
@@ -69,11 +69,9 @@ class IsPushed extends GgGitBase<bool> {
     }
 
     // Is everything pushed?
-    final result = await processWrapper.run(
-      'git',
-      ['status'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'status',
+    ], workingDirectory: directory.path);
 
     if (result.exitCode != 0) {
       throw Exception('Could not run "git push" in "${dirName(directory)}".');

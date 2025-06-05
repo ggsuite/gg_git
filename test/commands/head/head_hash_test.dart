@@ -69,11 +69,7 @@ void main() {
         test('when the offset has a wrong format', () async {
           late String exception;
           try {
-            await headHash.get(
-              directory: d,
-              ggLog: messages.add,
-              offset: -1,
-            );
+            await headHash.get(directory: d, ggLog: messages.add, offset: -1);
           } catch (e) {
             exception = e.toString();
           }
@@ -91,8 +87,12 @@ void main() {
 
           // Mock IsCommitted
           final isCommited = MockIsCommitted();
-          when(() => isCommited.get(directory: d, ggLog: any(named: 'ggLog')))
-              .thenAnswer((_) => Future.value(true));
+          when(
+            () => isCommited.get(
+              directory: d,
+              ggLog: any(named: 'ggLog'),
+            ),
+          ).thenAnswer((_) => Future.value(true));
 
           // Getting the head hash should throw
           final failingProcessWrapper = MockGgProcessWrapper();
@@ -104,14 +104,7 @@ void main() {
               any(),
               workingDirectory: d.path,
             ),
-          ).thenAnswer(
-            (_) async => ProcessResult(
-              1,
-              1,
-              'stdout',
-              'stderr',
-            ),
-          );
+          ).thenAnswer((_) async => ProcessResult(1, 1, 'stdout', 'stderr'));
 
           // Run headHash.get and check if it throws
           headHash = HeadHash(
@@ -126,9 +119,7 @@ void main() {
               isA<Exception>().having(
                 (e) => e.toString(),
                 'toString()',
-                contains(
-                  'Exception: Could not read the head hash: stderr',
-                ),
+                contains('Exception: Could not read the head hash: stderr'),
               ),
             ),
           );
@@ -220,11 +211,7 @@ void main() {
           final newHead = messages.last;
 
           // Get the head before the last commit
-          await headHash.exec(
-            directory: d,
-            ggLog: messages.add,
-            offset: 1,
-          );
+          await headHash.exec(directory: d, ggLog: messages.add, offset: 1);
 
           final oldHead2 = messages.last;
           expect(oldHead2, oldHead);

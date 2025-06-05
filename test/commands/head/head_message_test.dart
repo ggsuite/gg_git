@@ -90,8 +90,12 @@ void main() {
 
           // Mock IsCommitted
           final isCommited = MockIsCommitted();
-          when(() => isCommited.get(directory: d, ggLog: any(named: 'ggLog')))
-              .thenAnswer((_) => Future.value(true));
+          when(
+            () => isCommited.get(
+              directory: d,
+              ggLog: any(named: 'ggLog'),
+            ),
+          ).thenAnswer((_) => Future.value(true));
 
           // Getting the head commit message should throw
           final failingProcessWrapper = MockGgProcessWrapper();
@@ -103,14 +107,7 @@ void main() {
               any(),
               workingDirectory: d.path,
             ),
-          ).thenAnswer(
-            (_) async => ProcessResult(
-              1,
-              1,
-              'stdout',
-              'stderr',
-            ),
-          );
+          ).thenAnswer((_) async => ProcessResult(1, 1, 'stdout', 'stderr'));
 
           // Run headMessage.get and check if it throws
           headMessage = HeadMessage(
@@ -128,9 +125,7 @@ void main() {
 
           expect(
             exception,
-            contains(
-              'Exception: Could not read the head message: stderr',
-            ),
+            contains('Exception: Could not read the head message: stderr'),
           );
         });
       });
@@ -142,8 +137,10 @@ void main() {
           await addAndCommitSampleFile(d);
 
           // Getting the head commit message should work
-          final message =
-              await headMessage.get(directory: d, ggLog: messages.add);
+          final message = await headMessage.get(
+            directory: d,
+            ggLog: messages.add,
+          );
           expect(message, isNotEmpty);
         });
 
@@ -185,13 +182,17 @@ void main() {
           // Init git
           await initGit(d);
           await addAndCommitSampleFile(d, message: 'Old commit');
-          final oldMessage =
-              await headMessage.get(directory: d, ggLog: messages.add);
+          final oldMessage = await headMessage.get(
+            directory: d,
+            ggLog: messages.add,
+          );
 
           // Do another commit
           await updateAndCommitSampleFile(d, message: 'New commit');
-          final newMessage =
-              await headMessage.get(directory: d, ggLog: messages.add);
+          final newMessage = await headMessage.get(
+            directory: d,
+            ggLog: messages.add,
+          );
 
           // Get the message of the commit before the head
           final message = await headMessage.get(
@@ -226,11 +227,7 @@ void main() {
           final newMessage = messages.last;
 
           // Get the head before the last commit
-          await headMessage.exec(
-            directory: d,
-            ggLog: messages.add,
-            offset: 1,
-          );
+          await headMessage.exec(directory: d, ggLog: messages.add, offset: 1);
 
           final oldMessage2 = messages.last;
           expect(oldMessage2, oldMessage);

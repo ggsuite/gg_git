@@ -18,15 +18,13 @@ class HeadTimeStamp extends GgGitBase<int> {
     required super.ggLog,
     super.processWrapper,
     IsCommitted? isCommitted,
-  })  : _isCommitted = isCommitted ??
-            IsCommitted(
-              ggLog: ggLog,
-              processWrapper: processWrapper,
-            ),
-        super(
-          name: 'time-stamp',
-          description: 'Returns the unix timestamp of the head revision.',
-        ) {
+  }) : _isCommitted =
+           isCommitted ??
+           IsCommitted(ggLog: ggLog, processWrapper: processWrapper),
+       super(
+         name: 'time-stamp',
+         description: 'Returns the unix timestamp of the head revision.',
+       ) {
     HeadHash.addParams(argParser);
   }
 
@@ -63,8 +61,10 @@ class HeadTimeStamp extends GgGitBase<int> {
     await check(directory: directory);
 
     // Everything is committed?
-    final isCommited =
-        await _isCommitted.get(directory: directory, ggLog: ggLog);
+    final isCommited = await _isCommitted.get(
+      directory: directory,
+      ggLog: ggLog,
+    );
 
     if (!isCommited) {
       throw Exception('Not everything is committed.');
@@ -73,11 +73,12 @@ class HeadTimeStamp extends GgGitBase<int> {
     // Read the hash
     final head = 'HEAD${offset == 0 ? '' : '~$offset'}';
 
-    final result = await processWrapper.run(
-      'git',
-      ['show', '-s', '--format=%ct', head],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'show',
+      '-s',
+      '--format=%ct',
+      head,
+    ], workingDirectory: directory.path);
 
     if (result.exitCode == 0) {
       final timeStampString = result.stdout.toString().trim();

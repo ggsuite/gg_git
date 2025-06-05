@@ -33,9 +33,7 @@ void main() {
         stderrEncoding: utf8,
       );
 
-      final expectedMessages = [
-        'No head tags found.',
-      ];
+      final expectedMessages = ['No head tags found.'];
 
       final stdout = result.stdout as String;
 

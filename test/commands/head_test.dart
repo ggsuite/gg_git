@@ -22,9 +22,7 @@ void main() {
   // and if they are added to the help message
   final subCommands = Directory('lib/src/commands/head')
       .listSync(recursive: false)
-      .where(
-        (file) => file.path.endsWith('.dart'),
-      )
+      .where((file) => file.path.endsWith('.dart'))
       .map(
         (e) => basename(e.path)
             .replaceAll('.dart', '')
@@ -61,7 +59,8 @@ void main() {
           expect(
             hasLog(messages, subCommand),
             isTrue,
-            reason: '\nMissing subcommand "$ggSubCommand"\n'
+            reason:
+                '\nMissing subcommand "$ggSubCommand"\n'
                 'Please open  "lib/src/gg_git.dart" and add\n'
                 '"addSubcommand($ggSubCommand(ggLog: ggLog));',
           );
@@ -85,7 +84,8 @@ void main() {
           expect(
             head.subcommands.keys.contains(subCommand),
             isTrue,
-            reason: '\nMissing subcommand "$ggSubCommand"\n'
+            reason:
+                '\nMissing subcommand "$ggSubCommand"\n'
                 'Please open  "lib/src/commands/head.dart" and add\n'
                 '"addSubcommand($ggSubCommand(ggLog: ggLog));',
           );

@@ -58,10 +58,7 @@ void main() {
           test('specified via constructor', () async {
             initCommand();
             await expectLater(
-              ggGit.exec(
-                directory: Directory('xyz'),
-                ggLog: messages.add,
-              ),
+              ggGit.exec(directory: Directory('xyz'), ggLog: messages.add),
               throwsA(
                 isA<ArgumentError>().having(
                   (e) => e.message,

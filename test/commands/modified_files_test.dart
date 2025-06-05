@@ -34,8 +34,10 @@ void main() {
       group('should return a list of modified files', () {
         test('with force = false', () async {
           // Initially no files are modified
-          var result =
-              await modifiedFiles.get(directory: d, ggLog: messages.add);
+          var result = await modifiedFiles.get(
+            directory: d,
+            ggLog: messages.add,
+          );
           expect(result, isEmpty);
 
           // Let's modify a file
@@ -251,11 +253,10 @@ void main() {
             );
 
             when(
-              () => modifiedFiles.processWrapper.run(
-                'git',
-                ['status', '-s'],
-                workingDirectory: d.path,
-              ),
+              () => modifiedFiles.processWrapper.run('git', [
+                'status',
+                '-s',
+              ], workingDirectory: d.path),
             ).thenAnswer((_) async => ProcessResult(1, 1, '', 'My Error'));
 
             // Call the method
@@ -278,21 +279,21 @@ void main() {
             final processWrapper = MockGgProcessWrapper();
 
             when(
-              () => processWrapper.run(
-                'git',
-                ['status', '-s'],
-                workingDirectory: d.path,
-              ),
+              () => processWrapper.run('git', [
+                'status',
+                '-s',
+              ], workingDirectory: d.path),
             ).thenAnswer((_) async => ProcessResult(1, 0, '', ''));
 
             // Mock git rev-list returns an error
 
             when(
-              () => processWrapper.run(
-                'git',
-                ['rev-list', '-n', '1', '--all'],
-                workingDirectory: d.path,
-              ),
+              () => processWrapper.run('git', [
+                'rev-list',
+                '-n',
+                '1',
+                '--all',
+              ], workingDirectory: d.path),
             ).thenAnswer((_) async => ProcessResult(1, 1, '', 'My Error'));
 
             // Init command
@@ -315,9 +316,7 @@ void main() {
 
             expect(
               exception,
-              contains(
-                'Exception: Error while retrieving revisions: My Error',
-              ),
+              contains('Exception: Error while retrieving revisions: My Error'),
             );
           });
         });

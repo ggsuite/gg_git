@@ -49,19 +49,22 @@ void main() {
 
         // Create an initial commit
         await addAndCommitSampleFile(testDir);
-        final contentBefore =
-            File('${testDir.path}/$sampleFileName').readAsStringSync();
+        final contentBefore = File(
+          '${testDir.path}/$sampleFileName',
+        ).readAsStringSync();
 
         // Make a change
         await updateSampleFileWithoutCommitting(testDir);
-        final contentAfter =
-            File('${testDir.path}/$sampleFileName').readAsStringSync();
+        final contentAfter = File(
+          '${testDir.path}/$sampleFileName',
+        ).readAsStringSync();
         expect(contentBefore, isNot(contentAfter));
 
         // Revert all changes
         await revertLocalChanges(testDir);
-        final contentReverted =
-            File('${testDir.path}/$sampleFileName').readAsStringSync();
+        final contentReverted = File(
+          '${testDir.path}/$sampleFileName',
+        ).readAsStringSync();
         expect(contentBefore, contentReverted);
       });
     });
@@ -72,20 +75,23 @@ void main() {
 
         // Create an initial commit
         await addAndCommitSampleFile(dLocal);
-        final contentBefore =
-            File('${dLocal.path}/$sampleFileName').readAsStringSync();
+        final contentBefore = File(
+          '${dLocal.path}/$sampleFileName',
+        ).readAsStringSync();
         await pushLocalChanges(dLocal);
 
         // Make and commit a change, but do not push
         await updateAndCommitSampleFile(dLocal);
-        final contentAfter =
-            File('${dLocal.path}/$sampleFileName').readAsStringSync();
+        final contentAfter = File(
+          '${dLocal.path}/$sampleFileName',
+        ).readAsStringSync();
         expect(contentBefore, isNot(contentAfter));
 
         // Make a hard reset
         await hardReset(dLocal);
-        final contentReverted =
-            File('${dLocal.path}/$sampleFileName').readAsStringSync();
+        final contentReverted = File(
+          '${dLocal.path}/$sampleFileName',
+        ).readAsStringSync();
         expect(contentBefore, contentReverted);
       });
     });
@@ -109,41 +115,37 @@ void main() {
     });
 
     group('addAndCommitVersions', () {
-      test(
-        'should create a pubspec.yaml and a CHANGELOG.md file '
-        'containing the version',
-        () async {
-          // Add additioanl content the first time
-          await addAndCommitVersions(
-            d,
-            pubspec: '1.0.0',
-            changeLog: '1.0.0',
-            gitHead: null,
-            appendToPubspec: 'publish_to: none',
-          );
+      test('should create a pubspec.yaml and a CHANGELOG.md file '
+          'containing the version', () async {
+        // Add additioanl content the first time
+        await addAndCommitVersions(
+          d,
+          pubspec: '1.0.0',
+          changeLog: '1.0.0',
+          gitHead: null,
+          appendToPubspec: 'publish_to: none',
+        );
 
-          var content = await File('${d.path}/pubspec.yaml').readAsString();
-          int occurrences =
-              RegExp('publish_to: none').allMatches(content).length;
+        var content = await File('${d.path}/pubspec.yaml').readAsString();
+        int occurrences = RegExp('publish_to: none').allMatches(content).length;
 
-          expect(occurrences, 1);
+        expect(occurrences, 1);
 
-          // Add additioanl content the the second time
-          await addAndCommitVersions(
-            d,
-            pubspec: '1.0.0',
-            changeLog: '1.0.0',
-            gitHead: null,
-            appendToPubspec: 'publish_to: none',
-          );
+        // Add additioanl content the the second time
+        await addAndCommitVersions(
+          d,
+          pubspec: '1.0.0',
+          changeLog: '1.0.0',
+          gitHead: null,
+          appendToPubspec: 'publish_to: none',
+        );
 
-          // Should not be added a second time
-          content = await File('${d.path}/pubspec.yaml').readAsString();
-          occurrences = RegExp('publish_to: none').allMatches(content).length;
+        // Should not be added a second time
+        content = await File('${d.path}/pubspec.yaml').readAsString();
+        occurrences = RegExp('publish_to: none').allMatches(content).length;
 
-          expect(occurrences, 1);
-        },
-      );
+        expect(occurrences, 1);
+      });
     });
 
     group('createBranch', () {

@@ -53,11 +53,12 @@ void main() {
         initCommand(processWrapper: failingProcessWrapper);
 
         when(
-          () => failingProcessWrapper.run(
-            'git',
-            ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'],
-            workingDirectory: dLocal.path,
-          ),
+          () => failingProcessWrapper.run('git', [
+            'rev-parse',
+            '--abbrev-ref',
+            '--symbolic-full-name',
+            '@{u}',
+          ], workingDirectory: dLocal.path),
         ).thenAnswer(
           (_) async => ProcessResult(
             1,
@@ -70,10 +71,7 @@ void main() {
         late String exception;
 
         try {
-          await upstreamBranch.get(
-            directory: dLocal,
-            ggLog: messages.add,
-          );
+          await upstreamBranch.get(directory: dLocal, ggLog: messages.add);
         } catch (e) {
           exception = e.toString();
         }
@@ -100,8 +98,7 @@ void main() {
             expect(result, isEmpty);
           });
 
-          test(
-              'when the repo has a remote '
+          test('when the repo has a remote '
               'but the current branch has no upstream', () async {
             await initGit(dLocal);
 
@@ -132,21 +129,23 @@ void main() {
 
         // .....................................................................
         group('the remote branch name', () {
-          test('when the repo has a remote and the branch has an upstream',
-              () async {
-            await initGit(dLocal);
+          test(
+            'when the repo has a remote and the branch has an upstream',
+            () async {
+              await initGit(dLocal);
 
-            initCommand();
-            await initRemoteGit(dRemote);
-            await addRemoteToLocal(local: dLocal, remote: dRemote);
+              initCommand();
+              await initRemoteGit(dRemote);
+              await addRemoteToLocal(local: dLocal, remote: dRemote);
 
-            final result = await upstreamBranch.get(
-              directory: dLocal,
-              ggLog: messages.add,
-            );
+              final result = await upstreamBranch.get(
+                directory: dLocal,
+                ggLog: messages.add,
+              );
 
-            expect(result, 'origin/main');
-          });
+              expect(result, 'origin/main');
+            },
+          );
         });
       });
     });

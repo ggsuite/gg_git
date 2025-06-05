@@ -50,11 +50,11 @@ void main() {
           // Make git rev-list fail
           final processWrapper = MockGgProcessWrapper();
           when(
-            () => processWrapper.run(
-              'git',
-              ['rev-list', '--all', '--count'],
-              workingDirectory: d.path,
-            ),
+            () => processWrapper.run('git', [
+              'rev-list',
+              '--all',
+              '--count',
+            ], workingDirectory: d.path),
           ).thenAnswer((_) async => ProcessResult(1, 1, '', 'Some error'));
 
           // Create the command
@@ -84,14 +84,16 @@ void main() {
     });
 
     group('exec(directory, ggLog)', () {
-      test('should print the number of commits in the current branch',
-          () async {
-        await initGit(d);
-        await addAndCommitSampleFile(d);
+      test(
+        'should print the number of commits in the current branch',
+        () async {
+          await initGit(d);
+          await addAndCommitSampleFile(d);
 
-        await commitCount.exec(directory: d, ggLog: messages.add);
-        expect(messages, ['1']);
-      });
+          await commitCount.exec(directory: d, ggLog: messages.add);
+          expect(messages, ['1']);
+        },
+      );
 
       test('should allow to use the command via command line', () async {
         await initGit(d);

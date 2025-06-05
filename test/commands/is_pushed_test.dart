@@ -34,11 +34,10 @@ void main() {
 
   // ...........................................................................
   void addFile() {
-    final result = Process.runSync(
-      'git',
-      ['add', basename(file.path)],
-      workingDirectory: dLocal.path,
-    );
+    final result = Process.runSync('git', [
+      'add',
+      basename(file.path),
+    ], workingDirectory: dLocal.path);
     if (result.exitCode != 0) {
       throw Exception('Could not add file to local git repository.');
     }
@@ -46,11 +45,11 @@ void main() {
 
   // ...........................................................................
   void commitFile() {
-    final result = Process.runSync(
-      'git',
-      ['commit', '-m', 'Initial commit'],
-      workingDirectory: dLocal.path,
-    );
+    final result = Process.runSync('git', [
+      'commit',
+      '-m',
+      'Initial commit',
+    ], workingDirectory: dLocal.path);
     if (result.exitCode != 0) {
       throw Exception(
         'Could not commit file to local git repository. ${result.stderr}',
@@ -60,11 +59,12 @@ void main() {
 
   // ...........................................................................
   void pushFile() {
-    final result = Process.runSync(
-      'git',
-      ['push', '-u', 'origin', 'main'],
-      workingDirectory: dLocal.path,
-    );
+    final result = Process.runSync('git', [
+      'push',
+      '-u',
+      'origin',
+      'main',
+    ], workingDirectory: dLocal.path);
     if (result.exitCode != 0) {
       throw Exception(
         'Could not push file to remote git repository. ${result.stderr}',
@@ -74,11 +74,9 @@ void main() {
 
   // ...........................................................................
   void pull() {
-    final result = Process.runSync(
-      'git',
-      ['pull'],
-      workingDirectory: dLocal.path,
-    );
+    final result = Process.runSync('git', [
+      'pull',
+    ], workingDirectory: dLocal.path);
     if (result.exitCode != 0) {
       throw Exception(
         'Could not pull to remote git repository. ${result.stderr}',
@@ -88,11 +86,11 @@ void main() {
 
   // ...........................................................................
   void removeLastCommit() {
-    final result = Process.runSync(
-      'git',
-      ['reset', '--hard', 'HEAD~1'],
-      workingDirectory: dLocal.path,
-    );
+    final result = Process.runSync('git', [
+      'reset',
+      '--hard',
+      'HEAD~1',
+    ], workingDirectory: dLocal.path);
     if (result.exitCode != 0) {
       throw Exception('Could remove last commit. ${result.stderr}');
     }
@@ -267,12 +265,8 @@ void main() {
               workingDirectory: dLocal.path,
             ),
           ).thenAnswer(
-            (_) async => ProcessResult(
-              1,
-              0,
-              'Some unknown state',
-              'Some unknown state',
-            ),
+            (_) async =>
+                ProcessResult(1, 0, 'Some unknown state', 'Some unknown state'),
           );
 
           await expectLater(
@@ -290,9 +284,7 @@ void main() {
         // .....................................................................
         test('if not everything is pushed', () async {
           await initLocalGit(dLocal);
-          initCommand(
-            upstreamBranch: upstreamBranch,
-          );
+          initCommand(upstreamBranch: upstreamBranch);
 
           // Not yet added file?
           createFile();

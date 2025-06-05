@@ -86,20 +86,16 @@ void main() {
           // Mock staging fails
           final processWrapper = MockGgProcessWrapper();
           when(
-            () => processWrapper.run(
-              'git',
-              ['add', '.'],
-              workingDirectory: d.path,
-            ),
+            () => processWrapper.run('git', [
+              'add',
+              '.',
+            ], workingDirectory: d.path),
           ).thenAnswer(
             (_) async => ProcessResult(1, 1, '', 'Some staging error'),
           );
 
           // Create an instance
-          commit = Commit(
-            ggLog: messages.add,
-            processWrapper: processWrapper,
-          );
+          commit = Commit(ggLog: messages.add, processWrapper: processWrapper);
 
           // Let's modify a file
           await addFileWithoutCommitting(d, fileName: 'file1.txt');
@@ -128,31 +124,25 @@ void main() {
           // Mock staging succeeds
           final processWrapper = MockGgProcessWrapper();
           when(
-            () => processWrapper.run(
-              'git',
-              ['add', '.'],
-              workingDirectory: d.path,
-            ),
-          ).thenAnswer(
-            (_) async => ProcessResult(1, 0, '', ''),
-          );
+            () => processWrapper.run('git', [
+              'add',
+              '.',
+            ], workingDirectory: d.path),
+          ).thenAnswer((_) async => ProcessResult(1, 0, '', ''));
 
           // Mock committing fails
           when(
-            () => processWrapper.run(
-              'git',
-              ['commit', '-m', commitMessage],
-              workingDirectory: d.path,
-            ),
+            () => processWrapper.run('git', [
+              'commit',
+              '-m',
+              commitMessage,
+            ], workingDirectory: d.path),
           ).thenAnswer(
             (_) async => ProcessResult(1, 1, '', 'My commit error.'),
           );
 
           // Create an instance
-          commit = Commit(
-            ggLog: messages.add,
-            processWrapper: processWrapper,
-          );
+          commit = Commit(ggLog: messages.add, processWrapper: processWrapper);
 
           // Let's modify a file
           await addFileWithoutCommitting(d, fileName: 'file1.txt');
@@ -177,33 +167,35 @@ void main() {
           );
         });
 
-        test('if ammend and ammendWhenNotPushed is true at the same time',
-            () async {
-          // Let's modify a file
-          await addFileWithoutCommitting(d, fileName: 'file1.txt');
+        test(
+          'if ammend and ammendWhenNotPushed is true at the same time',
+          () async {
+            // Let's modify a file
+            await addFileWithoutCommitting(d, fileName: 'file1.txt');
 
-          // Commit the file
-          late String exception;
+            // Commit the file
+            late String exception;
 
-          try {
-            await commit.commit(
-              directory: d,
-              message: commitMessage,
-              doStage: true,
-              ammend: true,
-              ammendWhenNotPushed: true,
-              ggLog: messages.add,
+            try {
+              await commit.commit(
+                directory: d,
+                message: commitMessage,
+                doStage: true,
+                ammend: true,
+                ammendWhenNotPushed: true,
+                ggLog: messages.add,
+              );
+            } catch (e) {
+              exception = e.toString();
+            }
+
+            expect(
+              exception,
+              'Exception: You cannot use --ammend and --ammend-when-not-pushed '
+              'at the same time.',
             );
-          } catch (e) {
-            exception = e.toString();
-          }
-
-          expect(
-            exception,
-            'Exception: You cannot use --ammend and --ammend-when-not-pushed '
-            'at the same time.',
-          );
-        });
+          },
+        );
       });
 
       group('should commit files', () {
@@ -220,11 +212,11 @@ void main() {
           );
 
           // Check the commit
-          final result = Process.runSync(
-            'git',
-            ['log', '-1', '--pretty=%B'],
-            workingDirectory: d.path,
-          );
+          final result = Process.runSync('git', [
+            'log',
+            '-1',
+            '--pretty=%B',
+          ], workingDirectory: d.path);
 
           expect(result.stdout.trim(), commitMessage);
         });
@@ -301,135 +293,134 @@ void main() {
           expect(count2, count1);
         });
 
-        group('when ammendWhenNotPushed is true and state is not yet pushed',
-            () {
-          test(
-            'and it should not overwrite the last commit message',
-            () async {
-              // Let's modify a file
-              await addAndCommitSampleFile(
-                d,
-                fileName: 'file1.txt',
-                message: 'Commit message 0',
-              );
+        group(
+          'when ammendWhenNotPushed is true and state is not yet pushed',
+          () {
+            test(
+              'and it should not overwrite the last commit message',
+              () async {
+                // Let's modify a file
+                await addAndCommitSampleFile(
+                  d,
+                  fileName: 'file1.txt',
+                  message: 'Commit message 0',
+                );
 
-              // Count the number of commits
-              final count0 = await commitCount.get(
-                ggLog: messages.add,
-                directory: d,
-              );
+                // Count the number of commits
+                final count0 = await commitCount.get(
+                  ggLog: messages.add,
+                  directory: d,
+                );
 
-              // Modify the file again
-              File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
+                // Modify the file again
+                File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
 
-              // Commit the file again with ammendWhenNotPushed = true
-              await commit.commit(
-                directory: d,
-                message: 'Commit message 1',
-                doStage: true,
-                ammendWhenNotPushed: true,
-                ggLog: messages.add,
-              );
+                // Commit the file again with ammendWhenNotPushed = true
+                await commit.commit(
+                  directory: d,
+                  message: 'Commit message 1',
+                  doStage: true,
+                  ammendWhenNotPushed: true,
+                  ggLog: messages.add,
+                );
 
-              // Commit count should not have increased
-              // because we did not push yet.
-              final count1 = await commitCount.get(
-                ggLog: messages.add,
-                directory: d,
-              );
-              expect(count1, count0);
+                // Commit count should not have increased
+                // because we did not push yet.
+                final count1 = await commitCount.get(
+                  ggLog: messages.add,
+                  directory: d,
+                );
+                expect(count1, count0);
 
-              // Commit message should be the previous one.
-              // because the commit was ammended
-              final commitMessage1 = await headMessage.get(
-                ggLog: messages.add,
-                directory: d,
-              );
-              expect(commitMessage1, 'Commit message 0');
+                // Commit message should be the previous one.
+                // because the commit was ammended
+                final commitMessage1 = await headMessage.get(
+                  ggLog: messages.add,
+                  directory: d,
+                );
+                expect(commitMessage1, 'Commit message 0');
 
-              // Push the current state
-              await pushLocalChanges(d);
+                // Push the current state
+                await pushLocalChanges(d);
 
-              // Make another change
-              File('${d.path}/file1.txt').writeAsStringSync('Change 3!');
+                // Make another change
+                File('${d.path}/file1.txt').writeAsStringSync('Change 3!');
 
-              // Commit the file again with ammendWhenNotPushed = true
-              await commit.commit(
-                directory: d,
-                message: 'Commit message 2',
-                doStage: true,
-                ammendWhenNotPushed: true,
-                ggLog: messages.add,
-              );
+                // Commit the file again with ammendWhenNotPushed = true
+                await commit.commit(
+                  directory: d,
+                  message: 'Commit message 2',
+                  doStage: true,
+                  ammendWhenNotPushed: true,
+                  ggLog: messages.add,
+                );
 
-              // Commit count should have increased
-              // because we did push the previous release
-              final count2 = await commitCount.get(
-                ggLog: messages.add,
-                directory: d,
-              );
-              expect(count2, count1 + 1);
+                // Commit count should have increased
+                // because we did push the previous release
+                final count2 = await commitCount.get(
+                  ggLog: messages.add,
+                  directory: d,
+                );
+                expect(count2, count1 + 1);
 
-              // Commit message should be the new one,
-              // because we did add an additional commit
-              final commitMessage2 = await headMessage.get(
-                ggLog: messages.add,
-                directory: d,
-              );
-              expect(commitMessage2, 'Commit message 2');
-            },
-          );
-        });
+                // Commit message should be the new one,
+                // because we did add an additional commit
+                final commitMessage2 = await headMessage.get(
+                  ggLog: messages.add,
+                  directory: d,
+                );
+                expect(commitMessage2, 'Commit message 2');
+              },
+            );
+          },
+        );
 
         group('when ammendWhenNotPushed is true and branch has no remote', () {
-          test(
-            'and it should not overwrite the last commit message',
-            () async {
-              // Create a new local branch which does not has a remote branch
-              await createBranch(d, 'feature1');
+          test('and it should not overwrite the last commit message', () async {
+            // Create a new local branch which does not has a remote branch
+            await createBranch(d, 'feature1');
 
-              // Let's modify a file
-              await addAndCommitSampleFile(
-                d,
-                fileName: 'file1.txt',
-                message: 'Commit message 0',
-              );
+            // Let's modify a file
+            await addAndCommitSampleFile(
+              d,
+              fileName: 'file1.txt',
+              message: 'Commit message 0',
+            );
 
-              // Count the number of commits
-              final count0 = await commitCount.get(
-                ggLog: messages.add,
-                directory: d,
-              );
+            // Count the number of commits
+            final count0 = await commitCount.get(
+              ggLog: messages.add,
+              directory: d,
+            );
 
-              // Modify the file again
-              File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
+            // Modify the file again
+            File('${d.path}/file1.txt').writeAsStringSync('Change 2!');
 
-              // Commit the file again with ammendWhenNotPushed = true
-              await commit.commit(
-                directory: d,
-                message: 'Commit message 1',
-                doStage: true,
-                ammendWhenNotPushed: true,
-                ggLog: messages.add,
-              );
+            // Commit the file again with ammendWhenNotPushed = true
+            await commit.commit(
+              directory: d,
+              message: 'Commit message 1',
+              doStage: true,
+              ammendWhenNotPushed: true,
+              ggLog: messages.add,
+            );
 
-              // Commit count should not have increased
-              // because we did not push yet.
-              final count1 = await commitCount.get(
-                ggLog: messages.add,
-                directory: d,
-              );
-              expect(count1, count0);
+            // Commit count should not have increased
+            // because we did not push yet.
+            final count1 = await commitCount.get(
+              ggLog: messages.add,
+              directory: d,
+            );
+            expect(count1, count0);
 
-              // Commit message should be the previous one.
-              // because the commit was ammended
-              final commitMessage1 = await headMessage.get(
-                ggLog: messages.add,
-                directory: d,
-              );
-              expect(commitMessage1, 'Commit message 0');
-            },
-          );
+            // Commit message should be the previous one.
+            // because the commit was ammended
+            final commitMessage1 = await headMessage.get(
+              ggLog: messages.add,
+              directory: d,
+            );
+            expect(commitMessage1, 'Commit message 0');
+          });
         });
       });
     });
@@ -445,9 +436,14 @@ void main() {
           expect(await modifiedFiles(d), ['file1.txt']);
 
           // Commit the file
-          await runner.run(
-            ['commit', '-i', d.path, '-m', 'Commit message', '-s'],
-          );
+          await runner.run([
+            'commit',
+            '-i',
+            d.path,
+            '-m',
+            'Commit message',
+            '-s',
+          ]);
 
           expect(await modifiedFiles(d), <String>[]);
         });
@@ -473,9 +469,15 @@ void main() {
           expect(await modifiedFiles(d), ['file1.txt']);
 
           // Commit the file
-          await runner.run(
-            ['commit', '-i', d.path, '-m', 'Commit message', '-s', '-a'],
-          );
+          await runner.run([
+            'commit',
+            '-i',
+            d.path,
+            '-m',
+            'Commit message',
+            '-s',
+            '-a',
+          ]);
 
           // Everything is committed
           expect(await modifiedFiles(d), <String>[]);

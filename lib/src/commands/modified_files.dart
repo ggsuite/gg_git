@@ -32,11 +32,7 @@ class ModifiedFiles extends GgGitBase<List<String>> {
   }) async {
     force = force ?? argResults?['force'] as bool? ?? true;
 
-    final result = await get(
-      directory: directory,
-      ggLog: ggLog,
-      force: force,
-    );
+    final result = await get(directory: directory, ggLog: ggLog, force: force);
     ggLog(result.join('\n'));
 
     return result;
@@ -62,9 +58,7 @@ class ModifiedFiles extends GgGitBase<List<String>> {
       return result;
     }
 
-    if (!await _hasCommits(
-      directory: directory,
-    )) {
+    if (!await _hasCommits(directory: directory)) {
       return [];
     }
 
@@ -90,11 +84,10 @@ class ModifiedFiles extends GgGitBase<List<String>> {
     await check(directory: directory);
 
     // Use git status -s to get the status in a short format
-    final result = await processWrapper.run(
-      'git',
-      ['status', '-s'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'status',
+      '-s',
+    ], workingDirectory: directory.path);
 
     return _parseResult(result, ignoreFiles);
   }
@@ -110,11 +103,12 @@ class ModifiedFiles extends GgGitBase<List<String>> {
     var result = <String>[];
 
     while (result.isEmpty) {
-      final processResult = await processWrapper.run(
-        'git',
-        ['show', '--name-only', 'HEAD~$offset', '--pretty='],
-        workingDirectory: directory.path,
-      );
+      final processResult = await processWrapper.run('git', [
+        'show',
+        '--name-only',
+        'HEAD~$offset',
+        '--pretty=',
+      ], workingDirectory: directory.path);
 
       result = _parseResult(processResult, ignoreFiles);
       offset++;
@@ -154,11 +148,12 @@ class ModifiedFiles extends GgGitBase<List<String>> {
           .split('\n')
           .where((line) => line.isNotEmpty) // Filter out any empty lines
           .map((line) {
-        // Each line has the format "<status> <file>", so we split by spaces
-        // and get the last element, which is the file name
-        var parts = line.trim().split(RegExp(r'\s+'));
-        return parts.last;
-      }).toList();
+            // Each line has the format "<status> <file>", so we split by spaces
+            // and get the last element, which is the file name
+            var parts = line.trim().split(RegExp(r'\s+'));
+            return parts.last;
+          })
+          .toList();
       return modifiedFiles
           .where((element) => !ignoreFiles.contains(element))
           .toList();
@@ -169,14 +164,13 @@ class ModifiedFiles extends GgGitBase<List<String>> {
   }
 
   // ...........................................................................
-  Future<bool> _hasCommits({
-    required Directory directory,
-  }) async {
-    final result = await processWrapper.run(
-      'git',
-      ['rev-list', '-n', '1', '--all'],
-      workingDirectory: directory.path,
-    );
+  Future<bool> _hasCommits({required Directory directory}) async {
+    final result = await processWrapper.run('git', [
+      'rev-list',
+      '-n',
+      '1',
+      '--all',
+    ], workingDirectory: directory.path);
 
     if (result.exitCode != 0) {
       throw Exception('Error while retrieving revisions: ${result.stderr}');
@@ -194,7 +188,8 @@ class ModifiedFiles extends GgGitBase<List<String>> {
     argParser.addFlag(
       'force',
       abbr: 'f',
-      help: 'Forces to return files modified between the last two commits, '
+      help:
+          'Forces to return files modified between the last two commits, '
           'when all files are currently committed.',
       defaultsTo: false,
       negatable: true,

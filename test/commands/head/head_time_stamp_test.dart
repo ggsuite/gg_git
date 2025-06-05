@@ -89,8 +89,12 @@ void main() {
 
           // Mock IsCommitted
           final isCommited = MockIsCommitted();
-          when(() => isCommited.get(directory: d, ggLog: any(named: 'ggLog')))
-              .thenAnswer((_) => Future.value(true));
+          when(
+            () => isCommited.get(
+              directory: d,
+              ggLog: any(named: 'ggLog'),
+            ),
+          ).thenAnswer((_) => Future.value(true));
 
           // Getting the head commit message should throw
           final failingProcessWrapper = MockGgProcessWrapper();
@@ -102,14 +106,7 @@ void main() {
               any(),
               workingDirectory: d.path,
             ),
-          ).thenAnswer(
-            (_) async => ProcessResult(
-              1,
-              1,
-              'stdout',
-              'stderr',
-            ),
-          );
+          ).thenAnswer((_) async => ProcessResult(1, 1, 'stdout', 'stderr'));
 
           // Run headMessage.get and check if it throws
           headTimeStamp = HeadTimeStamp(
@@ -141,8 +138,10 @@ void main() {
           await addAndCommitSampleFile(d);
 
           // Getting the head commit message should work
-          final message =
-              await headTimeStamp.get(directory: d, ggLog: messages.add);
+          final message = await headTimeStamp.get(
+            directory: d,
+            ggLog: messages.add,
+          );
           expect(message, isNot(0));
         });
       });
@@ -156,8 +155,10 @@ void main() {
           await addAndCommitSampleFile(d);
 
           // Get time stamp
-          final timeStamp1 =
-              await headTimeStamp.get(directory: d, ggLog: messages.add);
+          final timeStamp1 = await headTimeStamp.get(
+            directory: d,
+            ggLog: messages.add,
+          );
           expect(timeStamp1, greaterThanOrEqualTo(timeStamp0));
 
           // Wait 100ms
@@ -167,8 +168,10 @@ void main() {
           await updateAndCommitSampleFile(d, message: 'New commit');
 
           // Get time stamp
-          final timeStamp2 =
-              await headTimeStamp.get(directory: d, ggLog: messages.add);
+          final timeStamp2 = await headTimeStamp.get(
+            directory: d,
+            ggLog: messages.add,
+          );
 
           // TimeStampe should be at least 100ms later
           expect(timeStamp2, greaterThanOrEqualTo(timeStamp1));

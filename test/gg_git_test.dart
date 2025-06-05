@@ -35,10 +35,9 @@ void main() {
         // Iterate all files in lib/src/commands
         // and check if they are added to the command runner
         // and if they are added to the help message
-        final subCommandsDart =
-            Directory('lib/src/commands').listSync(recursive: false).where(
-                  (file) => file.path.endsWith('.dart'),
-                );
+        final subCommandsDart = Directory('lib/src/commands')
+            .listSync(recursive: false)
+            .where((file) => file.path.endsWith('.dart'));
 
         await capturePrint(
           ggLog: messages.add,
@@ -54,12 +53,14 @@ void main() {
 
           // Check if the command has the right name
           final fileContent = await File(dartFile.path).readAsString();
-          final hasRightName = fileContent.contains('name: \'$subCommand\'') ||
+          final hasRightName =
+              fileContent.contains('name: \'$subCommand\'') ||
               fileContent.contains('name = \'$subCommand\'');
           expect(
             hasRightName,
             isTrue,
-            reason: '\nPlease open "$fileName" '
+            reason:
+                '\nPlease open "$fileName" '
                 'and make sure the name is "$subCommand".',
           );
 
@@ -69,7 +70,8 @@ void main() {
           expect(
             hasLog(messages, subCommand),
             isTrue,
-            reason: '\nMissing subcommand "$ggSubCommand"\n'
+            reason:
+                '\nMissing subcommand "$ggSubCommand"\n'
                 'Please open  "lib/src/gg_git.dart"\n'
                 '"and add "addSubcommand($ggSubCommand(ggLog: ggLog));"\n'
                 'Make sure the name of the command is '

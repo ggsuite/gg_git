@@ -47,13 +47,8 @@ abstract class GgGitBase<T> extends DirCommand<T> {
 /// Example git command implementation
 class GgGitCommandExample extends GgGitBase<String> {
   /// Constructor
-  GgGitCommandExample({
-    super.processWrapper,
-    required super.ggLog,
-  }) : super(
-          name: 'example',
-          description: 'This is an example command.',
-        );
+  GgGitCommandExample({super.processWrapper, required super.ggLog})
+    : super(name: 'example', description: 'This is an example command.');
 
   // ...........................................................................
   @override

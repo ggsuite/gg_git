@@ -29,8 +29,7 @@ void main() {
 
   group('LastChangesHash', () {
     group('get(ggLog, directory, ignoredFiles)', () {
-      test(
-          'should return a 64bit hash summarizing the changes '
+      test('should return a 64bit hash summarizing the changes '
           'since the last commit.', () async {
         await initGit(d);
         await addAndCommitSampleFile(d);

@@ -4,7 +4,7 @@ version: 2.5.18
 repository: https://github.com/inlavigo/gg_git.git
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.8.0 <4.0.0"
 
 dependencies:
   args: ^2.4.2

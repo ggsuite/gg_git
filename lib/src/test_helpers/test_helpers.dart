@@ -30,14 +30,9 @@ Future<Directory> initTestDir() async {
 }
 
 // .............................................................................
-void _throw(
-  String message,
-  ProcessResult result,
-) {
+void _throw(String message, ProcessResult result) {
   if (result.exitCode != 0) {
-    throw Exception(
-      '$message: ${result.stderr}',
-    );
+    throw Exception('$message: ${result.stderr}');
   }
 }
 
@@ -56,19 +51,18 @@ Future<void> initLocalGit(Directory testDir) async {
 
   final localDir = testDir;
 
-  final result = await Process.run(
-    'git',
-    ['init', '--initial-branch=main'],
-    workingDirectory: localDir.path,
-  );
+  final result = await Process.run('git', [
+    'init',
+    '--initial-branch=main',
+  ], workingDirectory: localDir.path);
 
   _throw('Could not initialize local git repository', result);
 
-  final result2 = await Process.run(
-    'git',
-    ['checkout', '-b', 'main'],
-    workingDirectory: localDir.path,
-  );
+  final result2 = await Process.run('git', [
+    'checkout',
+    '-b',
+    'main',
+  ], workingDirectory: localDir.path);
 
   _throw('Could not create main branch', result2);
 }
@@ -78,11 +72,11 @@ Future<void> initLocalGit(Directory testDir) async {
 Future<void> initRemoteGit(Directory testDir) async {
   final remoteDir = testDir;
   await remoteDir.create(recursive: true);
-  final result = await Process.run(
-    'git',
-    ['init', '--bare', '--initial-branch=main'],
-    workingDirectory: remoteDir.path,
-  );
+  final result = await Process.run('git', [
+    'init',
+    '--bare',
+    '--initial-branch=main',
+  ], workingDirectory: remoteDir.path);
 
   _throw('Could not initialize remote git repository', result);
 }
@@ -94,16 +88,12 @@ Future<void> addRemoteToLocal({
   required Directory remote,
 }) async {
   // Add remote
-  final result2 = await Process.run(
-    'git',
-    [
-      'remote',
-      'add',
-      'origin',
-      remote.path,
-    ],
-    workingDirectory: local.path,
-  );
+  final result2 = await Process.run('git', [
+    'remote',
+    'add',
+    'origin',
+    remote.path,
+  ], workingDirectory: local.path);
 
   _throw('Could not add remote to local git repository', result2);
 
@@ -114,16 +104,12 @@ Future<void> addRemoteToLocal({
     content: 'Initial commit',
   );
 
-  final result3 = await Process.run(
-    'git',
-    [
-      'push',
-      '--set-upstream',
-      'origin',
-      'main',
-    ],
-    workingDirectory: local.path,
-  );
+  final result3 = await Process.run('git', [
+    'push',
+    '--set-upstream',
+    'origin',
+    'main',
+  ], workingDirectory: local.path);
 
   _throw('Could not set up-stream', result3);
 }
@@ -143,19 +129,21 @@ Future<(Directory local, Directory remote)> initLocalAndRemoteGit() async {
 // .............................................................................
 void _setupGitHub(Directory testDir) async {
   if (isGitHub) {
-    final result2 = await Process.run(
-      'git',
-      ['config', '--global', 'user.email', 'githubaction@inlavigo.com'],
-      workingDirectory: testDir.path,
-    );
+    final result2 = await Process.run('git', [
+      'config',
+      '--global',
+      'user.email',
+      'githubaction@inlavigo.com',
+    ], workingDirectory: testDir.path);
 
     _throw('Could not set mail', result2);
 
-    final result3 = await Process.run(
-      'git',
-      ['config', '--global', 'user.name', 'Github Action'],
-      workingDirectory: testDir.path,
-    );
+    final result3 = await Process.run('git', [
+      'config',
+      '--global',
+      'user.name',
+      'Github Action',
+    ], workingDirectory: testDir.path);
 
     _throw('Could not set mail', result3);
   }
@@ -167,11 +155,11 @@ void _setupGitHub(Directory testDir) async {
 // .............................................................................
 /// Creates a branch in the git repo in testDir
 Future<void> createBranch(Directory testDir, String branchName) async {
-  final result = await Process.run(
-    'git',
-    ['checkout', '-b', branchName],
-    workingDirectory: testDir.path,
-  );
+  final result = await Process.run('git', [
+    'checkout',
+    '-b',
+    branchName,
+  ], workingDirectory: testDir.path);
 
   _throw('Could not create branch $branchName', result);
 }
@@ -179,11 +167,10 @@ Future<void> createBranch(Directory testDir, String branchName) async {
 // .............................................................................
 /// Returns the name of the current branch in testDir
 Future<String> branchName(Directory testDir) async {
-  final result = await Process.run(
-    'git',
-    ['branch', '--show-current'],
-    workingDirectory: testDir.path,
-  );
+  final result = await Process.run('git', [
+    'branch',
+    '--show-current',
+  ], workingDirectory: testDir.path);
 
   _throw('Could not get current branch name', result);
 
@@ -193,8 +180,9 @@ Future<String> branchName(Directory testDir) async {
 // .............................................................................
 /// Returns the name of the upstream branch
 Future<String> upstreamBranchName(Directory testDir) async {
-  final result =
-      UpstreamBranch(ggLog: print).get(directory: testDir, ggLog: print);
+  final result = UpstreamBranch(
+    ggLog: print,
+  ).get(directory: testDir, ggLog: print);
   return result;
 }
 
@@ -204,10 +192,7 @@ Future<String> upstreamBranchName(Directory testDir) async {
 
 // .............................................................................
 /// Adds a gitignore file to the test directory
-Future<void> addAndCommitGitIgnoreFile(
-  Directory d, {
-  String content = '',
-}) =>
+Future<void> addAndCommitGitIgnoreFile(Directory d, {String content = ''}) =>
     addAndCommitSampleFile(d, fileName: '.gitignore', content: content);
 
 // #############
@@ -216,11 +201,10 @@ Future<void> addAndCommitGitIgnoreFile(
 
 /// Add tag to test directory
 Future<void> addTag(Directory testDir, String tag) async {
-  final result = await Process.run(
-    'git',
-    ['tag', tag],
-    workingDirectory: testDir.path,
-  );
+  final result = await Process.run('git', [
+    'tag',
+    tag,
+  ], workingDirectory: testDir.path);
 
   _throw('Could not add tag $tag', result);
 }
@@ -266,26 +250,23 @@ Future<void> commitFile(
     await stageFile(testDir, fileName);
   }
 
-  final result2 = await Process.run(
-    'git',
-    ['commit', '-m', message, if (ammend) '--amend'],
-    workingDirectory: testDir.path,
-  );
+  final result2 = await Process.run('git', [
+    'commit',
+    '-m',
+    message,
+    if (ammend) '--amend',
+  ], workingDirectory: testDir.path);
 
   _throw('Could not commit $fileName', result2);
 }
 
 // .............................................................................
 /// Commit the file with a name in the test directory
-Future<void> stageFile(
-  Directory testDir,
-  String fileName,
-) async {
-  final result = await Process.run(
-    'git',
-    ['add', fileName],
-    workingDirectory: testDir.path,
-  );
+Future<void> stageFile(Directory testDir, String fileName) async {
+  final result = await Process.run('git', [
+    'add',
+    fileName,
+  ], workingDirectory: testDir.path);
 
   _throw('Could not stage $fileName', result);
 }
@@ -293,19 +274,16 @@ Future<void> stageFile(
 // .............................................................................
 /// Returns a list of modified files in the directory
 Future<List<String>> modifiedFiles(Directory directory) {
-  return ModifiedFiles(
-    ggLog: print,
-  ).get(directory: directory, ggLog: print);
+  return ModifiedFiles(ggLog: print).get(directory: directory, ggLog: print);
 }
 
 // .............................................................................
 /// Reverts all local changes in the directory
 Future<void> revertLocalChanges(Directory directory) async {
-  final result = await Process.run(
-    'git',
-    ['restore', '.'],
-    workingDirectory: directory.path,
-  );
+  final result = await Process.run('git', [
+    'restore',
+    '.',
+  ], workingDirectory: directory.path);
 
   _throw('Could not restore all changes', result);
 }
@@ -313,11 +291,11 @@ Future<void> revertLocalChanges(Directory directory) async {
 // .............................................................................
 /// Reverts all local changes in the directory
 Future<void> hardReset(Directory directory) async {
-  final result = await Process.run(
-    'git',
-    ['reset', '--hard', 'origin/main'],
-    workingDirectory: directory.path,
-  );
+  final result = await Process.run('git', [
+    'reset',
+    '--hard',
+    'origin/main',
+  ], workingDirectory: directory.path);
 
   _throw('Could not run "git reset --hard origin main"', result);
 }
@@ -432,11 +410,10 @@ Future<void> deleteFileAndCommit(Directory testDir, String fileName) async {
   }
 
   // Stage deletion
-  final result0 = await Process.run(
-    'git',
-    ['rm', fileName],
-    workingDirectory: testDir.path,
-  );
+  final result0 = await Process.run('git', [
+    'rm',
+    fileName,
+  ], workingDirectory: testDir.path);
 
   _throw('Could execute »git rm $fileName«', result0);
 
@@ -499,19 +476,14 @@ Future<void> addAndCommitVersions(
 /// Adds and pushes local changes
 Future<void> pushLocalChanges(Directory d) async {
   // Add local changes
-  final result0 = await Process.run(
-    'git',
-    ['add', '.'],
-    workingDirectory: d.path,
-  );
+  final result0 = await Process.run('git', [
+    'add',
+    '.',
+  ], workingDirectory: d.path);
 
   _throw('Could not add local changes', result0);
 
-  final result1 = await Process.run(
-    'git',
-    ['push'],
-    workingDirectory: d.path,
-  );
+  final result1 = await Process.run('git', ['push'], workingDirectory: d.path);
 
   _throw('Could not push local changes', result1);
 }

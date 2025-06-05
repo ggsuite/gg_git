@@ -14,13 +14,11 @@ import 'package:gg_log/gg_log.dart';
 /// Provides "ggGit current-version-tag dir" command
 class GetTags extends GgGitBase<List<String>> {
   /// Constructor
-  GetTags({
-    required super.ggLog,
-    super.processWrapper,
-  }) : super(
-          name: 'get-tags',
-          description: 'Retrieves the tags of the latest revision.',
-        ) {
+  GetTags({required super.ggLog, super.processWrapper})
+    : super(
+        name: 'get-tags',
+        description: 'Retrieves the tags of the latest revision.',
+      ) {
     _addArgs();
   }
 
@@ -52,34 +50,27 @@ class GetTags extends GgGitBase<List<String>> {
     required GgLog ggLog,
     required Directory directory,
     bool headOnly = false,
-  }) =>
-      headOnly
-          ? fromHead(ggLog: ggLog, directory: directory)
-          : all(ggLog: ggLog, directory: directory);
+  }) => headOnly
+      ? fromHead(ggLog: ggLog, directory: directory)
+      : all(ggLog: ggLog, directory: directory);
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   Future<List<String>> fromHead({
     required GgLog ggLog,
     required Directory directory,
-  }) =>
-      _getTags(
-        args: ['--contains', 'HEAD'],
-        ggLog: ggLog,
-        directory: directory,
-      );
+  }) => _getTags(
+    args: ['--contains', 'HEAD'],
+    ggLog: ggLog,
+    directory: directory,
+  );
 
   // ...........................................................................
   /// Returns true if everything in the directory is pushed.
   Future<List<String>> all({
     required GgLog ggLog,
     required Directory directory,
-  }) =>
-      _getTags(
-        args: [],
-        ggLog: ggLog,
-        directory: directory,
-      );
+  }) => _getTags(args: [], ggLog: ggLog, directory: directory);
 
   // ...........................................................................
   Future<List<String>> _getTags({
@@ -89,19 +80,20 @@ class GetTags extends GgGitBase<List<String>> {
   }) async {
     await check(directory: directory);
 
-    final result = await processWrapper.run(
-      'git',
-      ['tag', '-l', ...args],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'tag',
+      '-l',
+      ...args,
+    ], workingDirectory: directory.path);
 
     if (result.exitCode == 0) {
-      final tags = (result.stdout as String)
-          .split(RegExp(r'\r?\n'))
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList()
-        ..sort((a, b) => b.toLowerCase().compareTo(a.toLowerCase()));
+      final tags =
+          (result.stdout as String)
+              .split(RegExp(r'\r?\n'))
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList()
+            ..sort((a, b) => b.toLowerCase().compareTo(a.toLowerCase()));
 
       return tags;
     }

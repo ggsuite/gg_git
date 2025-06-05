@@ -53,27 +53,18 @@ void main() {
         initCommand(processWrapper: failingProcessWrapper);
 
         when(
-          () => failingProcessWrapper.run(
-            'git',
-            ['remote'],
-            workingDirectory: dLocal.path,
-          ),
+          () => failingProcessWrapper.run('git', [
+            'remote',
+          ], workingDirectory: dLocal.path),
         ).thenAnswer(
-          (_) async => ProcessResult(
-            1,
-            1,
-            'git remote failed',
-            'git remote failed',
-          ),
+          (_) async =>
+              ProcessResult(1, 1, 'git remote failed', 'git remote failed'),
         );
 
         late String exception;
 
         try {
-          await hasRemote.get(
-            directory: dLocal,
-            ggLog: messages.add,
-          );
+          await hasRemote.get(directory: dLocal, ggLog: messages.add);
         } catch (e) {
           exception = e.toString();
         }
@@ -139,10 +130,7 @@ void main() {
           expect(messages[0], contains('⌛️ Has a remote.'));
           expect(messages[1], contains('❌ Has a remote.'));
 
-          expect(
-            exception,
-            contains('Repo has no remote.'),
-          );
+          expect(exception, contains('Repo has no remote.'));
         });
       });
 

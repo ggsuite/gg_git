@@ -18,15 +18,13 @@ class HeadMessage extends GgGitBase<String> {
     required super.ggLog,
     super.processWrapper,
     IsCommitted? isCommitted,
-  })  : _isCommitted = isCommitted ??
-            IsCommitted(
-              ggLog: ggLog,
-              processWrapper: processWrapper,
-            ),
-        super(
-          name: 'message',
-          description: 'Returns the commit message of the head revision.',
-        ) {
+  }) : _isCommitted =
+           isCommitted ??
+           IsCommitted(ggLog: ggLog, processWrapper: processWrapper),
+       super(
+         name: 'message',
+         description: 'Returns the commit message of the head revision.',
+       ) {
     HeadHash.addParams(argParser);
   }
 
@@ -61,8 +59,10 @@ class HeadMessage extends GgGitBase<String> {
 
     await check(directory: directory);
 
-    final isCommited =
-        await _isCommitted.get(directory: directory, ggLog: ggLog);
+    final isCommited = await _isCommitted.get(
+      directory: directory,
+      ggLog: ggLog,
+    );
 
     if (!isCommited && throwIfNotEverythingIsCommitted) {
       throw Exception('Not everything is committed.');
@@ -70,11 +70,12 @@ class HeadMessage extends GgGitBase<String> {
 
     // To get the commit message, the command is adjusted to use `git log`
     final offsetString = offset == 0 ? '' : '~$offset';
-    final result = await processWrapper.run(
-      'git',
-      ['log', '-1', '--pretty=format:%B', 'HEAD$offsetString'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'log',
+      '-1',
+      '--pretty=format:%B',
+      'HEAD$offsetString',
+    ], workingDirectory: directory.path);
 
     if (result.exitCode == 0) {
       return result.stdout.toString().trim();

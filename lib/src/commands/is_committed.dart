@@ -16,14 +16,12 @@ import 'package:gg_status_printer/gg_status_printer.dart';
 /// Checks if eyerything in the current working directory is committed.
 class IsCommitted extends GgGitBase<bool> {
   /// Constructor
-  IsCommitted({
-    required super.ggLog,
-    super.processWrapper,
-  }) : super(
-          name: 'is-committed',
-          description:
-              'Is everything in the current working directory committed?',
-        );
+  IsCommitted({required super.ggLog, super.processWrapper})
+    : super(
+        name: 'is-committed',
+        description:
+            'Is everything in the current working directory committed?',
+      );
 
   // ...........................................................................
   @override
@@ -57,21 +55,19 @@ class IsCommitted extends GgGitBase<bool> {
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
   @override
-  Future<bool> get({
-    required GgLog ggLog,
-    required Directory directory,
-  }) async {
+  Future<bool> get({required GgLog ggLog, required Directory directory}) async {
     await check(directory: directory);
 
     // Is everything committed?
-    final result = await processWrapper.run(
-      'git',
-      ['status', '--porcelain'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'status',
+      '--porcelain',
+    ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
-      throw Exception('Could not run "git status" in "${dirName(directory)}": '
-          '${result.stderr}');
+      throw Exception(
+        'Could not run "git status" in "${dirName(directory)}": '
+        '${result.stderr}',
+      );
     }
 
     return (result.stdout as String).isEmpty;

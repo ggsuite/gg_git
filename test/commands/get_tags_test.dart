@@ -55,8 +55,10 @@ void main() {
       group('should return nothing', () {
         test('when no tags are available', () async {
           await initGit(d);
-          final result =
-              await getTags.fromHead(directory: d, ggLog: messages.add);
+          final result = await getTags.fromHead(
+            directory: d,
+            ggLog: messages.add,
+          );
           expect(result, isEmpty);
           expect(messages, isEmpty);
         });
@@ -68,13 +70,9 @@ void main() {
             await initGit(d);
             await addAndCommitSampleFile(d);
             await addTag(d, 'V0');
-            expect(
-              await getTags.fromHead(
-                directory: d,
-                ggLog: messages.add,
-              ),
-              ['V0'],
-            );
+            expect(await getTags.fromHead(directory: d, ggLog: messages.add), [
+              'V0',
+            ]);
             expect(messages, isEmpty);
           });
         });
@@ -84,13 +82,11 @@ void main() {
             await initGit(d);
             await addAndCommitSampleFile(d);
             await addTags(d, ['V0', 'T0', 'T1']);
-            expect(
-              await getTags.fromHead(
-                directory: d,
-                ggLog: messages.add,
-              ),
-              ['V0', 'T1', 'T0'],
-            );
+            expect(await getTags.fromHead(directory: d, ggLog: messages.add), [
+              'V0',
+              'T1',
+              'T0',
+            ]);
           });
 
           test('but not tags of previous commits', () async {
@@ -98,22 +94,15 @@ void main() {
             await addPubspecFileWithoutCommitting(d, version: '1.0.0');
             await commitPubspecFile(d);
             await addTag(d, 'T0');
-            expect(
-              await getTags.fromHead(
-                directory: d,
-                ggLog: messages.add,
-              ),
-              ['T0'],
-            );
+            expect(await getTags.fromHead(directory: d, ggLog: messages.add), [
+              'T0',
+            ]);
 
             // Commit a new change -> No tags should be returned
             await addPubspecFileWithoutCommitting(d, version: '2.0.0');
             await commitPubspecFile(d);
             expect(
-              await getTags.fromHead(
-                directory: d,
-                ggLog: messages.add,
-              ),
+              await getTags.fromHead(directory: d, ggLog: messages.add),
               isEmpty,
             );
           });

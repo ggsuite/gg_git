@@ -14,20 +14,15 @@ import 'package:gg_log/gg_log.dart';
 /// Checks if eyerything in the current working directory is committed.
 class CommitCount extends GgGitBase<int> {
   /// Constructor
-  CommitCount({
-    required super.ggLog,
-    super.processWrapper,
-  }) : super(
-          name: 'commit-count',
-          description: 'Returns the number of commits in the current branch.',
-        );
+  CommitCount({required super.ggLog, super.processWrapper})
+    : super(
+        name: 'commit-count',
+        description: 'Returns the number of commits in the current branch.',
+      );
 
   // ...........................................................................
   @override
-  Future<int> exec({
-    required Directory directory,
-    required GgLog ggLog,
-  }) async {
+  Future<int> exec({required Directory directory, required GgLog ggLog}) async {
     final result = await get(directory: directory, ggLog: ggLog);
     ggLog(result.toString());
     return result;
@@ -36,18 +31,15 @@ class CommitCount extends GgGitBase<int> {
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
   @override
-  Future<int> get({
-    required GgLog ggLog,
-    required Directory directory,
-  }) async {
+  Future<int> get({required GgLog ggLog, required Directory directory}) async {
     await check(directory: directory);
 
     // Is everything committed?
-    final result = await processWrapper.run(
-      'git',
-      ['rev-list', '--all', '--count'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'rev-list',
+      '--all',
+      '--count',
+    ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
       throw Exception(
         'Could not run "git rev-list --all --count" '

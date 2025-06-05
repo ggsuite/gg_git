@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.18] - 2025-06-05
+
+### Changed
+
+- Update to dart 3.8.0
+
 ## [2.5.17] - 2025-06-05
 
 ### Added
@@ -126,6 +132,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[2.5.18]: https://github.com/inlavigo/gg_git/compare/2.5.17...2.5.18
 [2.5.17]: https://github.com/inlavigo/gg_git/compare/2.5.16...2.5.17
 [2.5.16]: https://github.com/inlavigo/gg_git/compare/2.5.15...2.5.16
 [2.5.15]: https://github.com/inlavigo/gg_git/compare/2.5.14...2.5.15

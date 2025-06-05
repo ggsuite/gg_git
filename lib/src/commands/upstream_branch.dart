@@ -14,14 +14,12 @@ import 'package:gg_log/gg_log.dart';
 /// Provides "ggGit pushed dir" command
 class UpstreamBranch extends GgGitBase<String> {
   /// Constructor
-  UpstreamBranch({
-    required super.ggLog,
-    super.processWrapper,
-  }) : super(
-          name: 'upstream-branch',
-          description:
-              'Returns the remote branch assigned to the current branch.',
-        );
+  UpstreamBranch({required super.ggLog, super.processWrapper})
+    : super(
+        name: 'upstream-branch',
+        description:
+            'Returns the remote branch assigned to the current branch.',
+      );
 
   // ...........................................................................
   @override
@@ -47,11 +45,12 @@ class UpstreamBranch extends GgGitBase<String> {
     required Directory directory,
   }) async {
     // Is everything pushed?
-    final result = await processWrapper.run(
-      'git',
-      ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'rev-parse',
+      '--abbrev-ref',
+      '--symbolic-full-name',
+      '@{u}',
+    ], workingDirectory: directory.path);
 
     if (result.exitCode != 0) {
       final error = result.stderr.toString();

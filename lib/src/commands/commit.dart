@@ -22,18 +22,15 @@ class Commit extends GgGitBase<void> {
     ModifiedFiles? modifiedFiles,
     IsPushed? isPushed,
     HeadMessage? headMessage,
-  })  : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog),
-        _isPushed = isPushed ?? IsPushed(ggLog: ggLog),
-        _headMessage = headMessage ?? HeadMessage(ggLog: ggLog) {
+  }) : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog),
+       _isPushed = isPushed ?? IsPushed(ggLog: ggLog),
+       _headMessage = headMessage ?? HeadMessage(ggLog: ggLog) {
     _addArgs();
   }
 
   // ...........................................................................
   @override
-  Future<void> get({
-    required Directory directory,
-    required GgLog ggLog,
-  }) async {
+  Future<void> get({required Directory directory, required GgLog ggLog}) async {
     final stage = argResults!['stage'] as bool;
     final message = argResults!['message'] as String;
     final ammend = argResults!['ammend'] as bool;
@@ -107,7 +104,8 @@ class Commit extends GgGitBase<void> {
       await _stage(directory);
     }
 
-    ammend = ammend ||
+    ammend =
+        ammend ||
         ammendWhenNotPushed &&
             !await _isPushed.get(
               directory: directory,
@@ -124,11 +122,12 @@ class Commit extends GgGitBase<void> {
       );
     }
 
-    final result = await processWrapper.run(
-      'git',
-      ['commit', '-m', message, if (ammend) '--amend'],
-      workingDirectory: directory.path,
-    );
+    final result = await processWrapper.run('git', [
+      'commit',
+      '-m',
+      message,
+      if (ammend) '--amend',
+    ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
       var message = 'Could not commit files: ';
       if (result.stderr?.isNotEmpty == true) {
@@ -143,15 +142,12 @@ class Commit extends GgGitBase<void> {
     }
   }
 
-// .............................................................................
-  Future<void> _stage(
-    Directory directory,
-  ) async {
-    final result = await processWrapper.run(
-      'git',
-      ['add', '.'],
-      workingDirectory: directory.path,
-    );
+  // ...........................................................................
+  Future<void> _stage(Directory directory) async {
+    final result = await processWrapper.run('git', [
+      'add',
+      '.',
+    ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
       throw Exception('Could not stage files: ${result.stderr}');
     }

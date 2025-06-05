@@ -27,14 +27,8 @@ class LastChangesHash extends GgGitBase<int> {
 
   // ...........................................................................
   @override
-  Future<int> exec({
-    required Directory directory,
-    required GgLog ggLog,
-  }) async {
-    final result = await get(
-      directory: directory,
-      ggLog: ggLog,
-    );
+  Future<int> exec({required Directory directory, required GgLog ggLog}) async {
+    final result = await get(directory: directory, ggLog: ggLog);
     ggLog(result.toString());
 
     return result;
@@ -55,10 +49,7 @@ class LastChangesHash extends GgGitBase<int> {
       force: true,
       ignoreFiles: ignoreFiles,
       returnDeleted: true,
-    ))
-        .where((element) => !ignoreFiles.contains(element))
-        .toList()
-      ..sort();
+    )).where((element) => !ignoreFiles.contains(element)).toList()..sort();
 
     // Get the content of the modified files
     final modifiedFileFutures = modifiedFiles.map(
@@ -104,8 +95,8 @@ Future<String> _readFile(Directory directory, String fileName) async {
 
   return await file.exists()
       ? isBinaryFile
-          ? base64Encode(await file.readAsBytes())
-          : await file.readAsString()
+            ? base64Encode(await file.readAsBytes())
+            : await file.readAsString()
       : '$fileName was deleted';
 }
 
