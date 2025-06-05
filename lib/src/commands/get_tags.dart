@@ -11,7 +11,7 @@ import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_log/gg_log.dart';
 
 // #############################################################################
-/// Provides "ggGit current-version-tag <dir>" command
+/// Provides "ggGit current-version-tag dir" command
 class GetTags extends GgGitBase<List<String>> {
   /// Constructor
   GetTags({

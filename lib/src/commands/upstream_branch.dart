@@ -11,7 +11,7 @@ import 'package:gg_git/src/base/gg_git_base.dart';
 import 'package:gg_log/gg_log.dart';
 
 // #############################################################################
-/// Provides "ggGit pushed <dir>" command
+/// Provides "ggGit pushed dir" command
 class UpstreamBranch extends GgGitBase<String> {
   /// Constructor
   UpstreamBranch({
@@ -56,7 +56,8 @@ class UpstreamBranch extends GgGitBase<String> {
     if (result.exitCode != 0) {
       final error = result.stderr.toString();
       if (error.contains('no upstream configured') ||
-          error.contains('no such branch')) {
+          error.contains('no such branch') ||
+          error.contains('HEAD does not point to a branch')) {
         return '';
       }
       throw Exception(

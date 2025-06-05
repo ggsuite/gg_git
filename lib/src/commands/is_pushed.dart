@@ -13,7 +13,7 @@ import 'package:gg_log/gg_log.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
 
 // #############################################################################
-/// Provides "ggGit pushed <dir>" command
+/// Provides "ggGit pushed dir" command
 class IsPushed extends GgGitBase<bool> {
   /// Constructor
   IsPushed({
