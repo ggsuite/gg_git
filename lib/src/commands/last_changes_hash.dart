@@ -67,10 +67,16 @@ class LastChangesHash extends GgGitBase<int> {
       (file) => _readFile(directory, file),
     );
 
+    // Replace line endings with Linux line endings
     final modifiedFileContents = (await Future.wait(modifiedFileFutures));
+    final modifiedFileContentsWithLinuxLineEndings = modifiedFileContents
+        .map(
+          (content) => content.replaceAll('\r\n', '\n').replaceAll('\r', '\n'),
+        )
+        .toList();
 
     // Calculate the hash
-    final hash = modifiedFileContents.fold<int>(
+    final hash = modifiedFileContentsWithLinuxLineEndings.fold<int>(
       3849023480203,
       (int previousValue, element) =>
           previousValue ^
