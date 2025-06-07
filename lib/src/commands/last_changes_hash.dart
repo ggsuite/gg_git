@@ -15,6 +15,17 @@ import 'package:path/path.dart';
 /// Returns a 64bit hash summarizing the changes since the last commit.
 class LastChangesHash extends GgGitBase<int> {
   // ...........................................................................
+  /// Calculates a fast int hash of a string.
+  static int fastStringHash(String input) {
+    int hash = 0xcbf29ce484222325;
+    for (int i = 0; i < input.length; i++) {
+      hash ^= input.codeUnitAt(i);
+      hash = (hash * 0x100000001b3) & 0xFFFFFFFFFFFFFFFF;
+    }
+    return hash;
+  }
+
+  // ...........................................................................
   /// Constructor
   LastChangesHash({
     required super.ggLog,
@@ -63,7 +74,7 @@ class LastChangesHash extends GgGitBase<int> {
       3849023480203,
       (int previousValue, element) =>
           previousValue ^
-          element.replaceAll('\n', '').replaceAll('\r', '').hashCode,
+          fastStringHash(element.replaceAll('\n', '').replaceAll('\r', '')),
     );
 
     return hash;

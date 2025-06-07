@@ -39,7 +39,7 @@ void main() {
           ggLog: messages.add,
           directory: d,
         );
-        expect(hash0, 3848676170182);
+        expect(hash0, -875948485484559028);
 
         // Add some modifications
         await addFileWithoutCommitting(
@@ -54,7 +54,7 @@ void main() {
           directory: d,
         );
         expect(hash1, isNot(hash0));
-        expect(hash1, 3849194132644);
+        expect(hash1, -1261370386992797790);
 
         // Request the hash wile ignoring 'file1.txt'
         // We should get the former hash
