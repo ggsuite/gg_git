@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_is_github/gg_is_github.dart';
+import 'package:path/path.dart';
 
 // coverage:ignore-file
 
@@ -304,6 +305,60 @@ Future<void> hardReset(Directory directory) async {
 
 /// The name of the sample file
 const String sampleFileName = 'test.txt';
+
+// .............................................................................
+/// Add and commit sample file
+Future<void> enableEolLf(Directory testDir) async {
+  if (await isEolLfEnabled(testDir)) {
+    return;
+  }
+
+  final gitAttributesPath = join(testDir.path, '.gitattributes');
+  final file = File(gitAttributesPath);
+  var didChange = false;
+
+  if (!await file.exists()) {
+    // Create file with the required rule
+    await file.writeAsString('* text=auto eol=lf\n');
+    didChange = true;
+  } else {
+    final lines = await file.readAsLines();
+    final hasRule = lines.any(
+      (l) =>
+          l.toLowerCase().contains('text=auto') &&
+          l.toLowerCase().contains('eol=lf'),
+    );
+
+    if (!hasRule) {
+      final sink = file.openWrite(mode: FileMode.append);
+      sink.writeln('* text=auto eol=lf');
+      await sink.close();
+      didChange = true;
+    }
+  }
+
+  if (didChange) {
+    await commitFile(testDir, '.gitattributes');
+  }
+}
+
+/// Returns true when EOL LF is enabled
+Future<bool> isEolLfEnabled(Directory testDir) async {
+  final gitAttributesPath = join(testDir.path, '.gitattributes');
+  final file = File(gitAttributesPath);
+  if (!await file.exists()) {
+    return false;
+  }
+
+  final lines = await file.readAsLines();
+  final hasRule = lines.any(
+    (l) =>
+        l.toLowerCase().contains('text=auto') &&
+        l.toLowerCase().contains('eol=lf'),
+  );
+
+  return hasRule;
+}
 
 // .............................................................................
 /// Add and commit sample file

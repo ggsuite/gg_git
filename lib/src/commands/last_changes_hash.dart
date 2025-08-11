@@ -4,13 +4,11 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:path/path.dart';
 
 /// Returns a 64bit hash summarizing the changes since the last commit.
 class LastChangesHash extends GgGitBase<int> {
@@ -33,8 +31,10 @@ class LastChangesHash extends GgGitBase<int> {
     super.name = 'last-changes-hash',
     super.description =
         'Returns a 64bit hash summarizing the changes since the last commit.',
-    ModifiedFiles? modifiedFiles,
-  }) : _modifiedFiles = modifiedFiles ?? ModifiedFiles(ggLog: ggLog);
+    UnstagedFiles? unstagedFiles,
+    IsEolLf? convertsLineFeeds,
+  }) : _unStagedFiles = unstagedFiles ?? UnstagedFiles(ggLog: ggLog),
+       _convertsLineFeeds = convertsLineFeeds ?? IsEolLf(ggLog: ggLog);
 
   // ...........................................................................
   @override
@@ -53,68 +53,107 @@ class LastChangesHash extends GgGitBase<int> {
     required Directory directory,
     List<String> ignoreFiles = const [],
   }) async {
-    // Get the list of modified files
-    final modifiedFiles = (await _modifiedFiles.get(
-      ggLog: ggLog,
+    // Get hashes of unstaged files
+    final hashesFromGitLs = await _hashesFromGitLs(
       directory: directory,
-      force: true,
+      ggLog: ggLog,
       ignoreFiles: ignoreFiles,
-      returnDeleted: true,
-    )).where((element) => !ignoreFiles.contains(element)).toList()..sort();
-
-    // Get the content of the modified files
-    final modifiedFileFutures = modifiedFiles.map(
-      (file) => _readFile(directory, file),
     );
 
-    // Replace line endings with Linux line endings
-    final modifiedFileContents = (await Future.wait(modifiedFileFutures));
-    final modifiedFileContentsWithLinuxLineEndings = modifiedFileContents
-        .map(
-          (content) => content.replaceAll('\r\n', '\n').replaceAll('\r', '\n'),
-        )
+    // Get hashes of staged files
+    final hashesOfUnstagedFiles = await _hashesFromUnstagedFiles(
+      directory: directory,
+      ggLog: ggLog,
+      ignoreFiles: ignoreFiles,
+    );
+
+    // Merge hashes together
+    final allHashes = {...hashesFromGitLs, ...hashesOfUnstagedFiles};
+
+    // Remove ignore files
+    for (final file in ignoreFiles) {
+      allHashes.remove(file);
+    }
+
+    // Turn hashes into a list
+    final list = allHashes.entries
+        .map((entry) => [entry.key, entry.value])
         .toList();
 
-    // Calculate the hash
-    final hash = modifiedFileContentsWithLinuxLineEndings.fold<int>(
-      3849023480203,
-      (int previousValue, element) =>
-          previousValue ^
-          fastStringHash(element.replaceAll('\n', '').replaceAll('\r', '')),
-    );
+    // Sort list by file name
+    list.sort((a, b) => a[0].compareTo(b[0]));
 
-    return hash;
+    // Convert list into a string
+    final string = list.map((e) => e.join(' ')).join('\n');
+
+    // Calculate and return the hash
+    return fastStringHash(string);
   }
 
-  final ModifiedFiles _modifiedFiles;
-}
+  // ######################
+  // Private
+  // ######################
+  final UnstagedFiles _unStagedFiles;
+  final IsEolLf _convertsLineFeeds;
 
-// .............................................................................
-Future<String> _readFile(Directory directory, String fileName) async {
-  final file = File(join(directory.path, fileName));
-  const textFormats = [
-    '.txt',
-    '.md',
-    '.yaml',
-    '.yml',
-    '.json',
-    '.dart',
-    '.sh',
-    '.bat',
-    '.xml',
-    '.html',
-    '.css',
-    '.scss',
-    '.js',
-  ];
+  // ...........................................................................
+  Future<Map<String, String>> _hashesFromUnstagedFiles({
+    required GgLog ggLog,
+    required Directory directory,
+    List<String> ignoreFiles = const [],
+  }) async {
+    await _convertsLineFeeds.throwWhenNotLf(directory: directory);
 
-  final isBinaryFile = !textFormats.contains(extension(file.path));
+    // Get unstaged files
+    final unstagedFiles = (await _unStagedFiles.get(
+      ggLog: ggLog,
+      directory: directory,
+      ignoreFiles: ignoreFiles,
+    )).where((element) => !ignoreFiles.contains(element)).toList()..sort();
 
-  return await file.exists()
-      ? isBinaryFile
-            ? base64Encode(await file.readAsBytes())
-            : await file.readAsString()
-      : '$fileName was deleted';
+    final result = <String, String>{};
+
+    // Calculate the hashes of the unstaged files
+    for (final file in unstagedFiles) {
+      // git hash-object .vscode/settings.json
+      final raw =
+          (await processWrapper.run('git', [
+                'hash-object',
+                file,
+              ], workingDirectory: directory.path)).stdout
+              as String;
+
+      final hash = raw.trim();
+
+      result[file] = hash;
+    }
+
+    return result;
+  }
+
+  // ...........................................................................
+  Future<Map<String, String>> _hashesFromGitLs({
+    required GgLog ggLog,
+    required Directory directory,
+    List<String> ignoreFiles = const [],
+  }) async {
+    final result = <String, String>{};
+
+    // Use git status -s to get the status in a short format
+    final gitLs = await processWrapper.run('git', [
+      'ls-files',
+      '-s',
+    ], workingDirectory: directory.path);
+
+    (gitLs.stdout as String).trim().split('\n').forEach((e) {
+      final cols = e.split(RegExp(r'\s+'));
+      final hash = cols[1];
+      final filePath = cols[3];
+      result[filePath] = hash;
+    });
+
+    return result;
+  }
 }
 
 /// Mocktail mock

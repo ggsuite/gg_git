@@ -40,7 +40,7 @@
   // ##############
 
   "github.copilot.enable": {
-    "*": true,
+    "*": false,
     "plaintext": false,
     "markdown": false,
     "scminput": false
@@ -276,7 +276,7 @@
   "dart.flutterGenerateLocalizationsOnSave": "all",
   "dart.promptToGetPackages": false,
   "dart.showTodos": false,
-  "dart.debugSdkLibraries": true,
+  "dart.debugSdkLibraries": false,
   "dart.debugExternalPackageLibraries": true,
   "dart.openDevTools": "flutter",
 

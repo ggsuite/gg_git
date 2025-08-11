@@ -20,7 +20,9 @@ class GgGit extends Command<dynamic> {
     addSubcommand(GetTags(ggLog: ggLog));
     addSubcommand(IsCommitted(ggLog: ggLog));
     addSubcommand(IsPushed(ggLog: ggLog));
+    addSubcommand(IsEolLf(ggLog: ggLog));
     addSubcommand(ModifiedFiles(ggLog: ggLog));
+    addSubcommand(UnstagedFiles(ggLog: ggLog));
     addSubcommand(LastChangesHash(ggLog: ggLog));
     addSubcommand(Head(ggLog: ggLog));
     addSubcommand(CommitCount(ggLog: ggLog));

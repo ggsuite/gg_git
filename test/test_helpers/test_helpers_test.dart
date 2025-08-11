@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:gg_git/src/test_helpers/test_helpers.dart';
+import 'package:path/path.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -28,17 +29,17 @@ void main() {
       expect(await testDir.exists(), isTrue);
       testDir.deleteSync(recursive: true);
     });
-  });
 
-  group('addAndCommitGitIgnoreFile()', () {
-    test('should work fine', () async {
-      final testDir = await initTestDir();
-      await initGit(testDir);
-      final gitIgnoreFile = File('${testDir.path}/.gitignore');
-      expect(await gitIgnoreFile.exists(), isFalse);
-      await addAndCommitGitIgnoreFile(testDir, content: 'test\n');
-      expect(await gitIgnoreFile.exists(), isTrue);
-      testDir.deleteSync(recursive: true);
+    group('addAndCommitGitIgnoreFile()', () {
+      test('should work fine', () async {
+        final testDir = await initTestDir();
+        await initGit(testDir);
+        final gitIgnoreFile = File('${testDir.path}/.gitignore');
+        expect(await gitIgnoreFile.exists(), isFalse);
+        await addAndCommitGitIgnoreFile(testDir, content: 'test\n');
+        expect(await gitIgnoreFile.exists(), isTrue);
+        testDir.deleteSync(recursive: true);
+      });
     });
 
     group('revertLocalChanges(directory)', () {
@@ -165,6 +166,27 @@ void main() {
         }
 
         expect(error, contains('ProcessException'));
+      });
+    });
+
+    group('enableEoLf(directory), isEolEnabled(directory)', () {
+      test('enables EOL linefeed in .gitattributes', () async {
+        // At the beginning EOL LF is not enabled
+        expect(await isEolLfEnabled(d), isFalse);
+
+        // Create a git attributes file
+        final gitAttributesPath = join(d.path, '.gitattributes');
+        final file = File(gitAttributesPath);
+        await file.writeAsString('# Some content');
+
+        // EOL LF is still not enabled
+        expect(await isEolLfEnabled(d), isFalse);
+
+        // Enable EOL LF
+        await enableEolLf(d);
+
+        // Now it is enabled
+        expect(await isEolLfEnabled(d), isTrue);
       });
     });
   });

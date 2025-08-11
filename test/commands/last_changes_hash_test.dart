@@ -34,12 +34,30 @@ void main() {
         await initGit(d);
         await addAndCommitSampleFile(d);
 
+        // Throws when automatic EOL conversion is off
+        var message = <String>[];
+        try {
+          await lastChangesHahs.get(ggLog: messages.add, directory: d);
+        } catch (e) {
+          message = (e as dynamic).message.toString().split('\n');
+        }
+        expect(message, [
+          'Git automatic EOL conversion is OFF.',
+          '  1. Create a file ".gitattributes" in the root of this repo',
+          '  2. Open .gitattributes with a text editor.',
+          '  3. Add the following line:',
+          '      * text=auto eol=lf',
+        ]);
+
+        // Switch on automatic EOL conversion
+        await enableEolLf(d);
+
         // Let's get the first hash
         final hash0 = await lastChangesHahs.get(
           ggLog: messages.add,
           directory: d,
         );
-        expect(hash0, -875948485484559028);
+        expect(hash0, -7537449727184798886);
 
         // Add some modifications
         await addFileWithoutCommitting(
@@ -54,7 +72,7 @@ void main() {
           directory: d,
         );
         expect(hash1, isNot(hash0));
-        expect(hash1, -1261370386992797790);
+        expect(hash1, 1921129522768528912);
 
         // Request the hash wile ignoring 'file1.txt'
         // We should get the former hash
@@ -145,6 +163,32 @@ void main() {
           directory: d,
         );
         expect(hash6, isNot(hash5));
+
+        // Create another ignored file
+        await addFileWithoutCommitting(
+          d,
+          fileName: 'ignored.txt',
+          content: 'content3',
+        );
+
+        // The hash should still be hash6
+        final hash6b = await lastChangesHahs.get(
+          ggLog: messages.add,
+          directory: d,
+          ignoreFiles: ['ignored.txt'],
+        );
+        expect(hash6b, hash6);
+
+        // Commit the ignored file
+        await commitFile(d, 'ignored.txt');
+
+        // The hash should still be hash6
+        final hash6c = await lastChangesHahs.get(
+          ggLog: messages.add,
+          directory: d,
+          ignoreFiles: ['ignored.txt'],
+        );
+        expect(hash6c, hash6);
       });
     });
 
@@ -152,6 +196,7 @@ void main() {
       test('should allow to run the command from command line', () async {
         await initGit(d);
         await addAndCommitSampleFile(d);
+        await enableEolLf(d);
 
         final runner = CommandRunner<void>('test', 'test');
         runner.addCommand(lastChangesHahs);

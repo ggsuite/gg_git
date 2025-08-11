@@ -67,16 +67,17 @@ void main() {
           // Make sure the command is listed within the main command
           final ggSubCommand = subCommand.pascalCase;
 
-          expect(
-            hasLog(messages, subCommand),
-            isTrue,
-            reason:
-                '\nMissing subcommand "$ggSubCommand"\n'
-                'Please open  "lib/src/gg_git.dart"\n'
-                '"and add "addSubcommand($ggSubCommand(ggLog: ggLog));"\n'
-                'Make sure the name of the command is '
+          if (!hasLog(messages, subCommand)) {
+            throw Exception(
+              [
+                'Missing subcommand "$ggSubCommand"',
+                'Please open  "lib/src/gg_git.dart"',
+                '"and add "addSubcommand($ggSubCommand(ggLog: ggLog));"',
+                'Make sure the name of the command is ',
                 '"$subCommand".',
-          );
+              ].join('\n'),
+            );
+          }
         }
       });
     });
