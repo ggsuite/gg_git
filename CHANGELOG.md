@@ -9,6 +9,7 @@
 ### Changed
 
 - kidney: changed references to git
+- kidney: set kidney status to merged
 
 ## [3.0.1] - 2025-08-11
 
