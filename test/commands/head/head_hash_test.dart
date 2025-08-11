@@ -128,7 +128,7 @@ void main() {
 
       group('should return the head hash', () {
         test('when nothing is committed at all', () async {
-          await initGit(d);
+          await initGit(d, isEolLfEnabled: false);
           final hash = await headHash.get(directory: d, ggLog: messages.add);
           expect(hash, HeadHash.initialHash);
         });

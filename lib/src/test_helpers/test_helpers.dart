@@ -43,7 +43,13 @@ void _throw(String message, ProcessResult result) {
 
 // .............................................................................
 /// Init git repository in test directory
-Future<void> initGit(Directory testDir) async => initLocalGit(testDir);
+Future<void> initGit(Directory testDir, {bool isEolLfEnabled = true}) async {
+  await initLocalGit(testDir);
+
+  if (isEolLfEnabled) {
+    await enableEolLf(testDir);
+  }
+}
 
 // .............................................................................
 /// Init local git repository in directory
@@ -315,31 +321,17 @@ Future<void> enableEolLf(Directory testDir) async {
 
   final gitAttributesPath = join(testDir.path, '.gitattributes');
   final file = File(gitAttributesPath);
-  var didChange = false;
 
   if (!await file.exists()) {
     // Create file with the required rule
     await file.writeAsString('* text=auto eol=lf\n');
-    didChange = true;
   } else {
-    final lines = await file.readAsLines();
-    final hasRule = lines.any(
-      (l) =>
-          l.toLowerCase().contains('text=auto') &&
-          l.toLowerCase().contains('eol=lf'),
-    );
-
-    if (!hasRule) {
-      final sink = file.openWrite(mode: FileMode.append);
-      sink.writeln('* text=auto eol=lf');
-      await sink.close();
-      didChange = true;
-    }
+    final sink = file.openWrite(mode: FileMode.append);
+    sink.writeln('* text=auto eol=lf');
+    await sink.close();
   }
 
-  if (didChange) {
-    await commitFile(testDir, '.gitattributes');
-  }
+  await commitFile(testDir, '.gitattributes');
 }
 
 /// Returns true when EOL LF is enabled

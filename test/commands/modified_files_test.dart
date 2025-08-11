@@ -22,7 +22,7 @@ void main() {
     messages.clear();
     d = await initTestDir();
     modifiedFiles = ModifiedFiles(ggLog: messages.add);
-    await initGit(d);
+    await initGit(d, isEolLfEnabled: false);
   });
 
   tearDown(() {

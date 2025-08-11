@@ -33,7 +33,7 @@ void main() {
       test(
         'should return the number of commits in the current branch',
         () async {
-          await initGit(d);
+          await initGit(d, isEolLfEnabled: false);
           var count = await commitCount.get(ggLog: messages.add, directory: d);
           expect(count, 0);
 
@@ -87,7 +87,7 @@ void main() {
       test(
         'should print the number of commits in the current branch',
         () async {
-          await initGit(d);
+          await initGit(d, isEolLfEnabled: false);
           await addAndCommitSampleFile(d);
 
           await commitCount.exec(directory: d, ggLog: messages.add);
@@ -96,7 +96,7 @@ void main() {
       );
 
       test('should allow to use the command via command line', () async {
-        await initGit(d);
+        await initGit(d, isEolLfEnabled: false);
         await addAndCommitSampleFile(d);
 
         final runner = CommandRunner<void>('test', 'test');

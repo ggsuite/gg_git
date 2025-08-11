@@ -15,7 +15,7 @@ void main() {
 
   setUp(() async {
     d = await Directory.systemTemp.createTemp('test');
-    await initGit(d);
+    await initGit(d, isEolLfEnabled: false);
   });
 
   tearDown(() async {

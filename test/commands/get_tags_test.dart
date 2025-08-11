@@ -9,10 +9,9 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/src/commands/get_tags.dart';
+import 'package:gg_git/src/test_helpers/test_helpers.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:test/test.dart';
-
-import 'package:gg_git/src/test_helpers/test_helpers.dart';
 
 void main() {
   late Directory d;
@@ -54,7 +53,7 @@ void main() {
 
       group('should return nothing', () {
         test('when no tags are available', () async {
-          await initGit(d);
+          await initGit(d, isEolLfEnabled: false);
           final result = await getTags.fromHead(
             directory: d,
             ggLog: messages.add,
@@ -67,7 +66,7 @@ void main() {
       group('should return', () {
         group('one', () {
           test('when available', () async {
-            await initGit(d);
+            await initGit(d, isEolLfEnabled: false);
             await addAndCommitSampleFile(d);
             await addTag(d, 'V0');
             expect(await getTags.fromHead(directory: d, ggLog: messages.add), [
@@ -79,7 +78,7 @@ void main() {
 
         group('multiple', () {
           test('when available', () async {
-            await initGit(d);
+            await initGit(d, isEolLfEnabled: false);
             await addAndCommitSampleFile(d);
             await addTags(d, ['V0', 'T0', 'T1']);
             expect(await getTags.fromHead(directory: d, ggLog: messages.add), [
@@ -90,7 +89,7 @@ void main() {
           });
 
           test('but not tags of previous commits', () async {
-            await initGit(d);
+            await initGit(d, isEolLfEnabled: false);
             await addPubspecFileWithoutCommitting(d, version: '1.0.0');
             await commitPubspecFile(d);
             await addTag(d, 'T0');
@@ -113,7 +112,7 @@ void main() {
     group('all(....)', () {
       group('should return', () {
         test('all tags', () async {
-          await initGit(d);
+          await initGit(d, isEolLfEnabled: false);
           await addAndCommitSampleFile(d);
 
           // Initially we should get no tags
@@ -166,7 +165,7 @@ void main() {
       group('with --head-only', () {
         group('should log', () {
           test('the tags of the latest revision', () async {
-            await initGit(d);
+            await initGit(d, isEolLfEnabled: false);
             await addAndCommitSampleFile(d);
             await addTags(d, ['0a', '0b']);
 
@@ -185,7 +184,7 @@ void main() {
       group('without --head-only', () {
         group('should log', () {
           test('all historic tags', () async {
-            await initGit(d);
+            await initGit(d, isEolLfEnabled: false);
 
             await addAndCommitSampleFile(d);
             await addTags(d, ['0b', '0a']);

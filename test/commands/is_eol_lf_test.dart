@@ -21,7 +21,7 @@ void main() {
     messages.clear();
     d = await initTestDir();
     isEolLf = IsEolLf(ggLog: messages.add);
-    await initGit(d);
+    await initGit(d, isEolLfEnabled: false);
   });
 
   tearDown(() async {
@@ -62,7 +62,6 @@ void main() {
 
     group('exec(directory, ggLog)', () {
       test('should allow to run the command from command line', () async {
-        await initGit(d);
         await addAndCommitSampleFile(d);
         await enableEolLf(d);
 

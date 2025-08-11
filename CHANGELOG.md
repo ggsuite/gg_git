@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.1] - 2025-08-11
+
+### Changed
+
+- initGit creates .gitattributes file
+
 ## [3.0.0] - 2025-08-11
 
 ### Changed
@@ -162,6 +168,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[3.0.1]: https://github.com/inlavigo/gg_git/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/inlavigo/gg_git/compare/2.5.22...3.0.0
 [2.5.22]: https://github.com/inlavigo/gg_git/compare/2.5.21...2.5.22
 [2.5.21]: https://github.com/inlavigo/gg_git/compare/2.5.20...2.5.21

@@ -20,7 +20,7 @@ void main() {
     messages.clear();
     d = await initTestDir();
     lastChangesHahs = LastChangesHash(ggLog: messages.add);
-    await initGit(d);
+    await initGit(d, isEolLfEnabled: false);
   });
 
   tearDown(() {
@@ -31,7 +31,7 @@ void main() {
     group('get(ggLog, directory, ignoredFiles)', () {
       test('should return a 64bit hash summarizing the changes '
           'since the last commit.', () async {
-        await initGit(d);
+        await initGit(d, isEolLfEnabled: false);
         await addAndCommitSampleFile(d);
 
         // Throws when automatic EOL conversion is off
