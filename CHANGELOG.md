@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add .gitattributes file
+
 ### Fixed
 
 - Fix pipeline
