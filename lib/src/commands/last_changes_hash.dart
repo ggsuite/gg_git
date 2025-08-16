@@ -34,7 +34,9 @@ class LastChangesHash extends GgGitBase<int> {
     UnstagedFiles? unstagedFiles,
     IsEolLf? convertsLineFeeds,
   }) : _unStagedFiles = unstagedFiles ?? UnstagedFiles(ggLog: ggLog),
-       _convertsLineFeeds = convertsLineFeeds ?? IsEolLf(ggLog: ggLog);
+       _convertsLineFeeds = convertsLineFeeds ?? IsEolLf(ggLog: ggLog) {
+    _addArgs();
+  }
 
   // ...........................................................................
   @override
@@ -54,6 +56,9 @@ class LastChangesHash extends GgGitBase<int> {
     List<String> ignoreFiles = const [],
     bool logDetails = false,
   }) async {
+    final verbose = argResults?['verbose'] as bool? ?? false;
+    final details = logDetails || verbose;
+
     // Get hashes of unstaged files
     final hashesFromGitLs = await _hashesFromGitLs(
       directory: directory,
@@ -87,7 +92,7 @@ class LastChangesHash extends GgGitBase<int> {
     // Convert list into a string
     final string = list.map((e) => e.join(' ')).join('\n');
 
-    if (logDetails) {
+    if (details) {
       ggLog(string);
     }
 
@@ -158,6 +163,16 @@ class LastChangesHash extends GgGitBase<int> {
     });
 
     return result;
+  }
+
+  // ...........................................................................
+  void _addArgs() {
+    argParser.addFlag(
+      'verbose',
+      abbr: 'v',
+      help: 'Print details.',
+      defaultsTo: false,
+    );
   }
 }
 

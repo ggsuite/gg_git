@@ -223,12 +223,16 @@ void main() {
         final runner = CommandRunner<void>('test', 'test');
         runner.addCommand(lastChangesHahs);
 
-        await runner.run(['last-changes-hash', '-i', d.path]);
-        expect(messages.length, 1);
+        await runner.run(['last-changes-hash', '-i', d.path, '-v']);
+        expect(messages.length, 2);
 
-        final hashString = messages.first;
+        final hashString = messages.last;
         final hash = int.tryParse(hashString);
         expect(hash, isNotNull);
+        expect(messages.first.split('\n'), [
+          '.gitattributes 6313b56c57848efce05faa7aa7e901ccfc2886ea',
+          'test.txt eed7e79a92ce81c482fe5865098047e0293a31b2',
+        ]);
       });
     });
   });
