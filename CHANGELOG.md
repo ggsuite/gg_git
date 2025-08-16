@@ -5,6 +5,8 @@
 ### Added
 
 - Add .gitattributes file
+- Small kidney\_core\_test
+- Added a little change for testing kidney\_core
 
 ### Fixed
 
