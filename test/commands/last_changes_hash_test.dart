@@ -211,6 +211,75 @@ void main() {
                 'test.txt eed7e79a92ce81c482fe5865098047e0293a31b2',
           ]);
         });
+
+        test('but not when logDetails is false', () async {
+          // Switch on automatic EOL conversion
+          await enableEolLf(d);
+
+          await addAndCommitSampleFile(d);
+
+          // Let's get the first hash
+          final hash0 = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+            logDetails: false,
+          );
+
+          expect(hash0, -7537449727184798886);
+          expect(messages, <String>[]);
+        });
+      });
+
+      group('should ignore unstaged files', () {
+        test('when ignoreUnstaged is set to true', () async {
+          // Switch on automatic EOL conversion
+          await enableEolLf(d);
+
+          // Let's get the first hash
+          final hash0 = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          expect(hash0, 1791652410119668049);
+
+          // Add a file without committing
+          await addFileWithoutCommitting(d);
+
+          // Let's get the first hash
+          final hash1 = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+            ignoreUnstaged: true,
+          );
+
+          expect(hash1, hash0);
+        });
+
+        test('but not when ignoreUnstaged is set to false', () async {
+          // Switch on automatic EOL conversion
+          await enableEolLf(d);
+
+          // Let's get the first hash
+          final hash0 = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          expect(hash0, 1791652410119668049);
+
+          // Add a file without committing
+          await addFileWithoutCommitting(d);
+
+          // Let's get the first hash
+          final hash1 = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+            ignoreUnstaged: false,
+          );
+
+          expect(hash1, isNot(hash0));
+        });
       });
     });
 
@@ -233,6 +302,27 @@ void main() {
           '.gitattributes 6313b56c57848efce05faa7aa7e901ccfc2886ea',
           'test.txt eed7e79a92ce81c482fe5865098047e0293a31b2',
         ]);
+      });
+
+      group('with option ignoreUnstaged', () {
+        test('should allow to run the command from command line', () async {
+          await initGit(d);
+          await addFileWithoutCommitting(d);
+          await enableEolLf(d);
+
+          final runner = CommandRunner<void>('test', 'test');
+          runner.addCommand(lastChangesHahs);
+
+          await runner.run(['last-changes-hash', '-i', d.path, '-v', '-u']);
+          expect(messages.length, 2);
+
+          final hashString = messages.last;
+          final hash = int.tryParse(hashString);
+          expect(hash, isNotNull);
+          expect(messages.first.split('\n'), [
+            '.gitattributes 6313b56c57848efce05faa7aa7e901ccfc2886ea',
+          ]);
+        });
       });
     });
   });

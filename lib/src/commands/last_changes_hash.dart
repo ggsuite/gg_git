@@ -54,10 +54,11 @@ class LastChangesHash extends GgGitBase<int> {
     required GgLog ggLog,
     required Directory directory,
     List<String> ignoreFiles = const [],
-    bool logDetails = false,
+    bool? logDetails,
+    bool? ignoreUnstaged,
   }) async {
-    final verbose = argResults?['verbose'] as bool? ?? false;
-    final details = logDetails || verbose;
+    logDetails ??= argResults?['verbose'] as bool? ?? false;
+    ignoreUnstaged ??= argResults?['ignoreUnstaged'] as bool? ?? false;
 
     // Get hashes of unstaged files
     final hashesFromGitLs = await _hashesFromGitLs(
@@ -67,11 +68,13 @@ class LastChangesHash extends GgGitBase<int> {
     );
 
     // Get hashes of staged files
-    final hashesOfUnstagedFiles = await _hashesFromUnstagedFiles(
-      directory: directory,
-      ggLog: ggLog,
-      ignoreFiles: ignoreFiles,
-    );
+    final hashesOfUnstagedFiles = ignoreUnstaged
+        ? <String, String>{}
+        : await _hashesFromUnstagedFiles(
+            directory: directory,
+            ggLog: ggLog,
+            ignoreFiles: ignoreFiles,
+          );
 
     // Merge hashes together
     final allHashes = {...hashesFromGitLs, ...hashesOfUnstagedFiles};
@@ -92,7 +95,7 @@ class LastChangesHash extends GgGitBase<int> {
     // Convert list into a string
     final string = list.map((e) => e.join(' ')).join('\n');
 
-    if (details) {
+    if (logDetails) {
       ggLog(string);
     }
 
@@ -171,6 +174,13 @@ class LastChangesHash extends GgGitBase<int> {
       'verbose',
       abbr: 'v',
       help: 'Print details.',
+      defaultsTo: false,
+    );
+
+    argParser.addFlag(
+      'ignoreUnstaged',
+      abbr: 'u',
+      help: 'Ignore unstaged files.',
       defaultsTo: false,
     );
   }
