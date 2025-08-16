@@ -28,7 +28,7 @@ void main() {
   });
 
   group('LastChangesHash', () {
-    group('get(ggLog, directory, ignoredFiles)', () {
+    group('get(ggLog, directory, ignoredFiles, logDetails)', () {
       test('should return a 64bit hash summarizing the changes '
           'since the last commit.', () async {
         await initGit(d, isEolLfEnabled: false);
@@ -189,6 +189,28 @@ void main() {
           ignoreFiles: ['ignored.txt'],
         );
         expect(hash6c, hash6);
+      });
+
+      group('should log details', () {
+        test('when logDetails is true', () async {
+          // Switch on automatic EOL conversion
+          await enableEolLf(d);
+
+          await addAndCommitSampleFile(d);
+
+          // Let's get the first hash
+          final hash0 = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+            logDetails: true,
+          );
+
+          expect(hash0, -7537449727184798886);
+          expect(messages, [
+            '.gitattributes 6313b56c57848efce05faa7aa7e901ccfc2886ea\n'
+                'test.txt eed7e79a92ce81c482fe5865098047e0293a31b2',
+          ]);
+        });
       });
     });
 

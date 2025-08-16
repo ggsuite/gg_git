@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.4] - 2025-08-16
+
+### Added
+
+- Add options to log details when calculating a hash
+
 ## [3.0.3] - 2025-08-16
 
 ### Added
@@ -191,6 +197,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[3.0.4]: https://github.com/inlavigo/gg_git/compare/3.0.3...3.0.4
 [3.0.3]: https://github.com/inlavigo/gg_git/compare/3.0.2...3.0.3
 [3.0.2]: https://github.com/inlavigo/gg_git/compare/3.0.1...3.0.2
 [3.0.1]: https://github.com/inlavigo/gg_git/compare/3.0.0...3.0.1

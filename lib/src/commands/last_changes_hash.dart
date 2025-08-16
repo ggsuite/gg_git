@@ -52,6 +52,7 @@ class LastChangesHash extends GgGitBase<int> {
     required GgLog ggLog,
     required Directory directory,
     List<String> ignoreFiles = const [],
+    bool logDetails = false,
   }) async {
     // Get hashes of unstaged files
     final hashesFromGitLs = await _hashesFromGitLs(
@@ -85,6 +86,10 @@ class LastChangesHash extends GgGitBase<int> {
 
     // Convert list into a string
     final string = list.map((e) => e.join(' ')).join('\n');
+
+    if (logDetails) {
+      ggLog(string);
+    }
 
     // Calculate and return the hash
     return fastStringHash(string);
