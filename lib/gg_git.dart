@@ -15,6 +15,7 @@ export 'src/commands/head/head_hash.dart';
 export 'src/commands/head/head_message.dart';
 export 'src/commands/is_committed.dart';
 export 'src/commands/is_eol_lf.dart';
+export 'src/commands/is_feature_branch.dart';
 export 'src/commands/is_pushed.dart';
 export 'src/commands/last_changes_hash.dart';
 export 'src/commands/local_branch.dart';

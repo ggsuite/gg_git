@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Add is-feature-branch command to detect feature branches
+
 ## [3.0.6] - 2025-08-16
 
 ### Added
@@ -209,6 +215,7 @@
 - `HeadMessage`: Allow to return head message also when not everything is committed.
 - `modified-files`
 
+[Unreleased]: https://github.com/inlavigo/gg_git/compare/3.0.6...HEAD
 [3.0.6]: https://github.com/inlavigo/gg_git/compare/3.0.5...3.0.6
 [3.0.5]: https://github.com/inlavigo/gg_git/compare/3.0.4...3.0.5
 [3.0.4]: https://github.com/inlavigo/gg_git/compare/3.0.3...3.0.4
