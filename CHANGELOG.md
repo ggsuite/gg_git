@@ -6,6 +6,10 @@
 
 - Add is-feature-branch command to detect feature branches
 
+### Changed
+
+- ggcommit
+
 ## [3.0.6] - 2025-08-16
 
 ### Added
