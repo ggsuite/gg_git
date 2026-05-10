@@ -5,6 +5,7 @@
 ### Changed
 
 - Revert to version 3.0.6 and update changelog accordingly
+- gg\_multi: changed references to git
 
 ## [3.0.6] - 2025-08-16
 
