@@ -5,6 +5,7 @@
 ### Changed
 
 - Revert to version 3.0.6 and update changelog accordingly
+- feat(gg): do checkout + .gg/.ticket.json ticket marker; TS format no direct eslint &amp; P:\programs\flutter/bin/internal/exit\_with\_errorlevel.bat
 
 ## [3.0.6] - 2025-08-16
 
