@@ -158,7 +158,14 @@ class LastChangesHash extends GgGitBase<int> {
       '-s',
     ], workingDirectory: directory.path);
 
-    (gitLs.stdout as String).trim().split('\n').forEach((e) {
+    // An empty repository has no indexed files. Splitting the empty output
+    // would yield one empty line, so bail out early.
+    final stdout = (gitLs.stdout as String).trim();
+    if (stdout.isEmpty) {
+      return result;
+    }
+
+    stdout.split('\n').forEach((e) {
       final cols = e.split(RegExp(r'\s+'));
       final hash = cols[1];
       final filePath = cols[3];

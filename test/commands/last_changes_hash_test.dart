@@ -29,6 +29,18 @@ void main() {
 
   group('LastChangesHash', () {
     group('get(ggLog, directory, ignoredFiles, logDetails)', () {
+      test('should work in a repository without any commits', () async {
+        await initGit(d, isEolLfEnabled: false);
+        await enableEolLf(d);
+
+        // `git ls-files -s` prints nothing here. Must not throw a RangeError.
+        final hash = await lastChangesHahs.get(
+          ggLog: messages.add,
+          directory: d,
+        );
+        expect(hash, isA<int>());
+      });
+
       test('should return a 64bit hash summarizing the changes '
           'since the last commit.', () async {
         await initGit(d, isEolLfEnabled: false);
