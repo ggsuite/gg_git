@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Gg Multi: changed references to pub.dev
+
 ### Fixed
 
 - Fix an issue with empty repos
