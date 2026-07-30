@@ -15,7 +15,7 @@ import 'package:gg_log/gg_log.dart';
 /// when the branch only exists on `origin`).
 class Checkout extends GgGitBase<void> {
   /// Constructor
-  Checkout({required super.ggLog, super.processWrapper})
+  Checkout({required super.ggLog, super.processWrapper, super.isLocked})
     : super(name: 'checkout', description: 'Checks out an existing branch.');
 
   // ...........................................................................
@@ -38,6 +38,9 @@ class Checkout extends GgGitBase<void> {
     if (branch == null || branch.isEmpty) {
       throw ArgumentError('Missing branch name.');
     }
+
+    // "git checkout" writes the index and therefore needs the index lock.
+    await waitUntilUnlocked(directory: directory, ggLog: ggLog);
 
     final result = await processWrapper.run('git', [
       'checkout',

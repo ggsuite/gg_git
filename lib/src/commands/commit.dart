@@ -17,6 +17,7 @@ class Commit extends GgGitBase<void> {
   Commit({
     required super.ggLog,
     super.processWrapper,
+    super.isLocked,
     super.name = 'commit',
     super.description = 'Commits everything in a given directory.',
     ModifiedFiles? modifiedFiles,
@@ -122,6 +123,9 @@ class Commit extends GgGitBase<void> {
       );
     }
 
+    // "git commit" writes the index and therefore needs the index lock.
+    await waitUntilUnlocked(directory: directory);
+
     final result = await processWrapper.run('git', [
       'commit',
       '-m',
@@ -144,6 +148,9 @@ class Commit extends GgGitBase<void> {
 
   // ...........................................................................
   Future<void> _stage(Directory directory) async {
+    // "git add" writes the index and therefore needs the index lock.
+    await waitUntilUnlocked(directory: directory);
+
     final result = await processWrapper.run('git', [
       'add',
       '.',

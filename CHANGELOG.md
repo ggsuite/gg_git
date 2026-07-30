@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.2.0 - 2026-07-30
+
+### Added
+
+- Add `IsLocked` command reporting if `.git/index.lock` exists
+- `GgGitBase.waitUntilUnlocked` waits up to two minutes for another git process to release the git index and throws when it does not
+
+### Changed
+
+- Handle lock files in .git
+
+### Fixed
+
+- `Commit` and `Checkout` wait for `.git/index.lock` instead of failing with `fatal: Unable to create '.../.git/index.lock': File exists.`
+
 ## 3.1.1 - 2026-07-30
 
 ### Changed

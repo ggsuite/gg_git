@@ -7,8 +7,9 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:gg_git/src/base/gg_git_base.dart';
+import 'package:gg_git/gg_git.dart';
 import 'package:gg_process/gg_process.dart';
+import 'package:path/path.dart';
 import 'package:test/test.dart';
 
 import 'package:gg_git/src/test_helpers/test_helpers.dart';
@@ -96,6 +97,59 @@ void main() {
       await runner.run(['example', '--input', d.path]);
       expect(messages, ['Example executed for "test".']);
       expect(exitCode, 0);
+    });
+  });
+
+  // ###########################################################################
+  group('waitUntilUnlocked(directory, ggLog)', () {
+    test('creates an IsLocked instance when none is injected', () async {
+      initCommand();
+      expect(ggGit.isLocked.timeout, IsLocked.defaultTimeout);
+      expect(ggGit.isLocked.interval, IsLocked.defaultInterval);
+    });
+
+    test('uses the injected IsLocked instance', () async {
+      final isLocked = IsLocked(
+        ggLog: messages.add,
+        timeout: const Duration(milliseconds: 100),
+        interval: const Duration(milliseconds: 10),
+      );
+
+      ggGit = GgGitCommandExample(ggLog: messages.add, isLocked: isLocked);
+      expect(ggGit.isLocked, same(isLocked));
+    });
+
+    test('returns when the repo is not locked', () async {
+      await initGit(d);
+      initCommand();
+      await ggGit.waitUntilUnlocked(directory: d);
+      expect(messages, isEmpty);
+    });
+
+    test('throws when the lock file does not disappear', () async {
+      await initGit(d);
+
+      ggGit = GgGitCommandExample(
+        ggLog: messages.add,
+        isLocked: IsLocked(
+          ggLog: messages.add,
+          timeout: const Duration(milliseconds: 50),
+          interval: const Duration(milliseconds: 10),
+        ),
+      );
+
+      await File(join(d.path, '.git', 'index.lock')).create(recursive: true);
+
+      await expectLater(
+        ggGit.waitUntilUnlocked(directory: d, ggLog: messages.add),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('did not disappear within'),
+          ),
+        ),
+      );
     });
   });
 }
