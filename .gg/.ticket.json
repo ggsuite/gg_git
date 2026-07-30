@@ -1,0 +1,10 @@
+{
+  "issue_id": "34_handle_lock_files_in_git",
+  "description": "Handle lock files in .git",
+  "repositories": [
+    {
+      "name": "gg_git",
+      "url": "git@github.com:ggsuite/gg_git.git"
+    }
+  ]
+}
