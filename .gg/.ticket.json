@@ -5,34 +5,6 @@
     {
       "name": "gg_git",
       "url": "git@github.com:ggsuite/gg_git.git"
-    },
-    {
-      "name": "gg_merge",
-      "url": "git@github.com:ggsuite/gg_merge.git"
-    },
-    {
-      "name": "gg_version",
-      "url": "git@github.com:ggsuite/gg_version.git"
-    },
-    {
-      "name": "gg_publish",
-      "url": "git@github.com:ggsuite/gg_publish.git"
-    },
-    {
-      "name": "gg_localize_refs",
-      "url": "git@github.com:ggsuite/gg_localize_refs.git"
-    },
-    {
-      "name": "gg_one",
-      "url": "git@github.com:ggsuite/gg_one.git"
-    },
-    {
-      "name": "gg_multi",
-      "url": "git@github.com:ggsuite/gg_multi.git"
-    },
-    {
-      "name": "gg",
-      "url": "git@github.com:ggsuite/gg.git"
     }
   ]
 }
