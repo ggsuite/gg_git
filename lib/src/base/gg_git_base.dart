@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:gg_args/gg_args.dart';
+import 'package:gg_git/src/commands/is_locked.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
@@ -20,7 +21,9 @@ abstract class GgGitBase<T> extends DirCommand<T> {
     required super.name,
     required super.description,
     GgProcessWrapper? processWrapper,
-  }) : processWrapper = processWrapper ?? const GgProcessWrapper();
+    IsLocked? isLocked,
+  }) : processWrapper = processWrapper ?? const GgProcessWrapper(),
+       _isLocked = isLocked;
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
@@ -41,14 +44,42 @@ abstract class GgGitBase<T> extends DirCommand<T> {
   // ...........................................................................
   /// Use this wrapper to run processes
   final GgProcessWrapper processWrapper;
+
+  // ...........................................................................
+  /// Reports if the repository is locked by another git process.
+  late final IsLocked isLocked = _isLocked ?? IsLocked(ggLog: ggLog);
+
+  // ...........................................................................
+  /// Waits until no other git process writes the git index anymore.
+  ///
+  /// Call this before running a git command that writes `.git/index`, e.g.
+  /// `git add`, `git commit` or `git checkout`. Those commands abort with
+  /// `fatal: Unable to create '.../.git/index.lock': File exists.` when
+  /// another git process is writing the index at the same time.
+  Future<void> waitUntilUnlocked({
+    required Directory directory,
+    GgLog? ggLog,
+  }) => isLocked.waitUntilUnlocked(
+    directory: directory,
+    ggLog: ggLog ?? this.ggLog,
+  );
+
+  // ######################
+  // Private
+  // ######################
+
+  final IsLocked? _isLocked;
 }
 
 // #############################################################################
 /// Example git command implementation
 class GgGitCommandExample extends GgGitBase<String> {
   /// Constructor
-  GgGitCommandExample({super.processWrapper, required super.ggLog})
-    : super(name: 'example', description: 'This is an example command.');
+  GgGitCommandExample({
+    super.processWrapper,
+    super.isLocked,
+    required super.ggLog,
+  }) : super(name: 'example', description: 'This is an example command.');
 
   // ...........................................................................
   @override

@@ -4,6 +4,7 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
@@ -422,6 +423,78 @@ void main() {
             expect(commitMessage1, 'Commit message 0');
           });
         });
+      });
+    });
+
+    group('should wait for ".git/index.lock"', () {
+      // .......................................................................
+      /// Creates a commit command which does not wait too long for the lock
+      Commit commitWithLockTimeout(Duration timeout) => Commit(
+        ggLog: messages.add,
+        isLocked: IsLocked(
+          ggLog: messages.add,
+          timeout: timeout,
+          interval: const Duration(milliseconds: 10),
+        ),
+      );
+
+      test('before staging and committing', () async {
+        commit = commitWithLockTimeout(const Duration(seconds: 5));
+
+        // Let's modify a file
+        await addFileWithoutCommitting(d, fileName: 'file1.txt');
+
+        // Another git process is writing the index
+        final lockFile = commit.isLocked.lockFile(d);
+        await lockFile.create(recursive: true);
+
+        // The other git process finishes a little bit later
+        unawaited(
+          Future<void>.delayed(
+            const Duration(milliseconds: 50),
+          ).then((_) async => lockFile.delete()),
+        );
+
+        // The commit waits for the lock and succeeds afterwards
+        await commit.commit(
+          directory: d,
+          message: commitMessage,
+          doStage: true,
+          ggLog: messages.add,
+        );
+
+        expect(messages.where((m) => m.contains('Waiting until ')), isNotEmpty);
+        expect(messages.first, contains(lockFile.path));
+        expect(await modifiedFiles(d), <String>[]);
+      });
+
+      test('and throw when the lock does not disappear', () async {
+        commit = commitWithLockTimeout(const Duration(milliseconds: 50));
+
+        // Let's modify a file
+        await addFileWithoutCommitting(d, fileName: 'file1.txt');
+
+        // Another git process does not release the index
+        await commit.isLocked.lockFile(d).create(recursive: true);
+
+        await expectLater(
+          commit.commit(
+            directory: d,
+            message: commitMessage,
+            doStage: true,
+            ggLog: messages.add,
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('did not disappear within'),
+            ),
+          ),
+        );
+
+        // Nothing was committed
+        expect(await modifiedFiles(d), ['file1.txt']);
       });
     });
 
