@@ -2,9 +2,10 @@
 
 ## Unreleased
 
-### Changed
+### Fixed
 
-- IsPushed reads the push state from the untranslated git status --porcelain=v2 output instead of translated prose
+- `IsPushed` no longer derives the push state from translated »git status« prose. It evaluates the untranslated `git status --porcelain=v2 --branch` output instead — `# branch.ab +<ahead> -<behind>` for the remote state and the machine-readable entries for staged, unstaged, unmerged and untracked files. A missing `# branch.ab` header means »the branch has no remote«, and an unrecognized status no longer throws
+- Fix git errors: own stash in create ticket, locale-independent push state
 
 ## 3.2.0 - 2026-07-30
 
