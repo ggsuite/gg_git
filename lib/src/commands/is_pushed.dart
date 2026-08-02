@@ -69,44 +69,140 @@ class IsPushed extends GgGitBase<bool> {
     }
 
     // Is everything pushed?
+    //
+    // »--porcelain=v2« is never translated and never reformatted, in contrast
+    // to the prose of a plain »git status«, which depends on the user's locale
+    // and on the git version.
     final result = await processWrapper.run('git', [
       'status',
+      '--porcelain=v2',
+      '--branch',
     ], workingDirectory: directory.path);
 
     if (result.exitCode != 0) {
       throw Exception('Could not run "git push" in "${dirName(directory)}".');
     }
 
-    final stdout = result.stdout as String;
+    final lines = (result.stdout as String).split('\n');
+    final status = _StatusV2.fromLines(lines);
 
-    if (stdout.contains('Your branch is ahead')) {
+    if (status.ahead > 0) {
       ggLog('The local branch is ahead of remote branch.');
       return false;
-    } else if (stdout.contains('Your branch is behind')) {
+    }
+
+    if (status.behind > 0) {
       ggLog('Local branch is behind remote branch.');
       return false;
-    } else if (stdout.contains('Untracked files')) {
+    }
+
+    if (status.hasUntrackedFiles) {
       ggLog('There are untracked files.');
-      return ignoreUnCommittedChanges || false;
-    } else if (stdout.contains('Changes to be committed')) {
+      return ignoreUnCommittedChanges;
+    }
+
+    if (status.hasStagedChanges) {
       ggLog('There are staged but uncommitted changes.');
-      return ignoreUnCommittedChanges || false;
-    } else if (stdout.contains('Changes not staged for commit')) {
+      return ignoreUnCommittedChanges;
+    }
+
+    if (status.hasUnstagedChanges) {
       ggLog('There are not-added files.');
-      return ignoreUnCommittedChanges || false;
-    } else if (stdout.contains('Your branch is up to date')) {
-      ggLog('Everything is pushed.');
-      return true;
-    } else if (stdout.contains('nothing to commit, working tree clean')) {
+      return ignoreUnCommittedChanges;
+    }
+
+    // »# branch.ab« is only written when the branch has an upstream branch.
+    if (!status.hasUpstream) {
       ggLog('The branch has no remote.');
       return false;
     }
 
-    throw Exception('Unknown status of "git push" in "${dirName(directory)}".');
+    ggLog('Everything is pushed.');
+    return true;
   }
 
   // ...........................................................................
   final UpstreamBranch _upstreamBranch;
+}
+
+// #############################################################################
+/// The parsed output of »git status --porcelain=v2 --branch«.
+class _StatusV2 {
+  _StatusV2({
+    required this.hasUpstream,
+    required this.ahead,
+    required this.behind,
+    required this.hasStagedChanges,
+    required this.hasUnstagedChanges,
+    required this.hasUntrackedFiles,
+  });
+
+  /// Parses the lines of »git status --porcelain=v2 --branch«.
+  factory _StatusV2.fromLines(List<String> lines) {
+    var hasUpstream = false;
+    var ahead = 0;
+    var behind = 0;
+    var hasStagedChanges = false;
+    var hasUnstagedChanges = false;
+    var hasUntrackedFiles = false;
+
+    for (final line in lines) {
+      // »# branch.ab +<ahead> -<behind>«
+      if (line.startsWith('# branch.ab ')) {
+        hasUpstream = true;
+        final parts = line.substring('# branch.ab '.length).split(' ');
+        ahead = int.parse(parts[0].replaceFirst('+', ''));
+        behind = int.parse(parts[1].replaceFirst('-', ''));
+        continue;
+      }
+
+      // »? <path>«
+      if (line.startsWith('? ')) {
+        hasUntrackedFiles = true;
+        continue;
+      }
+
+      // »u <XY> ...« - unmerged, i.e. conflicting, files
+      if (line.startsWith('u ')) {
+        hasUnstagedChanges = true;
+        continue;
+      }
+
+      // »1 <XY> ...« - changed, »2 <XY> ...« - renamed or copied
+      if (line.startsWith('1 ') || line.startsWith('2 ')) {
+        final xy = line.substring(2, 4);
+        hasStagedChanges = hasStagedChanges || xy[0] != '.';
+        hasUnstagedChanges = hasUnstagedChanges || xy[1] != '.';
+      }
+    }
+
+    return _StatusV2(
+      hasUpstream: hasUpstream,
+      ahead: ahead,
+      behind: behind,
+      hasStagedChanges: hasStagedChanges,
+      hasUnstagedChanges: hasUnstagedChanges,
+      hasUntrackedFiles: hasUntrackedFiles,
+    );
+  }
+
+  /// True when the branch has an upstream branch.
+  final bool hasUpstream;
+
+  /// The number of commits the local branch is ahead of the remote branch.
+  final int ahead;
+
+  /// The number of commits the local branch is behind the remote branch.
+  final int behind;
+
+  /// True when there are staged but uncommitted changes.
+  final bool hasStagedChanges;
+
+  /// True when there are changes that are not staged.
+  final bool hasUnstagedChanges;
+
+  /// True when there are untracked files.
+  final bool hasUntrackedFiles;
 }
 
 /// Mocktail mock

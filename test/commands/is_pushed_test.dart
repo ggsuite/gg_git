@@ -250,38 +250,6 @@ void main() {
         });
 
         // .....................................................................
-        test('if "git returns an unknown status"', () async {
-          final failingProcessWrapper = MockGgProcessWrapper();
-          await initLocalGit(dLocal);
-          initCommand(
-            processWrapper: failingProcessWrapper,
-            upstreamBranch: upstreamBranch,
-          );
-
-          when(
-            () => failingProcessWrapper.run(
-              any(),
-              any(),
-              workingDirectory: dLocal.path,
-            ),
-          ).thenAnswer(
-            (_) async =>
-                ProcessResult(1, 0, 'Some unknown state', 'Some unknown state'),
-          );
-
-          await expectLater(
-            runner.run(['is-pushed', '--input', dLocal.path]),
-            throwsA(
-              isA<Exception>().having(
-                (e) => e.toString(),
-                'message',
-                'Exception: Unknown status of "git push" in "test".',
-              ),
-            ),
-          );
-        });
-
-        // .....................................................................
         test('if not everything is pushed', () async {
           await initLocalGit(dLocal);
           initCommand(upstreamBranch: upstreamBranch);
@@ -461,6 +429,124 @@ void main() {
         pull();
         await runner.run(['is-pushed', '--input', dLocal.path]);
         expect(messages.last, contains('Everything is pushed.'));
+      });
+    });
+
+    // #########################################################################
+    group('should evaluate »git status --porcelain=v2 --branch«', () {
+      late MockUpstreamBranch upstreamBranch;
+
+      // .......................................................................
+      /// Answers »git status« with [stdout] and returns the result of get().
+      Future<bool> statusIs(String stdout, {bool ignore = false}) async {
+        final processWrapper = MockGgProcessWrapper();
+        when(
+          () => processWrapper.run('git', [
+            'status',
+            '--porcelain=v2',
+            '--branch',
+          ], workingDirectory: dLocal.path),
+        ).thenAnswer((_) async => ProcessResult(1, 0, stdout, ''));
+
+        final isPushed = IsPushed(
+          ggLog: messages.add,
+          processWrapper: processWrapper,
+          upstreamBranch: upstreamBranch,
+        );
+
+        return isPushed.get(
+          directory: dLocal,
+          ggLog: messages.add,
+          ignoreUnCommittedChanges: ignore,
+        );
+      }
+
+      // .......................................................................
+      const header =
+          '# branch.oid abc123\n'
+          '# branch.head main\n'
+          '# branch.upstream origin/main\n';
+
+      setUp(() {
+        upstreamBranch = MockUpstreamBranch();
+        when(
+          () => upstreamBranch.get(
+            ggLog: any(named: 'ggLog'),
+            directory: any(named: 'directory'),
+          ),
+        ).thenAnswer((_) async => 'origin/main');
+      });
+
+      test('and not depend on the language of the git output', () async {
+        // The German »git status« prose would not match any English literal.
+        expect(await statusIs('$header# branch.ab +0 -0\n'), isTrue);
+        expect(messages.last, contains('Everything is pushed.'));
+      });
+
+      test('and report ahead and behind commits', () async {
+        expect(await statusIs('$header# branch.ab +2 -0\n'), isFalse);
+        expect(
+          messages.last,
+          contains('The local branch is ahead of remote branch.'),
+        );
+
+        expect(await statusIs('$header# branch.ab +0 -3\n'), isFalse);
+        expect(
+          messages.last,
+          contains('Local branch is behind remote branch.'),
+        );
+      });
+
+      test('and report untracked files', () async {
+        const status = '$header# branch.ab +0 -0\n? untracked.txt\n';
+        expect(await statusIs(status), isFalse);
+        expect(messages.last, contains('There are untracked files.'));
+        expect(await statusIs(status, ignore: true), isTrue);
+      });
+
+      test('and report staged changes', () async {
+        const status =
+            '$header# branch.ab +0 -0\n'
+            '1 M. N... 100644 100644 100644 abc abc staged.txt\n';
+        expect(await statusIs(status), isFalse);
+        expect(
+          messages.last,
+          contains('There are staged but uncommitted changes.'),
+        );
+        expect(await statusIs(status, ignore: true), isTrue);
+      });
+
+      test('and report unstaged changes', () async {
+        const status =
+            '$header# branch.ab +0 -0\n'
+            '1 .M N... 100644 100644 100644 abc abc unstaged.txt\n';
+        expect(await statusIs(status), isFalse);
+        expect(messages.last, contains('There are not-added files.'));
+      });
+
+      test('and report renamed files', () async {
+        const status =
+            '$header# branch.ab +0 -0\n'
+            '2 R. N... 100644 100644 100644 abc abc '
+            'R100 new.txt\told.txt\n';
+        expect(await statusIs(status), isFalse);
+        expect(
+          messages.last,
+          contains('There are staged but uncommitted changes.'),
+        );
+      });
+
+      test('and report unmerged files', () async {
+        const status =
+            '$header# branch.ab +0 -0\n'
+            'u UU N... 100644 100644 100644 100644 a b c conflict.txt\n';
+        expect(await statusIs(status), isFalse);
+        expect(messages.last, contains('There are not-added files.'));
+      });
+
+      test('and report a missing »# branch.ab« as »no remote«', () async {
+        expect(await statusIs(header), isFalse);
+        expect(messages.last, contains('The branch has no remote.'));
       });
     });
   });
