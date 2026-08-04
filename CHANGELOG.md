@@ -6,6 +6,10 @@
 
 - Add cached repo test helpers (initCachedRepo, initCachedRepoPair, initCachedGit, initCachedLocalAndRemoteGit); move pushLocalChangesUpstream from gg_one to gg_git; fix stale emoji expectations from gg_status_printer 1.4.2
 
+### Changed
+
+- Merge origin/main and tighten dependency constraints (dart pub upgrade --tighten)
+
 ## 3.2.1 - 2026-08-02
 
 ### Fixed
