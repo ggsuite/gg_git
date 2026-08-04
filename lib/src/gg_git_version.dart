@@ -9,4 +9,4 @@
 // coverage:ignore-file
 
 /// The version of the `gg_git` package.
-const String ggGitVersion = '3.2.1';
+const String ggGitVersion = '3.2.2';
