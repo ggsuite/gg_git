@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/gg_git_test_helpers.dart';
 import 'package:gg_process/gg_process.dart';
@@ -114,7 +115,7 @@ void main() {
     });
 
     group('exec(directory, ggLog)', () {
-      group('should print ❌ and throw', () {
+      group('should print ✗ and throw', () {
         test('when repo has no remote', () async {
           await initGit(dLocal);
           initCommand();
@@ -128,13 +129,13 @@ void main() {
           }
 
           expect(messages[0], contains('⌛️ Has a remote.'));
-          expect(messages[1], contains('❌ Has a remote.'));
+          expect(rmControls(messages[1]), contains('✗ Has a remote.'));
 
           expect(exception, contains('Repo has no remote.'));
         });
       });
 
-      group('should print ✅ when repo has a remote', () {
+      group('should print ✓ when repo has a remote', () {
         test('when repo has a remote', () async {
           await initGit(dLocal);
           await addAndCommitSampleFile(dLocal);
@@ -146,7 +147,7 @@ void main() {
           await runner.run(['has-remote', '-i', dLocal.path]);
 
           expect(messages[0], contains('⌛️ Has a remote.'));
-          expect(messages[1], contains('✅ Has a remote.'));
+          expect(rmControls(messages[1]), contains('✓ Has a remote.'));
         });
       });
     });

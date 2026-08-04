@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/gg_git_test_helpers.dart';
 import 'package:gg_process/gg_process.dart';
@@ -102,7 +103,10 @@ void main() {
               await initGit(d);
               initCommand();
               await runner.run(['is-committed', '--input', d.path]);
-              expect(messages.last, contains('✅ Everything is committed.'));
+              expect(
+                rmControls(messages.last),
+                contains('✓ Everything is committed.'),
+              );
             });
 
             test('with inputDir taken from constructor', () async {

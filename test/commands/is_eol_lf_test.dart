@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/src/test_helpers/test_helpers.dart';
 import 'package:path/path.dart';
@@ -72,7 +73,7 @@ void main() {
 
         expect(messages.length, 2);
         expect(messages.first, contains('⌛️ Is line feed enabled?'));
-        expect(messages.last, contains('✅ Is line feed enabled?'));
+        expect(rmControls(messages.last), contains('✓ Is line feed enabled?'));
       });
 
       test('prints error messages', () async {
@@ -85,7 +86,7 @@ void main() {
 
         expect(messages.length, 2);
         expect(messages.first, contains('⌛️ Is line feed enabled?'));
-        expect(messages.last, contains('❌ Is line feed enabled?'));
+        expect(rmControls(messages.last), contains('✗ Is line feed enabled?'));
       });
     });
 

@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_git/gg_git_test_helpers.dart';
 import 'package:gg_process/gg_process.dart';
@@ -272,7 +273,10 @@ void main() {
 
           // Push state
           await runner.run(['is-pushed', '--input', dLocal.path]);
-          expect(messages.last, contains('✅ Everything is pushed.'));
+          expect(
+            rmControls(messages.last),
+            contains('✓ Everything is pushed.'),
+          );
 
           // .............
           // Make a change
