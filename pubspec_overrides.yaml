@@ -6,7 +6,17 @@
 dependency_overrides:
   gg_args:
     path: ../gg_args
+  gg_capture_print:
+    path: ../gg_capture_print
+  gg_console_colors:
+    path: ../gg_console_colors
   gg_log:
     path: ../gg_log
+  gg_hash:
+    path: ../gg_hash
+  gg_is_github:
+    path: ../gg_is_github
+  gg_process:
+    path: ../gg_process
   gg_status_printer:
     path: ../gg_status_printer
