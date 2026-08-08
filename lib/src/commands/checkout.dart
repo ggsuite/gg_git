@@ -24,6 +24,7 @@ class Checkout extends GgGitBase<void> {
     required Directory directory,
     required GgLog ggLog,
     String? branch,
+    Map<String, dynamic> options = const {},
   }) => get(directory: directory, ggLog: ggLog, branch: branch);
 
   // ...........................................................................

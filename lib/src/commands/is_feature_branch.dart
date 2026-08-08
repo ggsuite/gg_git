@@ -32,6 +32,7 @@ class IsFeatureBranch extends GgGitBase<bool> {
   Future<bool> exec({
     required Directory directory,
     required GgLog ggLog,
+    Map<String, dynamic> options = const {},
   }) async {
     final result = await get(directory: directory, ggLog: ggLog);
     ggLog(result.toString());

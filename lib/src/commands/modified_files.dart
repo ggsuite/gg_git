@@ -29,6 +29,7 @@ class ModifiedFiles extends GgGitBase<List<String>> {
     required Directory directory,
     required GgLog ggLog,
     bool? force,
+    Map<String, dynamic> options = const {},
   }) async {
     force = force ?? argResults?['force'] as bool? ?? true;
 
