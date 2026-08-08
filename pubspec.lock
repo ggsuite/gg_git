@@ -108,10 +108,9 @@ packages:
   gg_args:
     dependency: "direct main"
     description:
-      name: gg_args
-      sha256: "222878732924c6228b62db2d19c9b9220b591ba812ce8d0e10e5e72258e5c9d2"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../gg_args"
+      relative: true
+    source: path
     version: "2.2.0"
   gg_capture_print:
     dependency: "direct dev"
