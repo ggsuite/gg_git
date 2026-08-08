@@ -19,8 +19,11 @@ class Fetch extends GgGitBase<void> {
 
   // ...........................................................................
   @override
-  Future<void> exec({required Directory directory, required GgLog ggLog}) =>
-      get(directory: directory, ggLog: ggLog);
+  Future<void> exec({
+    required Directory directory,
+    required GgLog ggLog,
+    Map<String, dynamic> options = const {},
+  }) => get(directory: directory, ggLog: ggLog);
 
   // ...........................................................................
   /// Fetches from the remote. Throws on failure.
