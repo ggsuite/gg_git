@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   args: ^2.7.0
-  gg_args: ^2.2.0
+  gg_args: ^3.0.0
   gg_console_colors: ^2.3.0
   gg_hash: ^1.1.0
   gg_is_github: ^1.0.6
