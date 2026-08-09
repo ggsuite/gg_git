@@ -692,6 +692,54 @@ void main() {
         );
       });
 
+      test('commits a staged rename via empty stagePaths', () async {
+        await addAndCommitSampleFile(d, fileName: 'old.txt', content: 'a');
+        await Process.run('git', [
+          'mv',
+          'old.txt',
+          'renamed.txt',
+        ], workingDirectory: d.path);
+
+        // The rename already sits in the index — »git add old.txt« would
+        // refuse, so nothing is staged and the pathspec does the work.
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: '#gg: Rename',
+          paths: <String>['renamed.txt', 'old.txt'],
+          stagePaths: <String>[],
+        );
+
+        expect(await _filesOfHead(d), containsAll(<String>['renamed.txt']));
+        expect(await modifiedFiles(d), <String>[]);
+      });
+
+      test('stages only stagePaths but commits the full pathspec', () async {
+        await addAndCommitSampleFile(d, fileName: 'old.txt', content: 'a');
+        await Process.run('git', [
+          'mv',
+          'old.txt',
+          'renamed.txt',
+        ], workingDirectory: d.path);
+        await File('${d.path}/pubspec.lock').writeAsString('generated');
+
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: '#gg: Rename and lock',
+          paths: <String>['renamed.txt', 'old.txt', 'pubspec.lock'],
+          stagePaths: <String>['pubspec.lock'],
+        );
+
+        expect(
+          await _filesOfHead(d),
+          containsAll(<String>['renamed.txt', 'pubspec.lock']),
+        );
+        expect(await modifiedFiles(d), <String>[]);
+      });
+
       test('a null path list still commits the whole tree', () async {
         await File('${d.path}/mine.txt').writeAsString('user work');
         await File('${d.path}/pubspec.lock').writeAsString('generated');

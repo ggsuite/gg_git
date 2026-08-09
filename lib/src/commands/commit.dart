@@ -62,6 +62,13 @@ class Commit extends GgGitBase<void> {
   ///
   /// Pass only paths that appear in the current `git status` — git rejects a
   /// pathspec that matches nothing.
+  ///
+  /// [stagePaths] narrows what `git add` stages to a subset of [paths], while
+  /// the commit still covers all of [paths]. Needed for entries whose change
+  /// already sits in the index: the old name of a staged rename matches
+  /// neither the working tree nor the index, so `git add` refuses it — but
+  /// the commit pathspec has to name it for the rename to be committed. An
+  /// empty [stagePaths] skips staging entirely. Ignored when [paths] is null.
   Future<void> commit({
     required GgLog ggLog,
     required Directory directory,
@@ -70,6 +77,7 @@ class Commit extends GgGitBase<void> {
     bool ammend = false,
     bool ammendWhenNotPushed = false,
     List<String>? paths,
+    List<String>? stagePaths,
   }) async {
     await check(directory: directory);
 
@@ -80,6 +88,7 @@ class Commit extends GgGitBase<void> {
       ammend: ammend,
       ammendWhenNotPushed: ammendWhenNotPushed,
       paths: paths,
+      stagePaths: stagePaths,
     );
   }
 
@@ -107,6 +116,7 @@ class Commit extends GgGitBase<void> {
     required bool ammend,
     required bool ammendWhenNotPushed,
     List<String>? paths,
+    List<String>? stagePaths,
   }) async {
     if (paths == null) {
       await _checkModifiedFiles(directory, ggLog);
@@ -129,7 +139,7 @@ class Commit extends GgGitBase<void> {
     }
 
     if (doStage) {
-      await _stage(directory, paths);
+      await _stage(directory, paths, stagePaths);
     }
 
     ammend =
@@ -177,13 +187,25 @@ class Commit extends GgGitBase<void> {
   }
 
   // ...........................................................................
-  Future<void> _stage(Directory directory, List<String>? paths) async {
+  Future<void> _stage(
+    Directory directory,
+    List<String>? paths,
+    List<String>? stagePaths,
+  ) async {
+    final toStage = paths == null ? null : (stagePaths ?? paths);
+
+    // Everything of the pathspec already sits in the index — e.g. a staged
+    // rename, whose old name »git add« would refuse.
+    if (toStage != null && toStage.isEmpty) {
+      return;
+    }
+
     // "git add" writes the index and therefore needs the index lock.
     await waitUntilUnlocked(directory: directory);
 
     final result = await processWrapper.run('git', [
       'add',
-      if (paths == null) '.' else ...['--', ...paths],
+      if (toStage == null) '.' else ...['--', ...toStage],
     ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
       throw Exception('Could not stage files: ${result.stderr}');
