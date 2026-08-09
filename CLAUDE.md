@@ -35,6 +35,16 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
 
 ## Architecture
 
+- `lib/src/base/process_runner.dart` — the `ProcessRunner` typedef of the
+  whole gg family (superset signature: `workingDirectory`, `environment`,
+  `runInShell`) plus `defaultProcessRunner`. Injected everywhere instead of
+  each package declaring its own.
+- `lib/src/base/git_snapshot.dart` — `runGit` (throw-on-non-zero unless
+  `allowFailure`; `trimmed: false` when the raw stdout matters, as for the
+  positional columns of `git status --porcelain`) and `captureUncommitted`
+  (stash tracked + staged/unstaged + untracked into a dangling commit, tree
+  left unchanged). Both are pure git, so they live here rather than in one of
+  the packages that happen to use them.
 - `lib/src/commands/` — one command class per file, based on
   `GgGitBase`/`DirCommand`. `ggLog` is constructor-injected everywhere.
 - `lib/src/test_helpers/test_helpers.dart` — public helpers that build real
