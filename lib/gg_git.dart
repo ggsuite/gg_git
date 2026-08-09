@@ -6,7 +6,6 @@
 
 library;
 
-export 'src/base/gg_commit_message.dart';
 export 'src/base/gg_git_base.dart';
 export 'src/commands/checkout.dart';
 export 'src/commands/commit.dart';

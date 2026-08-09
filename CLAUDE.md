@@ -6,8 +6,20 @@ code in this repository.
 ## What This Is
 
 `gg_git` is a Dart package with git helper commands for repository checks
-(e.g. `IsCommitted`, `IsPushed`, `ModifiedFiles`, `Commit`) and a public
-test-helper library used by the other ggsuite packages.
+(e.g. `IsCommitted`, `IsPushed`, `ModifiedFiles`, `GitStatus`, `Commit`) and a
+public test-helper library used by the other ggsuite packages.
+
+It is **git only** — deliberately. gg's own conventions (the `#gg: ` commit
+prefix, which files gg's bookkeeping owns) are *application* knowledge, not git
+semantics, and live in `gg_one_core`. Do not move them down here: this package
+must stay usable for anything that talks to git.
+
+`Commit.commit` takes an optional `paths` (and `stagePaths`) pathspec. Passing
+it turns the commit into `git add -- <paths>` + `git commit -m <msg> -- <paths>`
+so nothing else in the working tree can ride along; `null` keeps the tree-wide
+`git add .` every older caller expects. A partial commit is impossible during a
+merge, rebase or cherry-pick, so the guard throws there instead of silently
+falling back to committing everything.
 
 ## Commands
 
