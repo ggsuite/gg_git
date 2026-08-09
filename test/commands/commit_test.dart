@@ -564,5 +564,213 @@ void main() {
         });
       });
     });
+
+    group('commit(..., paths)', () {
+      test('commits only the given paths and leaves the rest dirty', () async {
+        await addAndCommitSampleFile(d, fileName: 'mine.txt', content: 'a');
+        await File('${d.path}/mine.txt').writeAsString('changed by the user');
+        await File('${d.path}/pubspec.lock').writeAsString('generated');
+
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: '#gg: Update pubspec.lock',
+          paths: <String>['pubspec.lock'],
+        );
+
+        // The lock file is in — the user's file is untouched and still dirty.
+        final committed = await _filesOfHead(d);
+        expect(committed, <String>['pubspec.lock']);
+        expect(await modifiedFiles(d), contains('mine.txt'));
+      });
+
+      test('stages the deletion and the addition of a rename', () async {
+        await addAndCommitSampleFile(d, fileName: 'old.txt', content: 'a');
+        File('${d.path}/old.txt').renameSync('${d.path}/new.txt');
+
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: '#gg: Rename',
+          paths: <String>['new.txt', 'old.txt'],
+        );
+
+        expect(await _filesOfHead(d), containsAll(<String>['new.txt']));
+        expect(await modifiedFiles(d), <String>[]);
+      });
+
+      test('ignores what was staged outside the pathspec', () async {
+        await addAndCommitSampleFile(d, fileName: 'mine.txt', content: 'a');
+        await File('${d.path}/mine.txt').writeAsString('user work');
+        await File('${d.path}/pubspec.lock').writeAsString('generated');
+
+        // Someone staged the user's file before gg got here.
+        await Process.run('git', ['add', 'mine.txt'], workingDirectory: d.path);
+
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: '#gg: Update pubspec.lock',
+          paths: <String>['pubspec.lock'],
+        );
+
+        expect(await _filesOfHead(d), <String>['pubspec.lock']);
+      });
+
+      test('throws on an empty path list instead of committing all', () async {
+        await File('${d.path}/mine.txt').writeAsString('user work');
+
+        await expectLater(
+          commit.commit(
+            ggLog: messages.add,
+            directory: d,
+            doStage: true,
+            message: '#gg: Nothing of mine changed',
+            paths: <String>[],
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Nothing to commit'),
+            ),
+          ),
+        );
+
+        // Nothing was committed — the user's file is still dirty.
+        expect(await modifiedFiles(d), contains('mine.txt'));
+      });
+
+      test('refuses a partial commit while a merge is in progress', () async {
+        await addAndCommitSampleFile(d, fileName: 'a.txt', content: 'base');
+
+        // Simulate the state git leaves behind during a conflicted merge.
+        await File('${d.path}/.git/MERGE_HEAD').writeAsString('deadbeef\n');
+        await File('${d.path}/pubspec.lock').writeAsString('generated');
+
+        await expectLater(
+          commit.commit(
+            ggLog: messages.add,
+            directory: d,
+            doStage: true,
+            message: '#gg: Update pubspec.lock',
+            paths: <String>['pubspec.lock'],
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('partial commit during a merge'),
+            ),
+          ),
+        );
+      });
+
+      test('names the rebase when a rebase is in progress', () async {
+        await addAndCommitSampleFile(d, fileName: 'a.txt', content: 'base');
+        await Directory('${d.path}/.git/rebase-merge').create();
+        await File('${d.path}/pubspec.lock').writeAsString('generated');
+
+        await expectLater(
+          commit.commit(
+            ggLog: messages.add,
+            directory: d,
+            doStage: true,
+            message: '#gg: Update pubspec.lock',
+            paths: <String>['pubspec.lock'],
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('partial commit during a rebase'),
+            ),
+          ),
+        );
+      });
+
+      test('commits a staged rename via empty stagePaths', () async {
+        await addAndCommitSampleFile(d, fileName: 'old.txt', content: 'a');
+        await Process.run('git', [
+          'mv',
+          'old.txt',
+          'renamed.txt',
+        ], workingDirectory: d.path);
+
+        // The rename already sits in the index — »git add old.txt« would
+        // refuse, so nothing is staged and the pathspec does the work.
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: '#gg: Rename',
+          paths: <String>['renamed.txt', 'old.txt'],
+          stagePaths: <String>[],
+        );
+
+        expect(await _filesOfHead(d), containsAll(<String>['renamed.txt']));
+        expect(await modifiedFiles(d), <String>[]);
+      });
+
+      test('stages only stagePaths but commits the full pathspec', () async {
+        await addAndCommitSampleFile(d, fileName: 'old.txt', content: 'a');
+        await Process.run('git', [
+          'mv',
+          'old.txt',
+          'renamed.txt',
+        ], workingDirectory: d.path);
+        await File('${d.path}/pubspec.lock').writeAsString('generated');
+
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: '#gg: Rename and lock',
+          paths: <String>['renamed.txt', 'old.txt', 'pubspec.lock'],
+          stagePaths: <String>['pubspec.lock'],
+        );
+
+        expect(
+          await _filesOfHead(d),
+          containsAll(<String>['renamed.txt', 'pubspec.lock']),
+        );
+        expect(await modifiedFiles(d), <String>[]);
+      });
+
+      test('a null path list still commits the whole tree', () async {
+        await File('${d.path}/mine.txt').writeAsString('user work');
+        await File('${d.path}/pubspec.lock').writeAsString('generated');
+
+        await commit.commit(
+          ggLog: messages.add,
+          directory: d,
+          doStage: true,
+          message: 'Everything',
+        );
+
+        expect(await modifiedFiles(d), <String>[]);
+      });
+    });
   });
+}
+
+// .............................................................................
+/// The files touched by the HEAD commit of [directory].
+Future<List<String>> _filesOfHead(Directory directory) async {
+  final result = await Process.run('git', [
+    'show',
+    '--name-only',
+    '--format=',
+    'HEAD',
+  ], workingDirectory: directory.path);
+
+  return result.stdout
+      .toString()
+      .split('\n')
+      .map((l) => l.trim())
+      .where((l) => l.isNotEmpty)
+      .toList();
 }
