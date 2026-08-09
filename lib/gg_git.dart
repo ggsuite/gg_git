@@ -6,12 +6,14 @@
 
 library;
 
+export 'src/base/gg_commit_message.dart';
 export 'src/base/gg_git_base.dart';
 export 'src/commands/checkout.dart';
 export 'src/commands/commit.dart';
 export 'src/commands/commit_count.dart';
 export 'src/commands/fetch.dart';
 export 'src/commands/get_tags.dart';
+export 'src/commands/git_status.dart';
 export 'src/commands/has_remote.dart';
 export 'src/commands/head/head_hash.dart';
 export 'src/commands/head/head_message.dart';

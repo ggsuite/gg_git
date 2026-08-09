@@ -49,6 +49,19 @@ class Commit extends GgGitBase<void> {
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.
+  ///
+  /// [paths] restricts the commit to the given repo-relative paths:
+  /// `git add -- <paths>` followed by `git commit -m <message> -- <paths>`.
+  /// Everything else stays in the working tree.
+  ///
+  /// - `null` (the default) commits the whole working tree — the behavior of
+  ///   every caller written before this parameter existed.
+  /// - An **empty list is not the same as null**. It means »scoped to
+  ///   nothing« and throws, so a caller intersecting an allowlist with a
+  ///   clean tree can never accidentally sweep everything instead.
+  ///
+  /// Pass only paths that appear in the current `git status` — git rejects a
+  /// pathspec that matches nothing.
   Future<void> commit({
     required GgLog ggLog,
     required Directory directory,
@@ -56,6 +69,7 @@ class Commit extends GgGitBase<void> {
     required String message,
     bool ammend = false,
     bool ammendWhenNotPushed = false,
+    List<String>? paths,
   }) async {
     await check(directory: directory);
 
@@ -65,6 +79,7 @@ class Commit extends GgGitBase<void> {
       doStage: doStage,
       ammend: ammend,
       ammendWhenNotPushed: ammendWhenNotPushed,
+      paths: paths,
     );
   }
 
@@ -91,8 +106,20 @@ class Commit extends GgGitBase<void> {
     required bool doStage,
     required bool ammend,
     required bool ammendWhenNotPushed,
+    List<String>? paths,
   }) async {
-    await _checkModifiedFiles(directory, ggLog);
+    if (paths == null) {
+      await _checkModifiedFiles(directory, ggLog);
+    } else {
+      // The caller derived the paths from the status, so an empty set means
+      // there is nothing of its own to commit. Same wording as the tree-wide
+      // check above — several callers tolerate this failure by matching on
+      // »Nothing to commit«.
+      if (paths.isEmpty) {
+        throw Exception('Nothing to commit. No uncommmited changes.');
+      }
+      await _throwOnPartialCommitBlocked(directory);
+    }
 
     if (ammendWhenNotPushed && ammend) {
       throw Exception(
@@ -102,7 +129,7 @@ class Commit extends GgGitBase<void> {
     }
 
     if (doStage) {
-      await _stage(directory);
+      await _stage(directory, paths);
     }
 
     ammend =
@@ -131,6 +158,9 @@ class Commit extends GgGitBase<void> {
       '-m',
       message,
       if (ammend) '--amend',
+      // The pathspec goes on the commit as well, not only on the »git add«:
+      // without it the commit takes whatever else the index already holds.
+      if (paths != null) ...['--', ...paths],
     ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
       var message = 'Could not commit files: ';
@@ -147,16 +177,58 @@ class Commit extends GgGitBase<void> {
   }
 
   // ...........................................................................
-  Future<void> _stage(Directory directory) async {
+  Future<void> _stage(Directory directory, List<String>? paths) async {
     // "git add" writes the index and therefore needs the index lock.
     await waitUntilUnlocked(directory: directory);
 
     final result = await processWrapper.run('git', [
       'add',
-      '.',
+      if (paths == null) '.' else ...['--', ...paths],
     ], workingDirectory: directory.path);
     if (result.exitCode != 0) {
       throw Exception('Could not stage files: ${result.stderr}');
+    }
+  }
+
+  // ...........................................................................
+  /// Throws when git refuses a partial commit in the current repository state.
+  ///
+  /// `git commit -- <pathspec>` dies with »cannot do a partial commit during a
+  /// merge« while a merge, cherry-pick, revert or rebase is in progress. None
+  /// of gg's bookkeeping commits runs in that state, so reaching this guard
+  /// means something unexpected happened. It throws rather than silently
+  /// falling back to committing everything — that fallback is exactly the
+  /// data loss the pathspec exists to prevent.
+  Future<void> _throwOnPartialCommitBlocked(Directory directory) async {
+    final gitDirResult = await processWrapper.run('git', [
+      'rev-parse',
+      '--git-dir',
+    ], workingDirectory: directory.path);
+    if (gitDirResult.exitCode != 0) {
+      return; // coverage:ignore-line — check() already proved it is a repo.
+    }
+
+    var gitDir = gitDirResult.stdout.toString().trim();
+    if (!gitDir.startsWith('/')) {
+      gitDir = '${directory.path}/$gitDir';
+    }
+
+    const blockers = <String, String>{
+      'MERGE_HEAD': 'a merge',
+      'CHERRY_PICK_HEAD': 'a cherry-pick',
+      'REVERT_HEAD': 'a revert',
+      'rebase-merge': 'a rebase',
+      'rebase-apply': 'a rebase',
+    };
+
+    for (final entry in blockers.entries) {
+      final path = '$gitDir/${entry.key}';
+      if (File(path).existsSync() || Directory(path).existsSync()) {
+        throw Exception(
+          'Cannot write a partial commit during ${entry.value}. '
+          'Finish or abort it first.',
+        );
+      }
     }
   }
 

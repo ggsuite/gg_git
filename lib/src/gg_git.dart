@@ -18,6 +18,7 @@ class GgGit extends Command<dynamic> {
   /// Constructor
   GgGit({required this.ggLog}) {
     addSubcommand(GetTags(ggLog: ggLog));
+    addSubcommand(GitStatus(ggLog: ggLog));
     addSubcommand(IsCommitted(ggLog: ggLog));
     addSubcommand(IsPushed(ggLog: ggLog));
     addSubcommand(IsEolLf(ggLog: ggLog));
