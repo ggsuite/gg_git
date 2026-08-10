@@ -6,6 +6,8 @@
 
 import 'dart:io';
 
+import 'package:gg_process/gg_process.dart';
+
 /// Signature for running an external process (for injection & tests).
 ///
 /// The one process-runner type of the gg_multi tool family. It carries
@@ -21,7 +23,10 @@ typedef ProcessRunner =
       bool runInShell,
     });
 
-/// Default [ProcessRunner] delegating to [Process.run].
+/// Default [ProcessRunner] delegating to [GgProcessDelegate.current].
+///
+/// Never calls `Process.run` directly, so an embedder — gg running as
+/// WebAssembly, say — can redirect it. See [GgProcessDelegate].
 ///
 /// Runs in a shell by default: the CLIs gg shells out to (`git`, `gh`,
 /// `az`, the package managers) are wrapper scripts on some platforms and
@@ -32,7 +37,7 @@ Future<ProcessResult> defaultProcessRunner(
   String? workingDirectory,
   Map<String, String>? environment,
   bool runInShell = true,
-}) => Process.run(
+}) => ggRunProcess(
   executable,
   arguments,
   workingDirectory: workingDirectory,
