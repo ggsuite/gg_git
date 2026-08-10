@@ -38,6 +38,7 @@ class HeadHash extends GgGitBase<String> {
     required GgLog ggLog,
     int? offset,
     bool? force,
+    Map<String, dynamic> options = const {},
   }) async {
     offset = readOffset(offset, argResults);
     force = argResults?['force'] as bool? ?? force ?? false;

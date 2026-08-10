@@ -40,7 +40,11 @@ class LastChangesHash extends GgGitBase<int> {
 
   // ...........................................................................
   @override
-  Future<int> exec({required Directory directory, required GgLog ggLog}) async {
+  Future<int> exec({
+    required Directory directory,
+    required GgLog ggLog,
+    Map<String, dynamic> options = const {},
+  }) async {
     final result = await get(directory: directory, ggLog: ggLog);
     ggLog(result.toString());
 

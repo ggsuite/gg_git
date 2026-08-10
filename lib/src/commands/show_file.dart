@@ -24,6 +24,7 @@ class ShowFile extends GgGitBase<String?> {
     required GgLog ggLog,
     String? ref,
     String? filePath,
+    Map<String, dynamic> options = const {},
   }) => get(directory: directory, ggLog: ggLog, ref: ref, filePath: filePath);
 
   // ...........................................................................

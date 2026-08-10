@@ -6,8 +6,20 @@ code in this repository.
 ## What This Is
 
 `gg_git` is a Dart package with git helper commands for repository checks
-(e.g. `IsCommitted`, `IsPushed`, `ModifiedFiles`, `Commit`) and a public
-test-helper library used by the other ggsuite packages.
+(e.g. `IsCommitted`, `IsPushed`, `ModifiedFiles`, `GitStatus`, `Commit`) and a
+public test-helper library used by the other ggsuite packages.
+
+It is **git only** — deliberately. gg's own conventions (the `#gg: ` commit
+prefix, which files gg's bookkeeping owns) are *application* knowledge, not git
+semantics, and live in `gg_one_core`. Do not move them down here: this package
+must stay usable for anything that talks to git.
+
+`Commit.commit` takes an optional `paths` (and `stagePaths`) pathspec. Passing
+it turns the commit into `git add -- <paths>` + `git commit -m <msg> -- <paths>`
+so nothing else in the working tree can ride along; `null` keeps the tree-wide
+`git add .` every older caller expects. A partial commit is impossible during a
+merge, rebase or cherry-pick, so the guard throws there instead of silently
+falling back to committing everything.
 
 ## Commands
 
@@ -23,6 +35,16 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
 
 ## Architecture
 
+- `lib/src/base/process_runner.dart` — the `ProcessRunner` typedef of the
+  whole gg family (superset signature: `workingDirectory`, `environment`,
+  `runInShell`) plus `defaultProcessRunner`. Injected everywhere instead of
+  each package declaring its own.
+- `lib/src/base/git_snapshot.dart` — `runGit` (throw-on-non-zero unless
+  `allowFailure`; `trimmed: false` when the raw stdout matters, as for the
+  positional columns of `git status --porcelain`) and `captureUncommitted`
+  (stash tracked + staged/unstaged + untracked into a dangling commit, tree
+  left unchanged). Both are pure git, so they live here rather than in one of
+  the packages that happen to use them.
 - `lib/src/commands/` — one command class per file, based on
   `GgGitBase`/`DirCommand`. `ggLog` is constructor-injected everywhere.
 - `lib/src/test_helpers/test_helpers.dart` — public helpers that build real

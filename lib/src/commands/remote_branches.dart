@@ -23,6 +23,7 @@ class RemoteBranches extends GgGitBase<List<String>> {
   Future<List<String>> exec({
     required Directory directory,
     required GgLog ggLog,
+    Map<String, dynamic> options = const {},
   }) => get(directory: directory, ggLog: ggLog);
 
   // ...........................................................................

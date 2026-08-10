@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.1.1 - 2026-08-10
+
+### Fixed
+
+- Various log and color fixes across the gg command output
+
+## 4.1.0 - 2026-08-09
+
+### Changed
+
+- Improve commit behavior
+- Move gg commit conventions from gg_git to gg_one_core
+- Move the git and process plumbing to gg_git
+
+## 4.0.0 - 2026-08-08
+
+### Changed
+
+- Allow to pass custom options to exec of dir commands.
+
 ## 3.2.2 - 2026-08-04
 
 ### Added

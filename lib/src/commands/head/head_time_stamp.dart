@@ -35,6 +35,7 @@ class HeadTimeStamp extends GgGitBase<int> {
     required Directory directory,
     required GgLog ggLog,
     int? offset,
+    Map<String, dynamic> options = const {},
   }) async {
     offset = HeadHash.readOffset(offset, argResults);
 
