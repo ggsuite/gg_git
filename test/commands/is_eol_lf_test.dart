@@ -96,7 +96,7 @@ void main() {
         try {
           await isEolLf.throwWhenNotLf(directory: d);
         } catch (e) {
-          message = (e as dynamic).message.toString().split('\n');
+          message = rmControls((e as dynamic).message.toString()).split('\n');
         }
 
         expect(message, [

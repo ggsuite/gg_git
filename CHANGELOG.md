@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.1 - 2026-08-10
+
+### Fixed
+
+- Various log and color fixes across the gg command output
+
 ## 4.1.0 - 2026-08-09
 
 ### Changed

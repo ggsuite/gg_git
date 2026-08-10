@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:gg_git/src/commands/last_changes_hash.dart';
+import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:gg_git/src/test_helpers/test_helpers.dart';
 import 'package:test/test.dart';
 
@@ -51,7 +52,7 @@ void main() {
         try {
           await lastChangesHahs.get(ggLog: messages.add, directory: d);
         } catch (e) {
-          message = (e as dynamic).message.toString().split('\n');
+          message = rmControls((e as dynamic).message.toString()).split('\n');
         }
         expect(message, [
           'Git automatic EOL conversion is OFF.',

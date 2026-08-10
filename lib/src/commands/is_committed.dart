@@ -35,6 +35,7 @@ class IsCommitted extends GgGitBase<bool> {
     final printer = GgStatusPrinter<bool>(
       message: 'Everything is committed.',
       ggLog: ggLog,
+      dark: true,
     );
 
     final result = await printer.logTask(

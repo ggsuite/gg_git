@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:gg_args/gg_args.dart';
+import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
@@ -87,13 +88,17 @@ class IsEolLf extends GgGitBase<bool> {
     final convertsLineFeeds = await get(directory: directory, ggLog: ggLog);
 
     if (!convertsLineFeeds) {
+      // The steps are what the user acts on, so they are yellow; the file
+      // name and the line to paste are literals and stay blue.
       throw Exception(
         [
-          'Git automatic EOL conversion is OFF.',
-          '  1. Create a file ".gitattributes" in the root of this repo',
-          '  2. Open .gitattributes with a text editor.',
-          '  3. Add the following line:',
-          '      * text=auto eol=lf',
+          cError('Git automatic EOL conversion is OFF.'),
+          cAction(
+            '  1. Create a file ".gitattributes" in the root of this repo',
+          ),
+          cAction('  2. Open .gitattributes with a text editor.'),
+          cAction('  3. Add the following line:'),
+          cCmd('      * text=auto eol=lf'),
         ].join('\n'),
       );
     }
