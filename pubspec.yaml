@@ -12,16 +12,16 @@ dependencies:
   gg_args: ^3.0.0
   gg_console_colors: ^2.3.0
   gg_hash: ^1.1.0
-  gg_is_github: ^1.0.6
-  gg_log: ^1.0.6
-  gg_process: ^1.1.6
+  gg_is_github: ^1.0.7
+  gg_log: ^1.0.7
+  gg_process: ^1.1.7
   gg_status_printer: ^1.4.2
   meta: ^1.19.0
   mocktail: ^1.0.5
   path: ^1.9.1
 
 dev_dependencies:
-  gg_capture_print: ^1.0.9
+  gg_capture_print: ^1.0.10
   lints: ^6.1.0
   test: ^1.31.2
   recase: ^4.1.0
