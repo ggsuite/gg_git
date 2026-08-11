@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_is_github/gg_is_github.dart';
+import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
 
 // coverage:ignore-file
@@ -58,14 +59,14 @@ Future<void> initLocalGit(Directory testDir) async {
 
   final localDir = testDir;
 
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'init',
     '--initial-branch=main',
   ], workingDirectory: localDir.path);
 
   _throw('Could not initialize local git repository', result);
 
-  final result2 = await Process.run('git', [
+  final result2 = await ggRunProcess('git', [
     'checkout',
     '-b',
     'main',
@@ -79,7 +80,7 @@ Future<void> initLocalGit(Directory testDir) async {
 Future<void> initRemoteGit(Directory testDir) async {
   final remoteDir = testDir;
   await remoteDir.create(recursive: true);
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'init',
     '--bare',
     '--initial-branch=main',
@@ -95,7 +96,7 @@ Future<void> addRemoteToLocal({
   required Directory remote,
 }) async {
   // Add remote
-  final result2 = await Process.run('git', [
+  final result2 = await ggRunProcess('git', [
     'remote',
     'add',
     'origin',
@@ -111,7 +112,7 @@ Future<void> addRemoteToLocal({
     content: 'Initial commit',
   );
 
-  final result3 = await Process.run('git', [
+  final result3 = await ggRunProcess('git', [
     'push',
     '--set-upstream',
     'origin',
@@ -136,7 +137,7 @@ Future<(Directory local, Directory remote)> initLocalAndRemoteGit() async {
 // .............................................................................
 void _setupGitHub(Directory testDir) async {
   if (isGitHub) {
-    final result2 = await Process.run('git', [
+    final result2 = await ggRunProcess('git', [
       'config',
       '--global',
       'user.email',
@@ -145,7 +146,7 @@ void _setupGitHub(Directory testDir) async {
 
     _throw('Could not set mail', result2);
 
-    final result3 = await Process.run('git', [
+    final result3 = await ggRunProcess('git', [
       'config',
       '--global',
       'user.name',
@@ -162,7 +163,7 @@ void _setupGitHub(Directory testDir) async {
 // .............................................................................
 /// Creates a branch in the git repo in testDir
 Future<void> createBranch(Directory testDir, String branchName) async {
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'checkout',
     '-b',
     branchName,
@@ -174,7 +175,7 @@ Future<void> createBranch(Directory testDir, String branchName) async {
 // .............................................................................
 /// Returns the name of the current branch in testDir
 Future<String> branchName(Directory testDir) async {
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'branch',
     '--show-current',
   ], workingDirectory: testDir.path);
@@ -208,7 +209,7 @@ Future<void> addAndCommitGitIgnoreFile(Directory d, {String content = ''}) =>
 
 /// Add tag to test directory
 Future<void> addTag(Directory testDir, String tag) async {
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'tag',
     tag,
   ], workingDirectory: testDir.path);
@@ -257,7 +258,7 @@ Future<void> commitFile(
     await stageFile(testDir, fileName);
   }
 
-  final result2 = await Process.run('git', [
+  final result2 = await ggRunProcess('git', [
     'commit',
     '-m',
     message,
@@ -270,7 +271,7 @@ Future<void> commitFile(
 // .............................................................................
 /// Commit the file with a name in the test directory
 Future<void> stageFile(Directory testDir, String fileName) async {
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'add',
     fileName,
   ], workingDirectory: testDir.path);
@@ -287,7 +288,7 @@ Future<List<String>> modifiedFiles(Directory directory) {
 // .............................................................................
 /// Reverts all local changes in the directory
 Future<void> revertLocalChanges(Directory directory) async {
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'restore',
     '.',
   ], workingDirectory: directory.path);
@@ -298,7 +299,7 @@ Future<void> revertLocalChanges(Directory directory) async {
 // .............................................................................
 /// Reverts all local changes in the directory
 Future<void> hardReset(Directory directory) async {
-  final result = await Process.run('git', [
+  final result = await ggRunProcess('git', [
     'reset',
     '--hard',
     'origin/main',
@@ -457,7 +458,7 @@ Future<void> deleteFileAndCommit(Directory testDir, String fileName) async {
   }
 
   // Stage deletion
-  final result0 = await Process.run('git', [
+  final result0 = await ggRunProcess('git', [
     'rm',
     fileName,
   ], workingDirectory: testDir.path);
@@ -523,14 +524,14 @@ Future<void> addAndCommitVersions(
 /// Adds and pushes local changes
 Future<void> pushLocalChanges(Directory d) async {
   // Add local changes
-  final result0 = await Process.run('git', [
+  final result0 = await ggRunProcess('git', [
     'add',
     '.',
   ], workingDirectory: d.path);
 
   _throw('Could not add local changes', result0);
 
-  final result1 = await Process.run('git', ['push'], workingDirectory: d.path);
+  final result1 = await ggRunProcess('git', ['push'], workingDirectory: d.path);
 
   _throw('Could not push local changes', result1);
 }

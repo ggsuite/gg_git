@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
 
 import 'test_helpers.dart';
@@ -79,7 +80,7 @@ Future<(Directory local, Directory remote)> initCachedRepoPair({
   _copyDirSync(templateRemote, remote);
 
   if (_hasOriginRemote(templateLocal)) {
-    final result = await Process.run('git', [
+    final result = await ggRunProcess('git', [
       'remote',
       'set-url',
       'origin',
@@ -124,14 +125,14 @@ Future<(Directory local, Directory remote)> initCachedLocalAndRemoteGit() =>
 /// Adds and pushes local changes and creates an upstream branch.
 Future<void> pushLocalChangesUpstream(Directory d, String branch) async {
   // Add local changes
-  final result0 = await Process.run('git', [
+  final result0 = await ggRunProcess('git', [
     'add',
     '.',
   ], workingDirectory: d.path);
   _throw('Could not add local changes', result0);
 
   // Push and create upstream
-  final result1 = await Process.run('git', [
+  final result1 = await ggRunProcess('git', [
     'push',
     '-u',
     'origin',
