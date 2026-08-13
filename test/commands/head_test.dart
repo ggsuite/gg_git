@@ -24,11 +24,12 @@ void main() {
       .listSync(recursive: false)
       .where((file) => file.path.endsWith('.dart'))
       .map(
-        (e) => basename(e.path)
-            .replaceAll('.dart', '')
-            .replaceAll('_', '-')
-            .replaceAll('gg-', '')
-            .replaceAll('head-', ''),
+        (e) =>
+            basename(e.path)
+                .replaceAll('.dart', '')
+                .replaceAll('_', '-')
+                .replaceAll('gg-', '')
+                .replaceAll('head-', ''),
       )
       .toList();
 

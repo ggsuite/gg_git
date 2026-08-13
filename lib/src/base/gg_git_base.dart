@@ -21,9 +21,8 @@ abstract class GgGitBase<T> extends DirCommand<T> {
     required super.name,
     required super.description,
     GgProcessWrapper? processWrapper,
-    IsLocked? isLocked,
-  }) : processWrapper = processWrapper ?? const GgProcessWrapper(),
-       _isLocked = isLocked;
+    this._isLocked,
+  }) : processWrapper = processWrapper ?? const GgProcessWrapper();
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.

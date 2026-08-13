@@ -147,9 +147,8 @@ void main() {
 
       test('throws when git status itself fails', () async {
         final processWrapper = MockGgProcessWrapper();
-        when(
-          () => processWrapper.run('git', any(), workingDirectory: d.path),
-        ).thenAnswer((_) async => ProcessResult(1, 1, '', 'git is unhappy'));
+        when(() => processWrapper.run('git', any(), workingDirectory: d.path))
+            .thenAnswer((_) async => ProcessResult(1, 1, '', 'git is unhappy'));
 
         final failing = GitStatus(
           ggLog: messages.add,

@@ -188,9 +188,8 @@ Future<String> branchName(Directory testDir) async {
 // .............................................................................
 /// Returns the name of the upstream branch
 Future<String> upstreamBranchName(Directory testDir) async {
-  final result = UpstreamBranch(
-    ggLog: print,
-  ).get(directory: testDir, ggLog: print);
+  final result = UpstreamBranch(ggLog: print)
+      .get(directory: testDir, ggLog: print);
   return result;
 }
 

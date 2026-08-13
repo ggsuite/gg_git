@@ -38,17 +38,16 @@ void main() {
 
   group('RemoteBranches', () {
     test('drops HEAD, strips origin/ and keeps main/master', () async {
-      when(
-        () => processWrapper.run('git', args, workingDirectory: d.path),
-      ).thenAnswer(
-        (_) async => ProcessResult(
-          1,
-          0,
-          'origin/HEAD\norigin/main\norigin/master\n\norigin/feat_a\n'
-              'origin/feat_b\n',
-          '',
-        ),
-      );
+      when(() => processWrapper.run('git', args, workingDirectory: d.path))
+          .thenAnswer(
+            (_) async => ProcessResult(
+              1,
+              0,
+              'origin/HEAD\norigin/main\norigin/master\n\norigin/feat_a\n'
+                  'origin/feat_b\n',
+              '',
+            ),
+          );
 
       final branches = await remoteBranches.get(
         directory: d,
@@ -58,9 +57,8 @@ void main() {
     });
 
     test('throws when the listing fails', () async {
-      when(
-        () => processWrapper.run('git', args, workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 1, '', 'boom'));
+      when(() => processWrapper.run('git', args, workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 1, '', 'boom'));
 
       expect(
         () => remoteBranches.get(directory: d, ggLog: messages.add),
@@ -75,9 +73,8 @@ void main() {
     });
 
     test('exec delegates to get', () async {
-      when(
-        () => processWrapper.run('git', args, workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 0, 'origin/feat_a\n', ''));
+      when(() => processWrapper.run('git', args, workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 0, 'origin/feat_a\n', ''));
 
       final branches = await remoteBranches.exec(
         directory: d,

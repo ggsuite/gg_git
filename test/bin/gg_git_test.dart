@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 import '../../bin/gg_git.dart';
+
 import 'package:gg_git/src/test_helpers/test_helpers.dart';
 
 void main() {

@@ -144,9 +144,8 @@ void main() {
 
       // The other git process finishes a little bit later
       unawaited(
-        Future<void>.delayed(
-          const Duration(milliseconds: 50),
-        ).then((_) async => lockFile.delete()),
+        Future<void>.delayed(const Duration(milliseconds: 50))
+            .then((_) async => lockFile.delete()),
       );
 
       await checkout.get(directory: d, ggLog: messages.add, branch: 'feat');

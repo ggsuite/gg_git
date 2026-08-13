@@ -18,8 +18,10 @@ typedef CachedRepoBuilder = Future<void> Function(Directory repo);
 
 // .............................................................................
 /// Builds the content of a cached local/remote template pair.
-typedef CachedRepoPairBuilder =
-    Future<void> Function(Directory local, Directory remote);
+typedef CachedRepoPairBuilder = Future<void> Function(
+  Directory local,
+  Directory remote,
+);
 
 // .............................................................................
 /// Copies the repo template [key] into [target].

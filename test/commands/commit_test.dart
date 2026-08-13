@@ -450,9 +450,8 @@ void main() {
 
         // The other git process finishes a little bit later
         unawaited(
-          Future<void>.delayed(
-            const Duration(milliseconds: 50),
-          ).then((_) async => lockFile.delete()),
+          Future<void>.delayed(const Duration(milliseconds: 50))
+              .then((_) async => lockFile.delete()),
         );
 
         // The commit waits for the lock and succeeds afterwards

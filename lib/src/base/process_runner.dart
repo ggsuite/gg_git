@@ -14,14 +14,13 @@ import 'package:gg_process/gg_process.dart';
 /// the superset of the parameters the family's modules need, so a single
 /// injected runner serves them all. Implementations must accept every
 /// named parameter; callers pass only what they care about.
-typedef ProcessRunner =
-    Future<ProcessResult> Function(
-      String executable,
-      List<String> arguments, {
-      String? workingDirectory,
-      Map<String, String>? environment,
-      bool runInShell,
-    });
+typedef ProcessRunner = Future<ProcessResult> Function(
+  String executable,
+  List<String> arguments, {
+  String? workingDirectory,
+  Map<String, String>? environment,
+  bool runInShell,
+});
 
 /// Default [ProcessRunner] delegating to [GgProcessDelegate.current].
 ///
