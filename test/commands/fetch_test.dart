@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2025 Dr. Gabriel Gatzsche. All Rights Reserved.
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -29,9 +29,8 @@ void main() {
 
   group('Fetch', () {
     test('runs "git fetch" on success', () async {
-      when(
-        () => processWrapper.run('git', ['fetch'], workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 0, '', ''));
+      when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 0, '', ''));
 
       await fetch.get(directory: d, ggLog: messages.add);
 
@@ -41,9 +40,8 @@ void main() {
     });
 
     test('throws when fetch fails', () async {
-      when(
-        () => processWrapper.run('git', ['fetch'], workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 1, '', 'offline'));
+      when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 1, '', 'offline'));
 
       expect(
         () => fetch.get(directory: d, ggLog: messages.add),
@@ -58,9 +56,8 @@ void main() {
     });
 
     test('exec delegates to get', () async {
-      when(
-        () => processWrapper.run('git', ['fetch'], workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 0, '', ''));
+      when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 0, '', ''));
 
       await fetch.exec(directory: d, ggLog: messages.add);
 
@@ -70,9 +67,8 @@ void main() {
     });
 
     test('reports stdout when fetch fails with empty stderr', () async {
-      when(
-        () => processWrapper.run('git', ['fetch'], workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 1, 'fatal: offline', ''));
+      when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 1, 'fatal: offline', ''));
 
       expect(
         () => fetch.get(directory: d, ggLog: messages.add),

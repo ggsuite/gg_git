@@ -1,27 +1,27 @@
 name: gg_git
 description: A collection of git helper scripts for repository checks and other utilities.
-version: 4.1.2
+version: 4.2.0
 repository: https://github.com/inlavigo/gg_git.git
 #test
 
 environment:
-  sdk: ">=3.8.0 <4.0.0"
+  sdk: ">=3.13.0 <4.0.0"
 
 dependencies:
   args: ^2.7.0
-  gg_args: ^3.0.1
-  gg_console_colors: ^2.3.1
-  gg_hash: ^1.1.1
-  gg_is_github: ^1.0.7
-  gg_log: ^1.0.7
-  gg_process: ^1.1.7
-  gg_status_printer: ^1.4.3
+  gg_args: ^3.1.0
+  gg_console_colors: ^2.4.0
+  gg_hash: ^1.2.0
+  gg_is_github: ^1.1.0
+  gg_log: ^1.1.0
+  gg_process: ^1.2.0
+  gg_status_printer: ^1.5.0
   meta: ^1.19.0
   mocktail: ^1.0.5
   path: ^1.9.1
 
 dev_dependencies:
-  gg_capture_print: ^1.0.10
+  gg_capture_print: ^1.1.0
   lints: ^6.1.0
   test: ^1.31.2
   recase: ^4.1.0

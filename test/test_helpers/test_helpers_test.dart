@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2019 - 2024 Dr. Gabriel Gatzsche. All Rights Reserved.
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -50,22 +50,19 @@ void main() {
 
         // Create an initial commit
         await addAndCommitSampleFile(testDir);
-        final contentBefore = File(
-          '${testDir.path}/$sampleFileName',
-        ).readAsStringSync();
+        final contentBefore = File('${testDir.path}/$sampleFileName')
+            .readAsStringSync();
 
         // Make a change
         await updateSampleFileWithoutCommitting(testDir);
-        final contentAfter = File(
-          '${testDir.path}/$sampleFileName',
-        ).readAsStringSync();
+        final contentAfter = File('${testDir.path}/$sampleFileName')
+            .readAsStringSync();
         expect(contentBefore, isNot(contentAfter));
 
         // Revert all changes
         await revertLocalChanges(testDir);
-        final contentReverted = File(
-          '${testDir.path}/$sampleFileName',
-        ).readAsStringSync();
+        final contentReverted = File('${testDir.path}/$sampleFileName')
+            .readAsStringSync();
         expect(contentBefore, contentReverted);
       });
     });
@@ -76,23 +73,20 @@ void main() {
 
         // Create an initial commit
         await addAndCommitSampleFile(dLocal);
-        final contentBefore = File(
-          '${dLocal.path}/$sampleFileName',
-        ).readAsStringSync();
+        final contentBefore = File('${dLocal.path}/$sampleFileName')
+            .readAsStringSync();
         await pushLocalChanges(dLocal);
 
         // Make and commit a change, but do not push
         await updateAndCommitSampleFile(dLocal);
-        final contentAfter = File(
-          '${dLocal.path}/$sampleFileName',
-        ).readAsStringSync();
+        final contentAfter = File('${dLocal.path}/$sampleFileName')
+            .readAsStringSync();
         expect(contentBefore, isNot(contentAfter));
 
         // Make a hard reset
         await hardReset(dLocal);
-        final contentReverted = File(
-          '${dLocal.path}/$sampleFileName',
-        ).readAsStringSync();
+        final contentReverted = File('${dLocal.path}/$sampleFileName')
+            .readAsStringSync();
         expect(contentBefore, contentReverted);
       });
     });

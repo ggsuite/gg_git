@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2019 - 2024 Dr. Gabriel Gatzsche. All Rights Reserved.
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -21,9 +21,8 @@ abstract class GgGitBase<T> extends DirCommand<T> {
     required super.name,
     required super.description,
     GgProcessWrapper? processWrapper,
-    IsLocked? isLocked,
-  }) : processWrapper = processWrapper ?? const GgProcessWrapper(),
-       _isLocked = isLocked;
+    this._isLocked,
+  }) : processWrapper = processWrapper ?? const GgProcessWrapper();
 
   // ...........................................................................
   /// Returns true if everything in the directory is committed.

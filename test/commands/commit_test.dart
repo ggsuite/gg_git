@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2019 - 2024 Dr. Gabriel Gatzsche. All Rights Reserved.
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -450,9 +450,8 @@ void main() {
 
         // The other git process finishes a little bit later
         unawaited(
-          Future<void>.delayed(
-            const Duration(milliseconds: 50),
-          ).then((_) async => lockFile.delete()),
+          Future<void>.delayed(const Duration(milliseconds: 50))
+              .then((_) async => lockFile.delete()),
         );
 
         // The commit waits for the lock and succeeds afterwards

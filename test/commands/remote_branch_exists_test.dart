@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2025 Dr. Gabriel Gatzsche. All Rights Reserved.
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -42,9 +42,8 @@ void main() {
     });
 
     test('returns true when the ref resolves', () async {
-      when(
-        () => processWrapper.run('git', args, workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 0, 'hash', ''));
+      when(() => processWrapper.run('git', args, workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 0, 'hash', ''));
 
       final exists = await remoteBranchExists.get(
         directory: d,
@@ -55,9 +54,8 @@ void main() {
     });
 
     test('returns false when the ref is missing', () async {
-      when(
-        () => processWrapper.run('git', args, workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 1, '', ''));
+      when(() => processWrapper.run('git', args, workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 1, '', ''));
 
       final exists = await remoteBranchExists.get(
         directory: d,
@@ -68,9 +66,8 @@ void main() {
     });
 
     test('exec delegates to get', () async {
-      when(
-        () => processWrapper.run('git', args, workingDirectory: d.path),
-      ).thenAnswer((_) async => ProcessResult(1, 0, 'hash', ''));
+      when(() => processWrapper.run('git', args, workingDirectory: d.path))
+          .thenAnswer((_) async => ProcessResult(1, 0, 'hash', ''));
 
       final exists = await remoteBranchExists.exec(
         directory: d,

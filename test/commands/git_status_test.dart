@@ -1,5 +1,5 @@
 // @license
-// Copyright (c) 2019 - 2025 Dr. Gabriel Gatzsche. All Rights Reserved.
+// Copyright (c) ggsuite
 //
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
@@ -147,9 +147,8 @@ void main() {
 
       test('throws when git status itself fails', () async {
         final processWrapper = MockGgProcessWrapper();
-        when(
-          () => processWrapper.run('git', any(), workingDirectory: d.path),
-        ).thenAnswer((_) async => ProcessResult(1, 1, '', 'git is unhappy'));
+        when(() => processWrapper.run('git', any(), workingDirectory: d.path))
+            .thenAnswer((_) async => ProcessResult(1, 1, '', 'git is unhappy'));
 
         final failing = GitStatus(
           ggLog: messages.add,

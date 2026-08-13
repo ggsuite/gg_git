@@ -364,7 +364,7 @@
       "language": "xml",
       "template": [
         "@license",
-        "Copyright (c) <<year>> Dr. Gabriel Gatzsche. All Rights Reserved.",
+        "Copyright (c) ggsuite",
         "",
         "Use of this source code is governed by terms that can be",
         "found in the LICENSE file in the root of this package."
@@ -374,7 +374,7 @@
       "language": "html",
       "template": [
         "@license",
-        "Copyright (c) <<year>> Dr. Gabriel Gatzsche. All Rights Reserved.",
+        "Copyright (c) ggsuite",
         "",
         "Use of this source code is governed by terms that can be",
         "found in the LICENSE file in the root of this package."
@@ -384,7 +384,7 @@
       "language": "typescript",
       "template": [
         "@license",
-        "Copyright (c) <<year>> Dr. Gabriel Gatzsche. All Rights Reserved.",
+        "Copyright (c) ggsuite",
         "",
         "Use of this source code is governed by terms that can be",
         "found in the LICENSE file in the root of this package."
@@ -394,7 +394,7 @@
       "language": "javascript",
       "template": [
         "@license",
-        "Copyright (c) <<year>> Dr. Gabriel Gatzsche. All Rights Reserved.",
+        "Copyright (c) ggsuite",
         "",
         "Use of this source code is governed by terms that can be",
         "found in the LICENSE file in the root of this package."
@@ -404,7 +404,7 @@
       "language": "scss",
       "template": [
         "@license",
-        "Copyright (c) <<year>> Dr. Gabriel Gatzsche. All Rights Reserved.",
+        "Copyright (c) ggsuite",
         "",
         "Use of this source code is governed by terms that can be",
         "found in the LICENSE file in the root of this package."
@@ -414,7 +414,7 @@
       "language": "dart",
       "template": [
         "@license",
-        "Copyright (c) <<year>> Dr. Gabriel Gatzsche. All Rights Reserved.",
+        "Copyright (c) ggsuite",
         "",
         "Use of this source code is governed by terms that can be",
         "found in the LICENSE file in the root of this package."
@@ -424,7 +424,7 @@
       "language": "markdown",
       "template": [
         "@license",
-        "Copyright (c) <<year>> Dr. Gabriel Gatzsche. All Rights Reserved.",
+        "Copyright (c) ggsuite",
         "",
         "Use of this source code is governed by terms that can be",
         "found in the LICENSE file in the root of this package."
