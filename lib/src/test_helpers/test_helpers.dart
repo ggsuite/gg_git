@@ -16,7 +16,11 @@ import 'package:path/path.dart';
 // .............................................................................
 /// Initializes a test directory
 Future<Directory> initTestDir() async {
-  final tmpBase = await Directory('/tmp').exists()
+  // Never use '/tmp' on Windows: Dart resolves it against the current
+  // drive (e.g. P:\tmp), while git resolves the same string against its
+  // own MSYS root - the two halves of a test repo end up on different
+  // paths and every push fails.
+  final tmpBase = !Platform.isWindows && await Directory('/tmp').exists()
       ? Directory('/tmp')
       : Directory.systemTemp;
 

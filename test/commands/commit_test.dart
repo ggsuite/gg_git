@@ -448,11 +448,13 @@ void main() {
         final lockFile = commit.isLocked.lockFile(d);
         await lockFile.create(recursive: true);
 
-        // The other git process finishes a little bit later
-        unawaited(
-          Future<void>.delayed(const Duration(milliseconds: 50))
-              .then((_) async => lockFile.delete()),
-        );
+        // The other git process finishes as soon as the commit starts waiting
+        unawaited(() async {
+          while (!messages.any((m) => m.contains('Waiting until '))) {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+          }
+          await lockFile.delete();
+        }());
 
         // The commit waits for the lock and succeeds afterwards
         await commit.commit(

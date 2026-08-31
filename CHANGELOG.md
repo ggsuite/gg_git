@@ -1,10 +1,15 @@
 # Changelog
 
-## Unreleased
+## 4.2.1 - 2026-09-01
 
 ### Changed
 
 - Use ggwsm in pipelines
+- Never use /tmp as test dir base on Windows - Dart and git resolve it to different paths
+
+### Fixed
+
+- Fix Windows-specific test failures that blocked the review
 
 ## 4.2.0 - 2026-08-13
 
