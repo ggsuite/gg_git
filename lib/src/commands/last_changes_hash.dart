@@ -81,12 +81,10 @@ class LastChangesHash extends GgGitBase<int> {
           );
 
     // Merge hashes together
-    final allHashes = {...hashesFromGitLs, ...hashesOfUnstagedFiles};
-
-    // Remove ignore files
-    for (final file in ignoreFiles) {
-      allHashes.remove(file);
-    }
+    // Remove ignore files. An entry ending with a slash names a directory
+    // and covers every file below it — see [isIgnoredFile].
+    final allHashes = {...hashesFromGitLs, ...hashesOfUnstagedFiles}
+      ..removeWhere((file, _) => isIgnoredFile(file, ignoreFiles));
 
     // Turn hashes into a list
     final list = allHashes.entries
@@ -122,11 +120,13 @@ class LastChangesHash extends GgGitBase<int> {
     await _convertsLineFeeds.throwWhenNotLf(directory: directory);
 
     // Get unstaged files
-    final unstagedFiles = (await _unStagedFiles.get(
-      ggLog: ggLog,
-      directory: directory,
-      ignoreFiles: ignoreFiles,
-    )).where((element) => !ignoreFiles.contains(element)).toList()..sort();
+    final unstagedFiles =
+        (await _unStagedFiles.get(
+            ggLog: ggLog,
+            directory: directory,
+            ignoreFiles: ignoreFiles,
+          )).where((element) => !isIgnoredFile(element, ignoreFiles)).toList()
+          ..sort();
 
     final result = <String, String>{};
 

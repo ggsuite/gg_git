@@ -10,22 +10,36 @@ import 'package:gg_args/gg_args.dart';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 
-/// Returns true when the current branch is neither main nor master.
+/// Returns true when the current branch is not the default branch.
+///
+/// The default branch is what the repository declares — see
+/// [DefaultBranch.declaredDefaultBranch] — not a hardcoded `main`: a
+/// repository whose default branch is `develop` is not on a feature branch
+/// while it sits on `develop`, and *is* on one while it sits on `main`.
+/// A repository that declares nothing is judged as it always was: neither
+/// `main` nor `master` is a feature branch.
 class IsFeatureBranch extends GgGitBase<bool> {
   /// Constructor
   IsFeatureBranch({
     required super.ggLog,
     super.processWrapper,
     LocalBranch? localBranch,
+    DefaultBranch? defaultBranch,
   }) : _localBranch = localBranch ?? LocalBranch(ggLog: ggLog),
+       _defaultBranch =
+           defaultBranch ??
+           DefaultBranch(ggLog: ggLog, processWrapper: processWrapper),
        super(
          name: 'is-feature-branch',
          description:
-             'Returns true when the current branch is neither main nor master.',
+             'Returns true when the current branch is not the default branch.',
        );
 
   /// Command used to resolve the current local branch.
   final LocalBranch _localBranch;
+
+  /// Command used to resolve the default branch.
+  final DefaultBranch _defaultBranch;
 
   // ...........................................................................
   @override
@@ -40,7 +54,7 @@ class IsFeatureBranch extends GgGitBase<bool> {
   }
 
   // ...........................................................................
-  /// Returns true when the current branch is neither main nor master.
+  /// Returns true when the current branch is not the default branch.
   @override
   Future<bool> get({required GgLog ggLog, required Directory directory}) async {
     final branchName = await _localBranch.get(
@@ -54,7 +68,15 @@ class IsFeatureBranch extends GgGitBase<bool> {
     }
 
     final lower = branchName.toLowerCase();
-    return lower != 'main' && lower != 'master';
+    final declared = await _defaultBranch.declaredDefaultBranch(
+      directory: directory,
+    );
+
+    if (declared != null) {
+      return lower != declared.toLowerCase();
+    }
+
+    return !DefaultBranch.fallbackCandidates.contains(lower);
   }
 }
 

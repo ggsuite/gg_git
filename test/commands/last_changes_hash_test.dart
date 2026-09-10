@@ -204,6 +204,52 @@ void main() {
         expect(hash6c, hash6);
       });
 
+      test(
+        'should ignore every file below a directory ending with a slash',
+        () async {
+          await enableEolLf(d);
+          await addAndCommitSampleFile(d, fileName: 'file1.txt');
+          final hashBefore = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+            ignoreFiles: ['.gg/'],
+          );
+
+          // Files below the directory do not change the hash — untracked ...
+          Directory('${d.path}/.gg').createSync();
+          await addFileWithoutCommitting(
+            d,
+            fileName: '.gg/publish_config.json',
+            content: '{}',
+          );
+          expect(
+            await lastChangesHahs.get(
+              ggLog: messages.add,
+              directory: d,
+              ignoreFiles: ['.gg/'],
+            ),
+            hashBefore,
+          );
+
+          // ... and committed.
+          await commitFile(d, '.gg/publish_config.json');
+          expect(
+            await lastChangesHahs.get(
+              ggLog: messages.add,
+              directory: d,
+              ignoreFiles: ['.gg/'],
+            ),
+            hashBefore,
+          );
+
+          // Without the entry the file counts.
+          expect(
+            await lastChangesHahs.get(ggLog: messages.add, directory: d),
+            isNot(hashBefore),
+          );
+        },
+      );
+
       group('should log details', () {
         test('when logDetails is true', () async {
           // Switch on automatic EOL conversion

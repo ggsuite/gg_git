@@ -12,6 +12,7 @@ export 'src/base/process_runner.dart';
 export 'src/commands/checkout.dart';
 export 'src/commands/commit.dart';
 export 'src/commands/commit_count.dart';
+export 'src/commands/default_branch.dart';
 export 'src/commands/fetch.dart';
 export 'src/commands/get_tags.dart';
 export 'src/commands/git_status.dart';

@@ -95,13 +95,31 @@ class UnstagedFiles extends GgGitBase<List<String>> {
           })
           .toList();
       return unstagedFiles
-          .where((element) => !ignoreFiles.contains(element))
+          .where((element) => !isIgnoredFile(element, ignoreFiles))
           .toList();
     } else {
       // Handle the error case where the git command fails
       throw Exception('Could not retrieve unstaged files: ${result.stderr}');
     }
   }
+}
+
+/// Returns true when [file] is covered by [ignoreFiles].
+///
+/// An entry names a file (`CHANGELOG.md`, `.gg/gg.json`) or, when it ends
+/// with a slash, a directory (`.gg/`) — then every file below it is ignored.
+/// A state file gg writes into `.gg/` must not change a hash, whichever name
+/// it carries, so the directory is named once instead of every file in it.
+bool isIgnoredFile(String file, List<String> ignoreFiles) {
+  for (final ignored in ignoreFiles) {
+    if (file == ignored) {
+      return true;
+    }
+    if (ignored.endsWith('/') && file.startsWith(ignored)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /// Mocktail mock
