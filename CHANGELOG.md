@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.4.0 - 2026-09-10
+
+### Added
+
+- `DefaultBranch` resolves the default branch of a repository offline: the declared `origin/HEAD`, then `main`, then `master`
+
+### Changed
+
+- `IsFeatureBranch` compares against the declared default branch instead of a hardcoded `main`/`master`
+
+### Fixed
+
+- `LastChangesHash` and `UnstagedFiles` honour directory entries such as `.gg/` in `ignoreFiles`
+
 ## 4.3.0 - 2026-09-02
 
 ### Changed

@@ -65,6 +65,37 @@ void main() {
       });
     });
 
+    group('isIgnoredFile(file, ignoreFiles)', () {
+      test('matches a file by name and a directory by prefix', () {
+        expect(isIgnoredFile('CHANGELOG.md', ['CHANGELOG.md']), isTrue);
+        expect(isIgnoredFile('.gg/gg.json', ['.gg/']), isTrue);
+        expect(isIgnoredFile('.gg/publish_config.json', ['.gg/']), isTrue);
+        expect(isIgnoredFile('.gg', ['.gg/']), isFalse);
+        expect(isIgnoredFile('lib/.gg/x.json', ['.gg/']), isFalse);
+        expect(isIgnoredFile('CHANGELOG.md', ['README.md']), isFalse);
+        expect(isIgnoredFile('CHANGELOG.md', []), isFalse);
+      });
+
+      test('is applied by get(ignoreFiles)', () async {
+        Directory('${d.path}/.gg').createSync();
+        await addFileWithoutCommitting(d, fileName: '.gg/state.json');
+        await addFileWithoutCommitting(d, fileName: 'file1.txt');
+
+        expect(await unstagedFiles.get(directory: d, ggLog: messages.add), [
+          '.gg/state.json',
+          'file1.txt',
+        ]);
+        expect(
+          await unstagedFiles.get(
+            directory: d,
+            ggLog: messages.add,
+            ignoreFiles: ['.gg/'],
+          ),
+          ['file1.txt'],
+        );
+      });
+    });
+
     group('should throw', () {
       group('when something goes wrong while calling', () {
         test('git diff --name-only', () async {

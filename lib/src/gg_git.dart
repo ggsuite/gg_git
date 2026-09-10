@@ -32,6 +32,7 @@ class GgGit extends Command<dynamic> {
     addSubcommand(UpstreamBranch(ggLog: ggLog));
     addSubcommand(LocalBranch(ggLog: ggLog));
     addSubcommand(IsFeatureBranch(ggLog: ggLog));
+    addSubcommand(DefaultBranch(ggLog: ggLog));
     addSubcommand(Fetch(ggLog: ggLog));
     addSubcommand(Checkout(ggLog: ggLog));
     addSubcommand(ShowFile(ggLog: ggLog));
