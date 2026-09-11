@@ -33,9 +33,12 @@ class RemoteBranches extends GgGitBase<List<String>> {
     required GgLog ggLog,
     required Directory directory,
   }) async {
+    // The full ref name, not the short one: git shortens the symbolic
+    // `refs/remotes/origin/HEAD` to plain `origin`, which no filter for
+    // `origin/HEAD` catches — and `origin` then passed as a branch.
     final result = await processWrapper.run('git', [
       'for-each-ref',
-      '--format=%(refname:short)',
+      '--format=%(refname)',
       'refs/remotes/origin',
     ], workingDirectory: directory.path);
 
@@ -46,12 +49,13 @@ class RemoteBranches extends GgGitBase<List<String>> {
       );
     }
 
-    const prefix = 'origin/';
+    const prefix = 'refs/remotes/origin/';
     return (result.stdout as String)
         .split('\n')
         .map((l) => l.trim())
-        .where((l) => l.isNotEmpty && l != 'origin/HEAD')
-        .map((l) => l.startsWith(prefix) ? l.substring(prefix.length) : l)
+        .where((l) => l.startsWith(prefix))
+        .map((l) => l.substring(prefix.length))
+        .where((l) => l.isNotEmpty && l != 'HEAD')
         .toList();
   }
 }

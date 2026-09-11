@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.4.1 - 2026-09-11
+
+### Fixed
+
+- `RemoteBranches` no longer lists the symbolic `origin/HEAD` as a branch named `origin`
+
 ## 4.4.0 - 2026-09-10
 
 ### Added

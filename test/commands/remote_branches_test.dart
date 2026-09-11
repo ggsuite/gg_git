@@ -18,11 +18,7 @@ void main() {
   late MockGgProcessWrapper processWrapper;
   late RemoteBranches remoteBranches;
 
-  final args = [
-    'for-each-ref',
-    '--format=%(refname:short)',
-    'refs/remotes/origin',
-  ];
+  final args = ['for-each-ref', '--format=%(refname)', 'refs/remotes/origin'];
 
   setUp(() async {
     d = await initTestDir();
@@ -43,8 +39,9 @@ void main() {
             (_) async => ProcessResult(
               1,
               0,
-              'origin/HEAD\norigin/main\norigin/master\n\norigin/feat_a\n'
-                  'origin/feat_b\n',
+              'refs/remotes/origin/HEAD\nrefs/remotes/origin/main\n'
+                  'refs/remotes/origin/master\n\nrefs/remotes/origin/feat_a\n'
+                  'refs/remotes/origin/feat_b\n',
               '',
             ),
           );
@@ -54,6 +51,31 @@ void main() {
         ggLog: messages.add,
       );
       expect(branches, ['main', 'master', 'feat_a', 'feat_b']);
+    });
+
+    // Regression: with `%(refname:short)` git printed the symbolic
+    // `refs/remotes/origin/HEAD` as plain `origin`, which slipped past the
+    // `origin/HEAD` filter and was offered as a branch named »origin«.
+    test('does not list origin/HEAD as a branch named origin', () async {
+      final (local, remote) = await initLocalAndRemoteGit();
+      addTearDown(() {
+        local.deleteSync(recursive: true);
+        remote.deleteSync(recursive: true);
+      });
+      await addAndCommitSampleFile(local);
+      await pushLocalChangesUpstream(local, 'main');
+      await createBranch(local, 'feat_x');
+      await pushLocalChangesUpstream(local, 'feat_x');
+      await Process.run('git', [
+        'remote',
+        'set-head',
+        'origin',
+        'main',
+      ], workingDirectory: local.path);
+
+      final branches = await RemoteBranches(ggLog: messages.add)
+          .get(directory: local, ggLog: messages.add);
+      expect(branches, unorderedEquals(['main', 'feat_x']));
     });
 
     test('throws when the listing fails', () async {
@@ -74,7 +96,10 @@ void main() {
 
     test('exec delegates to get', () async {
       when(() => processWrapper.run('git', args, workingDirectory: d.path))
-          .thenAnswer((_) async => ProcessResult(1, 0, 'origin/feat_a\n', ''));
+          .thenAnswer(
+            (_) async =>
+                ProcessResult(1, 0, 'refs/remotes/origin/feat_a\n', ''),
+          );
 
       final branches = await remoteBranches.exec(
         directory: d,
