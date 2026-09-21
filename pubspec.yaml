@@ -26,4 +26,4 @@ dev_dependencies:
   test: ^1.32.0
   recase: ^4.1.0
   dna_ggsuite: ^0.2.1
-  helix: ^1.7.1
+  helix: ^1.8.0
