@@ -66,6 +66,32 @@ void main() {
       ).called(1);
     });
 
+    test('retries a fetch the remote dropped and then succeeds', () async {
+      fetch = Fetch(
+        ggLog: messages.add,
+        processWrapper: processWrapper,
+        gitRetry: GitRetry.example,
+      );
+      var calls = 0;
+      when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
+          .thenAnswer((_) async {
+            final dropped = calls++ == 0;
+            return ProcessResult(
+              1,
+              dropped ? 1 : 0,
+              '',
+              dropped ? 'Connection to github.com closed by remote host.' : '',
+            );
+          });
+
+      await fetch.get(directory: d, ggLog: messages.add);
+
+      verify(
+        () => processWrapper.run('git', ['fetch'], workingDirectory: d.path),
+      ).called(2);
+      expect(messages.single, contains('git fetch failed with a transient'));
+    });
+
     test('reports stdout when fetch fails with empty stderr', () async {
       when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
           .thenAnswer((_) async => ProcessResult(1, 1, 'fatal: offline', ''));
