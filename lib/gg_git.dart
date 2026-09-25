@@ -7,6 +7,7 @@
 library;
 
 export 'src/base/gg_git_base.dart';
+export 'src/base/git_retry.dart';
 export 'src/base/git_snapshot.dart';
 export 'src/base/process_runner.dart';
 export 'src/commands/checkout.dart';

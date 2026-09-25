@@ -45,6 +45,14 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   (stash tracked + staged/unstaged + untracked into a dangling commit, tree
   left unchanged). Both are pure git, so they live here rather than in one of
   the packages that happen to use them.
+- `lib/src/base/git_retry.dart` — `GitRetry` reruns a git network command
+  (push, fetch, …) whose stderr shows a transient transport failure
+  (`isTransient`: »closed by remote host«, »kex_exchange_identification«
+  (GitHub's SSH throttling), »the remote end hung up unexpectedly«, a 5xx
+  reply, …). A rejected push, missing credentials or an unknown repository
+  is never retried. Four attempts by default, 5 s / 15 s / 45 s apart;
+  `GitRetry.example` retries without waiting for tests. `Fetch` uses it, and
+  so do the pushes of gg_one_commit (`do push`) and gg_one_do_publish.
 - `lib/src/commands/` — one command class per file, based on
   `GgGitBase`/`DirCommand`. `ggLog` is constructor-injected everywhere.
 - `lib/src/test_helpers/test_helpers.dart` — public helpers that build real

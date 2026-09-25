@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Add GitRetry: reruns a git network command that failed with a transient transport error (dropped connection, GitHub's SSH throttling, 5xx); Fetch uses it
+
 ## 4.4.2 - 2026-09-22
 
 ### Changed
