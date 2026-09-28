@@ -40,6 +40,11 @@ class UpstreamBranch extends GgGitBase<String> {
 
   // ...........................................................................
   /// Returns the remote branch or an empty string if no upstream is set.
+  ///
+  /// A configured upstream whose remote-tracking ref is gone counts as no
+  /// upstream too: the remote branch was merged and deleted (e.g. by an
+  /// auto-completed pull request) and a later fetch pruned the ref. There is
+  /// nothing left to compare with, and the next push sets a new upstream.
   @override
   Future<String> get({
     required GgLog ggLog,
@@ -55,9 +60,7 @@ class UpstreamBranch extends GgGitBase<String> {
 
     if (result.exitCode != 0) {
       final error = result.stderr.toString();
-      if (error.contains('no upstream configured') ||
-          error.contains('no such branch') ||
-          error.contains('HEAD does not point to a branch')) {
+      if (_noUpstreamMarkers.any(error.contains)) {
         return '';
       }
       throw Exception(
@@ -68,6 +71,20 @@ class UpstreamBranch extends GgGitBase<String> {
       return result.stdout.toString().trim();
     }
   }
+
+  // ######################
+  // Private
+  // ######################
+
+  /// Stderr fragments of »git rev-parse @{u}« that mean »no usable upstream«.
+  static const _noUpstreamMarkers = [
+    'no upstream configured',
+    'no such branch',
+    'HEAD does not point to a branch',
+    // The upstream is configured, but its remote-tracking ref is gone.
+    "ambiguous argument '@{u}'",
+    'not stored as a remote-tracking branch',
+  ];
 }
 
 /// Mocktail mock

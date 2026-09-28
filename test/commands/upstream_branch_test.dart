@@ -13,6 +13,18 @@ import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
+// .............................................................................
+Future<void> _git(Directory directory, List<String> args) async {
+  final result = await Process.run(
+    'git',
+    args,
+    workingDirectory: directory.path,
+  );
+  if (result.exitCode != 0) {
+    throw Exception('git ${args.join(' ')} failed: ${result.stderr}');
+  }
+}
+
 void main() {
   late Directory dLocal;
   late Directory dRemote;
@@ -124,6 +136,59 @@ void main() {
             );
 
             expect(result2, isEmpty);
+          });
+
+          test('when the upstream branch was deleted on the remote '
+              'and pruned', () async {
+            await initGit(dLocal);
+            initCommand();
+            await initRemoteGit(dRemote);
+            await addRemoteToLocal(local: dLocal, remote: dRemote);
+            await createBranch(dLocal, 'feature');
+            await _git(dLocal, ['push', '--set-upstream', 'origin', 'feature']);
+
+            expect(
+              await upstreamBranch.get(directory: dLocal, ggLog: messages.add),
+              'origin/feature',
+            );
+
+            // The remote branch is merged and deleted, a fetch prunes it
+            await _git(dLocal, ['push', 'origin', '--delete', 'feature']);
+            await _git(dLocal, ['fetch', '--prune']);
+
+            expect(
+              await upstreamBranch.get(directory: dLocal, ggLog: messages.add),
+              isEmpty,
+            );
+          });
+
+          test('when git reports the upstream as not stored '
+              'as a remote-tracking branch', () async {
+            await initGit(dLocal);
+            final processWrapper = MockGgProcessWrapper();
+            initCommand(processWrapper: processWrapper);
+
+            when(
+              () => processWrapper.run('git', [
+                'rev-parse',
+                '--abbrev-ref',
+                '--symbolic-full-name',
+                '@{u}',
+              ], workingDirectory: dLocal.path),
+            ).thenAnswer(
+              (_) async => ProcessResult(
+                1,
+                128,
+                '',
+                "fatal: upstream branch 'refs/heads/feature' not stored as a "
+                    "remote-tracking branch 'refs/remotes/origin/feature'",
+              ),
+            );
+
+            expect(
+              await upstreamBranch.get(directory: dLocal, ggLog: messages.add),
+              isEmpty,
+            );
           });
         });
 

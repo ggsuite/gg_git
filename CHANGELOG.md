@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- UpstreamBranch treats a configured upstream whose remote-tracking ref is gone (remote branch merged and deleted, then pruned) as no upstream instead of throwing
+
 ## 4.5.0 - 2026-09-25
 
 ### Added

@@ -53,6 +53,12 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   is never retried. Four attempts by default, 5 s / 15 s / 45 s apart;
   `GitRetry.example` retries without waiting for tests. `Fetch` uses it, and
   so do the pushes of gg_one_commit (`do push`) and gg_one_do_publish.
+- `lib/src/commands/upstream_branch.dart` — `UpstreamBranch` answers »no
+  upstream« (empty string) not only for a branch without tracking config
+  but also for one whose configured upstream ref is gone: the remote branch
+  was merged and deleted (auto-completed pull request), then pruned by a
+  fetch. `IsPushed` and the pushes of gg_one_commit then push with
+  `--set-upstream` instead of dying on a ref that no longer exists.
 - `lib/src/commands/` — one command class per file, based on
   `GgGitBase`/`DirCommand`. `ggLog` is constructor-injected everywhere.
 - `lib/src/test_helpers/test_helpers.dart` — public helpers that build real
