@@ -1,1 +1,0 @@
-{"issue_id":"tolerate-deleted-upstream-branch","description":"UpstreamBranch reports no upstream when the configured upstream ref is gone (pruned after the remote branch was merged and deleted)"}
