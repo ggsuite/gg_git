@@ -25,5 +25,5 @@ dev_dependencies:
   lints: ^6.1.0
   test: ^1.32.0
   recase: ^4.1.0
-  dna_ggsuite: ^0.2.2
-  helix: ^1.9.0
+  dna_ggsuite: ^0.2.3
+  helix: ^1.10.0
