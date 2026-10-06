@@ -49,8 +49,10 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   (push, fetch, …) whose stderr shows a transient transport failure
   (`isTransient`: »closed by remote host«, »kex_exchange_identification«
   (GitHub's SSH throttling), »the remote end hung up unexpectedly«, a 5xx
-  reply, …). A rejected push, missing credentials or an unknown repository
-  is never retried. Four attempts by default, 5 s / 15 s / 45 s apart;
+  reply, a failed DNS lookup (»could not resolve host«), »connection timed
+  out«, …). A rejected push, missing credentials or an unknown repository
+  is never retried; a misspelled host or a blocked port is, and fails again
+  after the last attempt. Four attempts by default, 5 s / 15 s / 45 s apart;
   `GitRetry.example` retries without waiting for tests. `Fetch` uses it, and
   so do the pushes of gg_one_commit (`do push`) and gg_one_do_publish.
 - `lib/src/commands/upstream_branch.dart` — `UpstreamBranch` answers »no

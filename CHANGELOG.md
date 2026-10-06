@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Retry git network commands on DNS lookup failures and timeouts
+
 ## 4.5.2 - 2026-10-06
 
 ## 4.5.1 - 2026-09-28
