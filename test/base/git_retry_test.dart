@@ -132,6 +132,29 @@ void main() {
         }
       });
 
+      test('is true for a failed host name lookup or a timeout', () {
+        for (final stderr in [
+          'ssh: Could not resolve hostname github.com: '
+              'Der angegebene Host ist unbekannt.\r\n'
+              'fatal: Could not read from remote repository.',
+          'ssh: Could not resolve hostname github.com: '
+              'Temporary failure in name resolution\n'
+              'fatal: Could not read from remote repository.',
+          "fatal: unable to access 'https://github.com/x/y.git/': "
+              'Could not resolve host: github.com',
+          'ssh: connect to host github.com port 22: Connection timed out\n'
+              'fatal: Could not read from remote repository.',
+          "fatal: unable to access 'https://github.com/x/y.git/': "
+              'Failed to connect to github.com port 443 after 21 ms: '
+              "Couldn't connect to server",
+          "fatal: unable to access 'https://github.com/x/y.git/': "
+              'Operation timed out after 300000 milliseconds',
+          'ssh: connect to host github.com port 22: Network is unreachable',
+        ]) {
+          expect(GitRetry.isTransient(stderr), isTrue, reason: stderr);
+        }
+      });
+
       test('is false for a real error', () {
         for (final stderr in [
           'git@github.com: Permission denied (publickey).\n'
