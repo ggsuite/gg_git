@@ -132,6 +132,19 @@ void main() {
         }
       });
 
+      test('is true for gh and az when the host does not answer', () {
+        for (final stderr in [
+          'error connecting to api.github.com\n'
+              'check your internet connection or https://githubstatus.com',
+          // az (Python requests) when dev.azure.com does not resolve.
+          'HTTPSConnectionPool(host=\'dev.azure.com\', port=443): Max retries '
+              'exceeded (Caused by NewConnectionError(\'<urllib3.connection '
+              'object>: Failed to establish a new connection: '
+              '[Errno -2] Name or service not known\'))',
+        ]) {
+          expect(GitRetry.isTransient(stderr), isTrue, reason: stderr);
+        }
+      });
       test('is true for a failed host name lookup or a timeout', () {
         for (final stderr in [
           'ssh: Could not resolve hostname github.com: '

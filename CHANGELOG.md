@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Also retry on the connection errors of gh and az (error connecting to, failed to establish a new connection, name or service not known)
+- Merge main into the ticket branch
+
 ## 4.5.3 - 2026-10-06
 
 ### Changed

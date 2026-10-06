@@ -85,6 +85,20 @@ class GitRetry {
   /// A misspelled host or a blocked port shows the same messages; those
   /// fail again after the last attempt, only later.
   static const List<String> _transient = [
+    // ssh: »Could not resolve hostname«, curl: »Could not resolve host«;
+    // az (Python): »Name or service not known«.
+    'could not resolve host',
+    'temporary failure in name resolution',
+    'name or service not known',
+    // A connection that could not be opened or timed out.
+    'failed to connect to',
+    'error connecting to',
+    'failed to establish a new connection',
+    'connection timed out',
+    'operation timed out',
+    'network is unreachable',
+    "couldn't connect to server",
+    // A connection that dropped or was throttled.
     'closed by remote host',
     'connection reset by peer',
     'broken pipe',
@@ -96,13 +110,6 @@ class GitRetry {
     'returned error: 502',
     'returned error: 503',
     'returned error: 504',
-    // ssh: »Could not resolve hostname«, curl: »Could not resolve host«
-    'could not resolve host',
-    'temporary failure in name resolution',
-    'connection timed out',
-    'operation timed out',
-    'network is unreachable',
-    "couldn't connect to server",
   ];
 
   // ...........................................................................
