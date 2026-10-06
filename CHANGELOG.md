@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Retry git and gh calls on transient DNS and connection errors instead of aborting
+
 ## 4.5.2 - 2026-10-06
 
 ## 4.5.1 - 2026-09-28

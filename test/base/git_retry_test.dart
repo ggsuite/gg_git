@@ -132,6 +132,30 @@ void main() {
         }
       });
 
+      test('is true for a host that does not resolve or answer', () {
+        for (final stderr in [
+          'fatal: unable to access \'https://github.com/x/y.git/\': '
+              'Could not resolve host: github.com',
+          'ssh: Could not resolve hostname github.com: '
+              'Temporary failure in name resolution',
+          'error connecting to api.github.com\n'
+              'check your internet connection or https://githubstatus.com',
+          'fatal: unable to access \'https://github.com/x/y.git/\': '
+              'Failed to connect to github.com port 443 after 21045 ms: '
+              'Could not connect to server',
+          'ssh: connect to host github.com port 22: Connection timed out',
+          'fatal: unable to access \'https://github.com/x/y.git/\': '
+              'Operation timed out after 300000 milliseconds',
+          // az (Python requests) when dev.azure.com does not resolve.
+          'HTTPSConnectionPool(host=\'dev.azure.com\', port=443): Max retries '
+              'exceeded (Caused by NewConnectionError(\'<urllib3.connection '
+              'object>: Failed to establish a new connection: '
+              '[Errno -2] Name or service not known\'))',
+        ]) {
+          expect(GitRetry.isTransient(stderr), isTrue, reason: stderr);
+        }
+      });
+
       test('is false for a real error', () {
         for (final stderr in [
           'git@github.com: Permission denied (publickey).\n'
