@@ -12,8 +12,8 @@ import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Reruns a git network command that failed with a transient transport
-/// error: a host name that did not resolve, a connection that could not be
-/// opened or dropped, GitHub's SSH throttling, a 5xx reply.
+/// error: a dropped connection, GitHub's SSH throttling, a 5xx reply, a
+/// failed host name lookup or a connection that timed out.
 class GitRetry {
   /// Constructor
   const GitRetry({
@@ -80,11 +80,13 @@ class GitRetry {
   // ######################
 
   // ...........................................................................
-  /// Messages that mean the transport dropped or throttled the connection —
-  /// or never got one: a DNS lookup that failed for a moment ends a run just
-  /// as hard as a dropped connection, and recovers just as quickly.
+  /// Messages that mean the transport dropped or throttled the connection,
+  /// or never got one: a DNS lookup that failed for a moment, a timeout.
+  /// A misspelled host or a blocked port shows the same messages; those
+  /// fail again after the last attempt, only later.
   static const List<String> _transient = [
-    // git over https (curl) and ssh, and gh, when the host does not resolve.
+    // ssh: »Could not resolve hostname«, curl: »Could not resolve host«;
+    // az (Python): »Name or service not known«.
     'could not resolve host',
     'temporary failure in name resolution',
     'name or service not known',
@@ -94,6 +96,8 @@ class GitRetry {
     'failed to establish a new connection',
     'connection timed out',
     'operation timed out',
+    'network is unreachable',
+    "couldn't connect to server",
     // A connection that dropped or was throttled.
     'closed by remote host',
     'connection reset by peer',

@@ -1,10 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Also retry on the connection errors of gh and az (error connecting to, failed to establish a new connection, name or service not known)
+
 ## 4.5.3 - 2026-10-06
 
 ### Changed
 
-- Retry git and gh calls on transient DNS and connection errors instead of aborting
+- Retry git network commands on DNS lookup failures and timeouts
 
 ## 4.5.2 - 2026-10-06
 

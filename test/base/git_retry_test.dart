@@ -132,25 +132,37 @@ void main() {
         }
       });
 
-      test('is true for a host that does not resolve or answer', () {
+      test('is true for gh and az when the host does not answer', () {
         for (final stderr in [
-          'fatal: unable to access \'https://github.com/x/y.git/\': '
-              'Could not resolve host: github.com',
-          'ssh: Could not resolve hostname github.com: '
-              'Temporary failure in name resolution',
           'error connecting to api.github.com\n'
               'check your internet connection or https://githubstatus.com',
-          'fatal: unable to access \'https://github.com/x/y.git/\': '
-              'Failed to connect to github.com port 443 after 21045 ms: '
-              'Could not connect to server',
-          'ssh: connect to host github.com port 22: Connection timed out',
-          'fatal: unable to access \'https://github.com/x/y.git/\': '
-              'Operation timed out after 300000 milliseconds',
           // az (Python requests) when dev.azure.com does not resolve.
           'HTTPSConnectionPool(host=\'dev.azure.com\', port=443): Max retries '
               'exceeded (Caused by NewConnectionError(\'<urllib3.connection '
               'object>: Failed to establish a new connection: '
               '[Errno -2] Name or service not known\'))',
+        ]) {
+          expect(GitRetry.isTransient(stderr), isTrue, reason: stderr);
+        }
+      });
+      test('is true for a failed host name lookup or a timeout', () {
+        for (final stderr in [
+          'ssh: Could not resolve hostname github.com: '
+              'Der angegebene Host ist unbekannt.\r\n'
+              'fatal: Could not read from remote repository.',
+          'ssh: Could not resolve hostname github.com: '
+              'Temporary failure in name resolution\n'
+              'fatal: Could not read from remote repository.',
+          "fatal: unable to access 'https://github.com/x/y.git/': "
+              'Could not resolve host: github.com',
+          'ssh: connect to host github.com port 22: Connection timed out\n'
+              'fatal: Could not read from remote repository.',
+          "fatal: unable to access 'https://github.com/x/y.git/': "
+              'Failed to connect to github.com port 443 after 21 ms: '
+              "Couldn't connect to server",
+          "fatal: unable to access 'https://github.com/x/y.git/': "
+              'Operation timed out after 300000 milliseconds',
+          'ssh: connect to host github.com port 22: Network is unreachable',
         ]) {
           expect(GitRetry.isTransient(stderr), isTrue, reason: stderr);
         }
