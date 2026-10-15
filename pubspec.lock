@@ -114,20 +114,18 @@ packages:
     source: hosted
     version: "0.2.1"
   dna_gg:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: dna_gg
-      sha256: "73d764c7bdf4b624c871ac4b77e91ed0234cb59e643d175451e015fc7940b937"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../dna_gg"
+      relative: true
+    source: path
     version: "0.9.0"
   dna_ggsuite:
     dependency: "direct dev"
     description:
-      name: dna_ggsuite
-      sha256: eb07ba88d42a2e56eb182bfc11ca8b188f14d4347055123775105840ec789b8d
-      url: "https://pub.dev"
-    source: hosted
+      path: "../dna_ggsuite"
+      relative: true
+    source: path
     version: "0.4.0"
   dna_github:
     dependency: transitive
@@ -162,12 +160,11 @@ packages:
     source: hosted
     version: "0.2.0"
   dna_readme:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: dna_readme
-      sha256: b8b6152769bdbba3d8597c3c4e667d900dbb6b63bdd7f1331d402726a8dd3c6d
-      url: "https://pub.dev"
-    source: hosted
+      path: "../dna_readme"
+      relative: true
+    source: path
     version: "0.3.0"
   dna_scripts:
     dependency: transitive
@@ -186,12 +183,11 @@ packages:
     source: hosted
     version: "0.2.0"
   dna_vscode:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: dna_vscode
-      sha256: "84912400705b25abc8abc377c3f1c603a2ed5968f20ae42b7ddf6a6ff32fac48"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../dna_vscode"
+      relative: true
+    source: path
     version: "0.4.0"
   ffi:
     dependency: transitive
@@ -252,10 +248,9 @@ packages:
   gg_is_github:
     dependency: "direct main"
     description:
-      name: gg_is_github
-      sha256: c20626e8b5f5f167e40ebdefe52af43fec509e4970f2bb98f42db2f330027caa
-      url: "https://pub.dev"
-    source: hosted
+      path: "../gg_is_github"
+      relative: true
+    source: path
     version: "1.2.3"
   gg_json:
     dependency: transitive
@@ -284,10 +279,9 @@ packages:
   gg_status_printer:
     dependency: "direct main"
     description:
-      name: gg_status_printer
-      sha256: "63b43b1dc8e49cf4783094267f52bf2ad457856923ea31a4902a78491a46c13b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../gg_status_printer"
+      relative: true
+    source: path
     version: "1.6.3"
   glob:
     dependency: transitive
