@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Add the blog post of ticket gg-1
+
+### Changed
+
+- Make gg checks work on Windows
+
 ## 4.5.5 - 2026-10-16
 
 ## 4.5.4 - 2026-10-06
