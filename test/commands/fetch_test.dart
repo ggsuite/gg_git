@@ -92,6 +92,40 @@ void main() {
       expect(messages.single, contains('git fetch failed with a transient'));
     });
 
+    test('says what to do when ssh does not know the host', () async {
+      when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
+          .thenAnswer(
+            (_) async =>
+                ProcessResult(1, 128, '', 'Host key verification failed.'),
+          );
+      when(
+        () => processWrapper.run('git', [
+          'remote',
+          'get-url',
+          'origin',
+        ], workingDirectory: d.path),
+      ).thenAnswer(
+        (_) async => ProcessResult(1, 0, 'git@github.com:org/repo.git\n', ''),
+      );
+
+      await expectLater(
+        fetch.get(directory: d, ggLog: messages.add),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            allOf(
+              contains('Could not fetch in'),
+              contains(
+                '\nSSH does not know github.com yet. Run "git ls-remote '
+                'git@github.com:org/repo.git" once',
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+
     test('reports stdout when fetch fails with empty stderr', () async {
       when(() => processWrapper.run('git', ['fetch'], workingDirectory: d.path))
           .thenAnswer((_) async => ProcessResult(1, 1, 'fatal: offline', ''));
