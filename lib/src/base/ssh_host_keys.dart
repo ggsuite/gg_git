@@ -108,6 +108,13 @@ class SshHostKeys {
   static bool isKeyRejected(String stderr) =>
       stderr.toLowerCase().contains('permission denied (publickey');
 
+  /// Whether [stderr] shows that ssh is not set up for the host: unknown,
+  /// changed host key or refused user key — the cases [setupHint] explains.
+  static bool isSetupProblem(String stderr) =>
+      isUnknownHost(stderr) ||
+      isChangedHostKey(stderr) ||
+      isKeyRejected(stderr);
+
   // ...........................................................................
   /// What the developer does next when [stderr] of a git command on
   /// [repoUrl] shows that ssh is not set up for its host. Null for every

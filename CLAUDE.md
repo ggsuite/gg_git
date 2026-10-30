@@ -73,7 +73,10 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   like `ssh-keygen -l`). `trust` appends to `~/.ssh/known_hosts`, skipping
   lines already there; the home is found like Git for Windows does (HOME,
   else HOMEDRIVE+HOMEPATH if it exists, else USERPROFILE). A custom
-  `UserKnownHostsFile` in `~/.ssh/config` is not followed.
+  `UserKnownHostsFile` in `~/.ssh/config` is not followed. `Fetch` appends
+  `setupHint` (with the url of `origin`) to its error when
+  `isSetupProblem` matches, so every caller of `Fetch` explains ssh
+  problems without code of its own.
 - `lib/src/commands/upstream_branch.dart` — `UpstreamBranch` answers »no
   upstream« (empty string) not only for a branch without tracking config
   but also for one whose configured upstream ref is gone: the remote branch

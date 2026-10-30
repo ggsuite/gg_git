@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.7.0 - 2026-10-30
+
+### Changed
+
+- Explain ssh problems when git fetch fails
+
 ## 4.6.0 - 2026-10-30
 
 ### Added

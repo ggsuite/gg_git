@@ -90,6 +90,13 @@ void main() {
         expect(SshHostKeys.isChangedHostKey(unknown), isFalse);
       });
 
+      test('isSetupProblem', () {
+        expect(SshHostKeys.isSetupProblem(unknown), isTrue);
+        expect(SshHostKeys.isSetupProblem(changed), isTrue);
+        expect(SshHostKeys.isSetupProblem(rejected), isTrue);
+        expect(SshHostKeys.isSetupProblem('Repository not found.'), isFalse);
+      });
+
       test('isKeyRejected', () {
         expect(SshHostKeys.isKeyRejected(rejected), isTrue);
         expect(SshHostKeys.isKeyRejected(unknown), isFalse);
