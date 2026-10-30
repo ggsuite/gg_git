@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Add SshHostKeys for unknown ssh hosts of git remotes
+
 ## 4.5.5 - 2026-10-16
 
 ## 4.5.4 - 2026-10-06
