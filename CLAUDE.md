@@ -55,6 +55,25 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   after the last attempt. Four attempts by default, 5 s / 15 s / 45 s apart;
   `GitRetry.example` retries without waiting for tests. `Fetch` uses it, and
   so do the pushes of gg_one_commit (`do push`) and gg_one_do_publish.
+- `lib/src/base/ssh_host_keys.dart` — `SshHostKeys` classifies the stderr
+  of a failed ssh connection (`isUnknownHost`, `isChangedHostKey` — both
+  print »Host key verification failed«, only an unknown host may be
+  trusted —, `isKeyRejected`), says what to do next (`setupHint`, per
+  host — Azure DevOps takes RSA keys only), reads the host of a remote url as
+  known_hosts names it (`hostOf`: `host` or `[host]:port`), and reads the
+  key an unknown host presents with `scan`: `git ls-remote` with a
+  `GIT_SSH_COMMAND` — the user's own (`GIT_SSH_COMMAND`, `core.sshCommand`,
+  else `ssh`) plus options — that accepts the key into an empty known_hosts
+  file of its own. So it is the ssh and ssh config git itself uses (Git for
+  Windows bundles one; `ssh-keyscan` is often not on the PATH there). The
+  temp path goes in as `'UserKnownHostsFile="…"'`: double quotes for ssh,
+  which splits the value at spaces, single quotes for sh. `checkFingerprint`
+  compares with the fingerprints GitHub and Azure DevOps publish;
+  `SshHostKey.fingerprint` is computed in Dart (SHA256 of the key blob,
+  like `ssh-keygen -l`). `trust` appends to `~/.ssh/known_hosts`, skipping
+  lines already there; the home is found like Git for Windows does (HOME,
+  else HOMEDRIVE+HOMEPATH if it exists, else USERPROFILE). A custom
+  `UserKnownHostsFile` in `~/.ssh/config` is not followed.
 - `lib/src/commands/upstream_branch.dart` — `UpstreamBranch` answers »no
   upstream« (empty string) not only for a branch without tracking config
   but also for one whose configured upstream ref is gone: the remote branch
@@ -91,16 +110,6 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
 
 <!-- helix:claude_md:start -->
 
-# gg workflow
-
-This repo is developed ticket by ticket with the `gg` CLI. Follow the
-development guide, it tells you when to ask the user and which command
-comes next:
-
-@doc/guides/for-ai/ai-dev-guide.md
-
-The steps are also available as skills: `/gg-ticket`, `/gg-commit`,
-`/gg-push`, `/gg-publish`, `/gg-cleanup`. `/gg` lists them and says which
-one comes next.
+@.claude/CLAUDE_dna_gg.md
 
 <!-- helix:claude_md:end -->

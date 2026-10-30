@@ -2,6 +2,25 @@
 
 A collection of git helper scripts for repository checks and other utilities.
 
+## SSH host keys
+
+`SshHostKeys` helps when git cannot connect to an ssh remote: it tells an
+unknown host (`isUnknownHost`) from a changed host key (`isChangedHostKey`)
+and a refused user key (`isKeyRejected`), reads the key an unknown host
+presents without trusting it (`scan`), tells the developer what to do
+next (`setupHint`), compares its fingerprint with the
+fingerprints GitHub and Azure DevOps publish (`checkFingerprint`) and adds
+it to `~/.ssh/known_hosts` (`trust`).
+
+```dart
+final hostKeys = SshHostKeys();
+final host = SshHostKeys.hostOf(url)!;
+for (final key in await hostKeys.scan(url)) {
+  print('${key.typeName} ${key.fingerprint} '
+      '${SshHostKeys.checkFingerprint(host, key)}');
+}
+```
+
 ## Test helpers
 
 `package:gg_git/gg_git_test_helpers.dart` provides helpers that create real
