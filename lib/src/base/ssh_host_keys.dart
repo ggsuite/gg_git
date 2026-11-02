@@ -105,8 +105,13 @@ class SshHostKeys {
       stderr.toLowerCase().contains('remote host identification has changed');
 
   /// Whether [stderr] shows that the host refused the ssh key of the user.
-  static bool isKeyRejected(String stderr) =>
-      stderr.toLowerCase().contains('permission denied (publickey');
+  /// OpenSSH says "Permission denied (publickey)", Azure DevOps says
+  /// "Public key authentication failed".
+  static bool isKeyRejected(String stderr) {
+    final text = stderr.toLowerCase();
+    return text.contains('permission denied (publickey') ||
+        text.contains('public key authentication failed');
+  }
 
   /// Whether [stderr] shows that ssh is not set up for the host: unknown,
   /// changed host key or refused user key — the cases [setupHint] explains.
@@ -146,17 +151,25 @@ class SshHostKeys {
           'publishes, then remove the old one with "ssh-keygen -R $quoted".';
     }
     if (isKeyRejected(stderr)) {
-      // Azure DevOps takes RSA keys only.
-      final azure = _azureHosts.contains(host);
-      final keyType = azure ? 'rsa -b 4096' : 'ed25519';
-      final where = azure
-          ? 'Azure DevOps: User settings → SSH public keys'
-          : host == 'github.com'
+      if (_azureHosts.contains(host)) {
+        // Azure DevOps takes RSA keys only.
+        return '$host refused your SSH key. Azure DevOps takes RSA keys '
+            'only, an ED25519 key does not work there. If you have no RSA '
+            'key yet, create one with "ssh-keygen -t rsa -b 4096". Then add '
+            'the public key (~/.ssh/id_rsa.pub) in Azure DevOps: User '
+            'settings → SSH public keys. If your key is not ~/.ssh/id_rsa, '
+            'name it in ~/.ssh/config ("Host $host" with "IdentityFile '
+            '<key file>"). Check with "ssh -T git@$host", then run the '
+            'command again.';
+      }
+      final github = host == 'github.com';
+      final where = github
           ? 'GitHub: Settings → SSH and GPG keys'
           : 'the settings of your account on $host';
+      final check = github ? ', check with "ssh -T git@$host"' : '';
       return '$host refused your SSH key. If you have none yet, create one '
-          'with "ssh-keygen -t $keyType". Then add the public key '
-          '(~/.ssh/*.pub) in $where and run the command again.';
+          'with "ssh-keygen -t ed25519". Then add the public key '
+          '(~/.ssh/*.pub) in $where$check and run the command again.';
     }
     return null;
   }

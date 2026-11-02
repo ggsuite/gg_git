@@ -101,6 +101,16 @@ void main() {
         expect(SshHostKeys.isKeyRejected(rejected), isTrue);
         expect(SshHostKeys.isKeyRejected(unknown), isFalse);
       });
+
+      test('isKeyRejected with the words of Azure DevOps', () {
+        const azure =
+            '** WARNING: connection is not using a post-quantum key '
+            'exchange algorithm.\r\n'
+            'remote: Public key authentication failed.\r\n'
+            'fatal: Could not read from remote repository.';
+        expect(SshHostKeys.isKeyRejected(azure), isTrue);
+        expect(SshHostKeys.isSetupProblem(azure), isTrue);
+      });
     });
 
     group('setupHint', () {
@@ -157,8 +167,11 @@ void main() {
           SshHostKeys.setupHint('git@ssh.dev.azure.com:v3/o/p/r', refused),
           allOf(
             contains('ssh.dev.azure.com refused your SSH key.'),
+            contains('Azure DevOps takes RSA keys only'),
             contains('"ssh-keygen -t rsa -b 4096"'),
             contains('Azure DevOps: User settings → SSH public keys'),
+            contains('"Host ssh.dev.azure.com" with "IdentityFile'),
+            contains('"ssh -T git@ssh.dev.azure.com"'),
           ),
         );
         expect(
@@ -166,11 +179,29 @@ void main() {
           allOf(
             contains('"ssh-keygen -t ed25519"'),
             contains('GitHub: Settings → SSH and GPG keys'),
+            contains('"ssh -T git@github.com"'),
           ),
         );
         expect(
           SshHostKeys.setupHint('git@example.com:repo.git', refused),
-          contains('the settings of your account on example.com'),
+          allOf(
+            contains('the settings of your account on example.com'),
+            isNot(contains('ssh -T')),
+          ),
+        );
+      });
+
+      test('explains the refused key of Azure DevOps', () {
+        const refused = 'remote: Public key authentication failed.';
+        expect(
+          SshHostKeys.setupHint(
+            'git@ssh.dev.azure.com:v3/mhk-carat/p/r',
+            refused,
+          ),
+          startsWith(
+            'ssh.dev.azure.com refused your SSH key. Azure DevOps takes RSA '
+            'keys only',
+          ),
         );
       });
 
