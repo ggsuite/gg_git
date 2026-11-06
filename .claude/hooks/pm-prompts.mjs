@@ -17,8 +17,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 /** The branch of the project management repo holding the prompts. */
 export const promptsBranch = 'prompts';
 
-const promptsDir = 'doc/prompts';
-const peopleFile = 'doc/team/people.md';
+// Everything a project management repo plans lives in quarter folders
+// doc/<yyyy>-Q<n>; repos not moved yet keep doc/team.
+const quarterDir = /^doc\/(\d{4}-Q[1-4])$/;
+const legacyPeopleFile = 'doc/team/people.md';
 const configFile = path.join('.claude', 'hooks', 'pm-prompts.json');
 
 // A session that ended without an end event counts as ended after a week.
@@ -238,7 +240,7 @@ export function onPrompt(input) {
       started: new Date().toISOString(),
       folder: path.basename(projectDir),
       repos,
-      email: git(['-C', projectDir, 'config', 'user.email']).out,
+      name: git(['-C', projectDir, 'config', 'user.name']).out,
       targets,
     });
   }
@@ -299,28 +301,41 @@ export function slug(name) {
     .replace(/^-+|-+$/g, '');
 }
 
-/** The first name in [peopleMd] whose `Git` line lists [email]. */
-export function personOf(email, peopleMd) {
-  if (!email) return '';
+/**
+ * The first name in [peopleMd] for the git user name [gitName]: the person
+ * whose `Git` line lists it, else the person whose first name is the git
+ * name or its first word. E-mail addresses play no part.
+ */
+export function personOf(gitName, peopleMd) {
+  const wanted = (gitName ?? '').trim().toLowerCase();
+  if (!wanted) return '';
+  const byFirstName = new Map();
   let name = '';
   for (const line of peopleMd.split(/\r?\n/)) {
     const heading = line.match(/^##\s+(.+?)\s*$/);
     if (heading) {
       name = heading[1];
+      byFirstName.set(name.toLowerCase(), name);
       continue;
     }
-    const emails = line.match(/^\s*-\s*Git:\s*(.+)$/i);
+    const names = line.match(/^\s*-\s*Git:\s*(.+)$/i);
     if (
       name &&
-      emails &&
-      emails[1]
-        .split(/[,;\s]+/)
-        .some((e) => e.toLowerCase() === email.toLowerCase())
+      names &&
+      names[1].split(/[,;]/).some((n) => n.trim().toLowerCase() === wanted)
     ) {
       return name;
     }
   }
-  return '';
+  return (
+    byFirstName.get(wanted) ?? byFirstName.get(wanted.split(/\s+/)[0]) ?? ''
+  );
+}
+
+/** The quarter folder name of a local date: 2026-11-06 → 2026-Q4. */
+export function quarterOf(date) {
+  const month = Number(date.slice(5, 7));
+  return `${date.slice(0, 4)}-Q${Math.floor((month - 1) / 3) + 1}`;
 }
 
 /** Where the prompts of a session go in the project management repo. */
@@ -328,7 +343,21 @@ export function promptsPath(meta, person) {
   const date = localDate(meta.started);
   const folder = person ? slug(person) : '_unknown';
   const id = String(meta.session).slice(0, 8);
-  return `${promptsDir}/${folder}/${date.slice(0, 7)}/${date}_${slug(meta.folder) || 'session'}_${id}.md`;
+  const name = `${date}_${slug(meta.folder) || 'session'}_${id}.md`;
+  return `doc/${quarterOf(date)}/prompts/${folder}/${name}`;
+}
+
+/**
+ * The files people.md may be in, best first: the team of the newest quarter
+ * folder among the [entries] of doc, then the one of a repo not moved yet.
+ */
+export function peopleFiles(entries) {
+  const quarters = entries
+    .map((e) => quarterDir.exec(e.trim())?.[1])
+    .filter(Boolean)
+    .sort()
+    .reverse();
+  return [...quarters.map((q) => `doc/${q}/team/people.md`), legacyPeopleFile];
 }
 
 /** The head of the file a session's prompts start. */
@@ -336,7 +365,7 @@ export function renderHead(meta, person) {
   const lines = [
     `# ${localDate(meta.started)} · ${meta.folder} · ${String(meta.session).slice(0, 8)}`,
     '',
-    `- Person: ${person || meta.email || 'unknown'}`,
+    `- Person: ${person || meta.name || 'unknown'}`,
   ];
   const repos = meta.repos ?? [];
   if (repos.length === 1 && repos[0] === meta.folder) {
@@ -385,7 +414,12 @@ function ensureCache(url) {
 function readPeople(dir) {
   const fetched = git(['-C', dir, 'fetch', '-q', '--depth=1', 'origin', 'HEAD']);
   if (!fetched.ok) throw new Error(`fetch HEAD: ${fetched.err}`);
-  return git(['-C', dir, 'show', `FETCH_HEAD:${peopleFile}`]).out;
+  const ls = git(['-C', dir, 'ls-tree', '--name-only', 'FETCH_HEAD', 'doc/']);
+  for (const file of peopleFiles(ls.ok ? ls.out.split('\n') : [])) {
+    const shown = git(['-C', dir, 'show', `FETCH_HEAD:${file}`]);
+    if (shown.ok) return shown.out;
+  }
+  return '';
 }
 
 // The tip of the prompts branch, '' while it does not exist yet.
@@ -399,16 +433,15 @@ function fetchBranch(dir) {
   return git(['-C', dir, 'rev-parse', ref]).out;
 }
 
-function identityEnv(dir) {
-  const env = { ...gitEnv };
-  if (!git(['-C', dir, 'config', 'user.name']).out) {
-    env.GIT_AUTHOR_NAME = env.GIT_COMMITTER_NAME = 'pm-prompts';
-  }
-  if (!git(['-C', dir, 'config', 'user.email']).out) {
-    env.GIT_AUTHOR_EMAIL = env.GIT_COMMITTER_EMAIL = 'pm-prompts@localhost';
-  }
-  return env;
-}
+// The prompts are committed under a neutral identity, so the e-mail address
+// of the developer never reaches the project management repo.
+const identityEnv = {
+  ...gitEnv,
+  GIT_AUTHOR_NAME: 'pm-prompts',
+  GIT_COMMITTER_NAME: 'pm-prompts',
+  GIT_AUTHOR_EMAIL: 'pm-prompts@localhost',
+  GIT_COMMITTER_EMAIL: 'pm-prompts@localhost',
+};
 
 // Commits the not yet pushed prompts of [sessions] to the prompts branch of
 // [url]. Returns how many prompts of each session the branch now holds.
@@ -421,7 +454,7 @@ function pushTarget(url, sessions) {
       os.tmpdir(),
       `pm-prompts-${process.pid}-${Date.now()}.index`,
     );
-    const env = { ...identityEnv(dir), GIT_INDEX_FILE: index };
+    const env = { ...identityEnv, GIT_INDEX_FILE: index };
     try {
       const read = base
         ? git(['-C', dir, 'read-tree', base], { env })
@@ -433,8 +466,8 @@ function pushTarget(url, sessions) {
         const fresh = session.prompts.slice(pushed);
         done.set(file, session.prompts.length);
         if (!fresh.length) continue;
-        const person = personOf(session.meta.email, people);
-        names.add(person || session.meta.email || 'unknown');
+        const person = personOf(session.meta.name, people);
+        names.add(person || session.meta.name || 'unknown');
         const target = promptsPath(session.meta, person);
         const existing = base
           ? git(['-C', dir, 'cat-file', '-p', `${base}:${target}`])

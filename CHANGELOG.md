@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.8.1 - 2026-11-06
+
+### Changed
+
+- Tighten dependencies
+
 ## 4.8.0 - 2026-11-03
 
 ### Changed
