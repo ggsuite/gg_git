@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.8.1 - 2026-11-06
 
 ### Changed
 
