@@ -4,13 +4,59 @@
 // Use of this source code is governed by terms that can be
 // found in the LICENSE file in the root of this package.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:gg_git/src/commands/last_changes_hash.dart';
+import 'package:gg_process/gg_process.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:gg_git/src/test_helpers/test_helpers.dart';
 import 'package:test/test.dart';
+
+// .............................................................................
+/// Runs the real git and records the files each `git hash-object` call was
+/// asked to hash. With [failBatches] a call for several files fails, as git
+/// does when it cannot read one of them.
+class _RecordingProcessWrapper extends GgProcessWrapper {
+  _RecordingProcessWrapper({this.failBatches = false});
+
+  final bool failBatches;
+
+  /// The files of each `git hash-object` call.
+  final List<List<String>> hashedFiles = [];
+
+  @override
+  Future<ProcessResult> run(
+    String executable,
+    List<String> arguments, {
+    String? workingDirectory,
+    Map<String, String>? environment,
+    bool includeParentEnvironment = true,
+    bool runInShell = false,
+    Encoding? stdoutEncoding,
+    Encoding? stderrEncoding,
+  }) async {
+    if (arguments.first == 'hash-object') {
+      final files = arguments.skip(2).toList();
+      hashedFiles.add(files);
+      if (failBatches && files.length > 1) {
+        return ProcessResult(0, 128, '', 'fatal: could not open a file');
+      }
+    }
+
+    return super.run(
+      executable,
+      arguments,
+      workingDirectory: workingDirectory,
+      environment: environment,
+      includeParentEnvironment: includeParentEnvironment,
+      runInShell: runInShell,
+      stdoutEncoding: stdoutEncoding,
+      stderrEncoding: stderrEncoding,
+    );
+  }
+}
 
 void main() {
   late Directory d;
@@ -338,6 +384,121 @@ void main() {
           );
 
           expect(hash1, isNot(hash0));
+        });
+      });
+
+      group('hashes the unstaged files', () {
+        late _RecordingProcessWrapper processWrapper;
+
+        /// The hash as a run asking git for one file at a time gives it.
+        Future<int> hashFileByFile() => LastChangesHash(
+          ggLog: messages.add,
+          processWrapper: _RecordingProcessWrapper(failBatches: true),
+        ).get(ggLog: messages.add, directory: d);
+
+        setUp(() async {
+          processWrapper = _RecordingProcessWrapper();
+          lastChangesHahs = LastChangesHash(
+            ggLog: messages.add,
+            processWrapper: processWrapper,
+          );
+          await enableEolLf(d);
+          await addAndCommitSampleFile(d);
+        });
+
+        test('with one git call for all of them', () async {
+          for (var i = 0; i < 5; i++) {
+            await addFileWithoutCommitting(
+              d,
+              fileName: 'file$i.txt',
+              content: 'content$i',
+            );
+          }
+
+          final hash = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          expect(processWrapper.hashedFiles, [
+            ['file0.txt', 'file1.txt', 'file2.txt', 'file3.txt', 'file4.txt'],
+          ]);
+          expect(hash, await hashFileByFile());
+        });
+
+        test('without asking git when nothing changed', () async {
+          await lastChangesHahs.get(ggLog: messages.add, directory: d);
+          expect(processWrapper.hashedFiles, isEmpty);
+        });
+
+        test('with several git calls when the names fill a command line, '
+            'in the order of the files', () async {
+          // 70 names of 100 characters: more than one command line takes.
+          final names = [
+            for (var i = 0; i < 70; i++)
+              '${'$i'.padLeft(3, '0')}_${'x' * 92}.txt',
+          ];
+          for (final name in names) {
+            File('${d.path}/$name').writeAsStringSync('content of $name');
+          }
+
+          final hash = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          expect(processWrapper.hashedFiles, hasLength(2));
+          expect(processWrapper.hashedFiles.expand((files) => files), names);
+          for (final files in processWrapper.hashedFiles) {
+            expect(
+              files.join(' ').length,
+              lessThanOrEqualTo(LastChangesHash.maxCommandLineLength),
+            );
+          }
+          expect(hash, await hashFileByFile());
+        });
+
+        test('with an empty hash for a deleted file, without asking git '
+            'about it', () async {
+          await addFileWithoutCommitting(d, fileName: 'kept.txt');
+          final before = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+          processWrapper.hashedFiles.clear();
+
+          File('${d.path}/$sampleFileName').deleteSync();
+          final after = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          expect(processWrapper.hashedFiles, [
+            ['kept.txt'],
+          ]);
+          expect(after, isNot(before));
+        });
+
+        test('file by file when git cannot hash them at once', () async {
+          await addFileWithoutCommitting(d, fileName: 'a.txt', content: 'a');
+          await addFileWithoutCommitting(d, fileName: 'b.txt', content: 'b');
+          final expected = await lastChangesHahs.get(
+            ggLog: messages.add,
+            directory: d,
+          );
+
+          final failing = _RecordingProcessWrapper(failBatches: true);
+          final hash = await LastChangesHash(
+            ggLog: messages.add,
+            processWrapper: failing,
+          ).get(ggLog: messages.add, directory: d);
+
+          expect(failing.hashedFiles, [
+            ['a.txt', 'b.txt'],
+            ['a.txt'],
+            ['b.txt'],
+          ]);
+          expect(hash, expected);
         });
       });
     });

@@ -53,8 +53,36 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   out«, …). A rejected push, missing credentials or an unknown repository
   is never retried; a misspelled host or a blocked port is, and fails again
   after the last attempt. Four attempts by default, 5 s / 15 s / 45 s apart;
-  `GitRetry.example` retries without waiting for tests. `Fetch` uses it, and
+  `GitRetry.example` retries without waiting for tests. A **rate limit**
+  (`isRateLimited`: »rate limit«, »abuse detection«, »too many requests«,
+  HTTP 429 — GitHub's secondary rate limit, npm, pub.dev) is retried as
+  well, but after `rateLimitDelay` (60 s), doubled with every retry: such a
+  limit is lifted after a minute or more, and asking earlier prolongs it.
+  The log line then says that the remote limits how often it is asked. `Fetch` uses it, and
   so do the pushes of gg_one_commit (`do push`) and gg_one_do_publish.
+- `lib/src/base/git_version.dart` — `GitVersion.isAtLeast(major, minor)`
+  asks `git --version` once per process and never throws (an unreadable
+  answer counts as older than everything). `GitVersion.fixed` / `.unknown`
+  are for tests. `Fetch` uses it to decide between the two ways below.
+- `lib/src/commands/fetch.dart` — `Fetch.get` takes two options that save
+  connections: `mirrorTags` (`--prune --prune-tags --force`: the tags become
+  a copy of the remote's — one fetch instead of deleting the local tags and
+  fetching them twice) and `refreshDefaultBranch` (`origin/HEAD` names the
+  remote's default branch afterwards: with git ≥ 2.48 through
+  `-c remote.origin.followRemoteHEAD=always` in the same connection, with an
+  older git through `git remote set-head origin --auto` afterwards, retried
+  and never failing the fetch). `Fetch.arguments` builds the command line
+  for callers that run git through their own process runner.
+- `lib/src/base/wait_for_both.dart` — `waitForBoth(a, b)` runs two things
+  at the same time and reports a failure only once **both** are through:
+  a git process that is still running holds on to its working directory
+  (Windows refuses to delete it), which `Future.wait(…, eagerError: true)`
+  ignores. `LastChangesHash` and `UnstagedFiles` read with it.
+- `lib/src/commands/last_changes_hash.dart` — hashes the unstaged files
+  with **one** `git hash-object -- <files>` per command line full
+  (`maxCommandLineLength`), not one call per file; a deleted file or a
+  folder gets the empty hash without asking git, and a call git refuses
+  falls back to file by file. The hash values are unchanged.
 - `lib/src/base/ssh_host_keys.dart` — `SshHostKeys` classifies the stderr
   of a failed ssh connection (`isUnknownHost`, `isChangedHostKey` — both
   print »Host key verification failed«, only an unknown host may be
@@ -88,7 +116,15 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
 - `lib/src/test_helpers/test_helpers.dart` — public helpers that build real
   git repos for tests (`initGit`, `initLocalAndRemoteGit`, …). Exported via
   `lib/gg_git_test_helpers.dart` and consumed by gg_one, gg_publish and
-  gg_version. The file is `coverage:ignore-file`.
+  gg_version. The file is `coverage:ignore-file`. The helpers start as few
+  git processes as they can — the processes are what a test run waits for
+  (see »Testing Conventions«): `initLocalGit` checks `main` out only in a
+  repository that was there before (a new one is on `main` right away);
+  `commitFile` asks `git status` only when git refuses the commit — except
+  for an amend, which would rewrite the last commit also when nothing
+  changed and therefore asks first — and commits with
+  `maintenance.auto=false`, so no detached `git maintenance` outlives the
+  test and holds on to its folder.
 - `lib/src/test_helpers/cached_repos.dart` — cached fixture variants:
   `initCachedRepo` / `initCachedRepoPair` build a fixture once per isolate
   (memoized by a caller-chosen string key) and deliver pure-Dart directory
@@ -108,6 +144,17 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   (`mocktail`).
 - Prefer the cached helpers in new tests when a fixture is rebuilt in every
   `setUp` — they reduce git process spawns by an order of magnitude.
+  **The git processes are what this suite takes its time for**: measured on
+  22 processors under Windows, a machine starts about 25 of them per second,
+  whether three or eleven test files run at once (111 s and 90 s for the
+  whole suite). The suite started 2830 git processes; with the lighter
+  helpers and the standard repositories taken from the templates
+  (`initCachedGit`, `initCachedLocalAndRemoteGit`) it starts 1566, and the
+  run with every process traced went from 107 s to 71 s. So a new test
+  takes `initCachedGit(d)` instead of `initGit(d)` on a fresh folder, and
+  `initCachedLocalAndRemoteGit()` in a `setUp`. `initGit` stays where the
+  folder is not empty, where a repository is initialized a second time, and
+  for the tests of the helpers themselves.
 - Existing helpers in `test_helpers.dart` must stay backwards compatible —
   four packages depend on them.
 

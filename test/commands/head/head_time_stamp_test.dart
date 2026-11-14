@@ -46,7 +46,7 @@ void main() {
         });
         test('when not everything is committed', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
 
           // Add an uncommitted file
           await addFileWithoutCommitting(d);
@@ -84,7 +84,7 @@ void main() {
 
         test('when something goes wrong while getting the message', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Mock IsCommitted
@@ -134,7 +134,7 @@ void main() {
       group('should return the head commit message', () {
         test('when everything is committed', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Getting the head commit message should work
@@ -151,7 +151,7 @@ void main() {
           // Get linux time stamp
           final timeStamp0 = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Get time stamp
@@ -186,7 +186,7 @@ void main() {
           final timeStamp0 = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d, message: 'message 1');
 
           // Run the command
@@ -207,7 +207,7 @@ void main() {
           final timeStamp0 = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d, message: 'message 1');
 
           // Run the command
@@ -235,7 +235,7 @@ void main() {
           runner.addCommand(headTimeStamp);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command
@@ -259,7 +259,7 @@ void main() {
           runner.addCommand(headTimeStamp);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command

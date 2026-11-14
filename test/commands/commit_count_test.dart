@@ -45,7 +45,7 @@ void main() {
 
       group('should throw', () {
         test('when git rev-list --all --count fails', () async {
-          await initGit(d);
+          await initCachedGit(d);
 
           // Make git rev-list fail
           final processWrapper = MockGgProcessWrapper();

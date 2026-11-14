@@ -2,6 +2,22 @@
 
 A collection of git helper scripts for repository checks and other utilities.
 
+## Fetch
+
+`Fetch.get(mirrorTags: true)` makes the tags of a checkout a copy of the
+remote's, in the connection of the fetch. `refreshDefaultBranch: true` lets
+`origin/HEAD` name the default branch of the remote afterwards — in the
+same connection with git 2.48 or newer (`GitVersion.isAtLeast`), with one
+more call for an older git.
+
+## Retrying network commands
+
+`GitRetry` reruns a git network command that failed because the connection
+was dropped or throttled: four attempts, 5 s, 15 s and 45 s apart. A remote
+that answers with a rate limit (HTTP 429, »rate limit«) is asked again as
+well, after a minute, doubled with every retry. A rejected push, missing
+credentials or an unknown repository is never retried.
+
 ## SSH host keys
 
 `SshHostKeys` helps when git cannot connect to an ssh remote: it tells an

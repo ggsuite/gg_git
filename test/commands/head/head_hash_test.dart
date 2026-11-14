@@ -46,7 +46,7 @@ void main() {
         group('when not everything is committed', () {
           test('and --force is false', () async {
             // Init git
-            await initGit(d);
+            await initCachedGit(d);
 
             // Add an uncommitted file
             await addFileWithoutCommitting(d);
@@ -82,7 +82,7 @@ void main() {
 
         test('when something goes wrong while getting the tag', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Mock IsCommitted
@@ -135,7 +135,7 @@ void main() {
 
         test('when everything is committed', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Getting the head hash should work
@@ -145,7 +145,7 @@ void main() {
 
         test('when not everything is committed but --force is true', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Getting the head hash should work
@@ -170,7 +170,7 @@ void main() {
       group('should allow to get the hashes of commits before head', () {
         test('when offset is used', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
           final oldHead = await headHash.get(directory: d, ggLog: messages.add);
 
@@ -195,7 +195,7 @@ void main() {
       group('should allow to run the command', () {
         test('programmatically', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command
@@ -223,7 +223,7 @@ void main() {
           runner.addCommand(headHash);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command
@@ -253,7 +253,7 @@ void main() {
           runner.addCommand(headHash);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command
@@ -277,7 +277,7 @@ void main() {
           runner.addCommand(headHash);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command

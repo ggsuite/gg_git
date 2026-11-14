@@ -8,7 +8,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:gg_git/gg_git.dart';
-import 'package:gg_git/src/test_helpers/test_helpers.dart';
+import 'package:gg_git/gg_git_test_helpers.dart';
 import 'package:gg_process/gg_process.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -22,7 +22,7 @@ void main() {
     messages.clear();
     d = await initTestDir();
     unstagedFiles = UnstagedFiles(ggLog: messages.add);
-    await initGit(d);
+    await initCachedGit(d);
   });
 
   tearDown(() {
@@ -113,6 +113,15 @@ void main() {
               '--name-only',
             ], workingDirectory: d.path),
           ).thenAnswer((_) async => ProcessResult(1, 1, '', 'My Error'));
+
+          // Both questions are asked at the same time: the other one works.
+          when(
+            () => stagedFiles.processWrapper.run('git', [
+              'ls-files',
+              '--others',
+              '--exclude-standard',
+            ], workingDirectory: d.path),
+          ).thenAnswer((_) async => ProcessResult(1, 0, '', ''));
 
           // Call the method
           late String exception;

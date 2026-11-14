@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.9.0 - 2026-11-14
+
+### Added
+
+- Add the blog post and describe Fetch and GitRetry
+
+### Changed
+
+- Fetch tags and default branch in one connection
+
 ## 4.8.1 - 2026-11-06
 
 ### Changed

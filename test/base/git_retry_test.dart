@@ -103,6 +103,131 @@ void main() {
       });
     });
 
+    group('run after a rate limit', () {
+      const limited =
+          'HTTP 403: You have exceeded a secondary rate limit. Please wait a '
+          'few minutes before you try again.';
+
+      /// A command the remote turns away [times] times before it succeeds.
+      (Future<ProcessResult> Function(), List<int>) limitedCommand(int times) {
+        final calls = <int>[];
+        Future<ProcessResult> run() async {
+          final exitCode = calls.length < times ? 1 : 0;
+          calls.add(exitCode);
+          return ProcessResult(0, exitCode, '', exitCode == 0 ? '' : limited);
+        }
+
+        return (run, calls);
+      }
+
+      test(
+        'tries again and says that the remote limits the requests',
+        () async {
+          final (run, calls) = limitedCommand(1);
+
+          final result = await GitRetry.example.run(
+            run,
+            ggLog: messages.add,
+            description: 'gh pr create',
+          );
+
+          expect(result.exitCode, 0);
+          expect(calls, [1, 0]);
+          expect(
+            rmControls(messages.single),
+            [
+              'gh pr create was turned away: the remote limits how often it ',
+              'is asked. Retrying in 0s (attempt 2 of 3).',
+            ].join(),
+          );
+        },
+      );
+
+      test('waits the rate limit delay, not the short one', () async {
+        const retry = GitRetry(
+          attempts: 2,
+          baseDelay: Duration.zero,
+          rateLimitDelay: Duration(seconds: 1),
+        );
+        final (run, _) = limitedCommand(1);
+        final stopwatch = Stopwatch()..start();
+
+        await retry.run(run, ggLog: messages.add, description: 'git push');
+
+        expect(rmControls(messages.single), contains('Retrying in 1s'));
+        expect(
+          stopwatch.elapsed,
+          greaterThan(const Duration(milliseconds: 900)),
+        );
+      });
+
+      test('gives up after the last attempt', () async {
+        final (run, calls) = limitedCommand(10);
+
+        final result = await GitRetry.example.run(
+          run,
+          ggLog: messages.add,
+          description: 'gh pr create',
+        );
+
+        expect(result.exitCode, 1);
+        expect(result.stderr, limited);
+        expect(calls, [1, 1, 1]);
+      });
+    });
+
+    group('delayAfterRateLimit', () {
+      test('starts with a minute and doubles with every retry', () {
+        const retry = GitRetry();
+        expect(retry.rateLimitDelay, const Duration(seconds: 60));
+        expect(retry.delayAfterRateLimit(1), const Duration(minutes: 1));
+        expect(retry.delayAfterRateLimit(2), const Duration(minutes: 2));
+        expect(retry.delayAfterRateLimit(3), const Duration(minutes: 4));
+      });
+    });
+
+    group('isRateLimited', () {
+      test('is true when the remote says the client asks too often', () {
+        for (final stderr in [
+          // gh, GitHub REST
+          'HTTP 403: API rate limit exceeded for user ID 1.',
+          'You have exceeded a secondary rate limit and have been '
+              'temporarily blocked from content creation.',
+          'You have triggered an abuse detection mechanism.',
+          // git over https
+          'error: RPC failed; HTTP 429 curl 22 The requested URL returned '
+              'error: 429',
+          'fatal: unable to access \'https://github.com/a/b.git/\': The '
+              'requested URL returned error: 429',
+          // npm, pub
+          'npm error code E429\nnpm error 429 Too Many Requests - PUT '
+              'https://registry.npmjs.org/a',
+          'Rate limit exceeded, please try again later.',
+        ]) {
+          expect(GitRetry.isRateLimited(stderr), isTrue, reason: stderr);
+          expect(GitRetry.isTransient(stderr), isTrue, reason: stderr);
+        }
+      });
+
+      test('is false for other failures', () {
+        for (final stderr in [
+          '',
+          'Connection to github.com closed by remote host.',
+          'fatal: repository not found',
+          'error: failed to push some refs',
+        ]) {
+          expect(GitRetry.isRateLimited(stderr), isFalse, reason: stderr);
+        }
+      });
+
+      test('does not make a real error worth a retry', () {
+        const stderr =
+            'remote: Permission denied to a/b.\n'
+            'remote: API rate limit exceeded';
+        expect(GitRetry.isTransient(stderr), isFalse);
+      });
+    });
+
     group('delayBeforeRetry', () {
       test('triples the base delay with every retry', () {
         const retry = GitRetry();
@@ -197,6 +322,7 @@ void main() {
     test('example retries without waiting', () {
       expect(GitRetry.example.attempts, 3);
       expect(GitRetry.example.baseDelay, Duration.zero);
+      expect(GitRetry.example.rateLimitDelay, Duration.zero);
     });
   });
 }

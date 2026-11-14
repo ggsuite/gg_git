@@ -59,7 +59,7 @@ void main() {
     // #########################################################################
     group('get()', () {
       test('should throw if "git rev-parse" fails', () async {
-        await initGit(dLocal);
+        await initCachedGit(dLocal);
         final failingProcessWrapper = MockGgProcessWrapper();
 
         initCommand(processWrapper: failingProcessWrapper);
@@ -99,7 +99,7 @@ void main() {
       group('should return', () {
         group('an empty string', () {
           test('when the repo has no remote', () async {
-            await initGit(dLocal);
+            await initCachedGit(dLocal);
             initCommand();
 
             final result = await upstreamBranch.get(
@@ -112,7 +112,7 @@ void main() {
 
           test('when the repo has a remote '
               'but the current branch has no upstream', () async {
-            await initGit(dLocal);
+            await initCachedGit(dLocal);
 
             initCommand();
             await initRemoteGit(dRemote);
@@ -140,7 +140,7 @@ void main() {
 
           test('when the upstream branch was deleted on the remote '
               'and pruned', () async {
-            await initGit(dLocal);
+            await initCachedGit(dLocal);
             initCommand();
             await initRemoteGit(dRemote);
             await addRemoteToLocal(local: dLocal, remote: dRemote);
@@ -164,7 +164,7 @@ void main() {
 
           test('when git reports the upstream as not stored '
               'as a remote-tracking branch', () async {
-            await initGit(dLocal);
+            await initCachedGit(dLocal);
             final processWrapper = MockGgProcessWrapper();
             initCommand(processWrapper: processWrapper);
 
@@ -197,7 +197,7 @@ void main() {
           test(
             'when the repo has a remote and the branch has an upstream',
             () async {
-              await initGit(dLocal);
+              await initCachedGit(dLocal);
 
               initCommand();
               await initRemoteGit(dRemote);
@@ -218,7 +218,7 @@ void main() {
     group('exec(directory, ggLog)', () {
       group('should print nothing', () {
         test('when repo has no remote', () async {
-          await initGit(dLocal);
+          await initCachedGit(dLocal);
           initCommand();
           await runner.run(['upstream-branch', '-i', dLocal.path]);
           expect(messages, isEmpty);
@@ -227,7 +227,7 @@ void main() {
 
       group('should print the remote branch when available', () {
         test('when repo has a remote', () async {
-          await initGit(dLocal);
+          await initCachedGit(dLocal);
           await addAndCommitSampleFile(dLocal);
 
           initCommand();

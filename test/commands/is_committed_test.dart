@@ -47,7 +47,7 @@ void main() {
     group('run(), get()', () {
       test('should throw if "git status" fails', () async {
         final failingProcessWrapper = MockGgProcessWrapper();
-        await initGit(d);
+        await initCachedGit(d);
         initCommand(processWrapper: failingProcessWrapper);
 
         when(
@@ -79,7 +79,7 @@ void main() {
       group('should return', () {
         group('false', () {
           test('if there are uncommitted changes', () async {
-            await initGit(d);
+            await initCachedGit(d);
             await addFileWithoutCommitting(d);
             initCommand();
 
@@ -100,7 +100,7 @@ void main() {
         group('true', () {
           group('if everything is committed', () {
             test('with inputDir from --input args', () async {
-              await initGit(d);
+              await initCachedGit(d);
               initCommand();
               await runner.run(['is-committed', '--input', d.path]);
               expect(
@@ -110,7 +110,7 @@ void main() {
             });
 
             test('with inputDir taken from constructor', () async {
-              await initGit(d);
+              await initCachedGit(d);
               initCommand();
               final result = await isCommitted.get(
                 directory: d,

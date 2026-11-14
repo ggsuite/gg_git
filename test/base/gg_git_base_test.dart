@@ -12,7 +12,7 @@ import 'package:gg_process/gg_process.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 
-import 'package:gg_git/src/test_helpers/test_helpers.dart';
+import 'package:gg_git/gg_git_test_helpers.dart';
 
 void main() {
   final messages = <String>[];
@@ -92,7 +92,7 @@ void main() {
     // #########################################################################
     test('should succeed', () async {
       await initTestDir();
-      await initGit(d);
+      await initCachedGit(d);
       initCommand();
       await runner.run(['example', '--input', d.path]);
       expect(messages, ['Example executed for "test".']);
@@ -120,14 +120,14 @@ void main() {
     });
 
     test('returns when the repo is not locked', () async {
-      await initGit(d);
+      await initCachedGit(d);
       initCommand();
       await ggGit.waitUntilUnlocked(directory: d);
       expect(messages, isEmpty);
     });
 
     test('throws when the lock file does not disappear', () async {
-      await initGit(d);
+      await initCachedGit(d);
 
       ggGit = GgGitCommandExample(
         ggLog: messages.add,

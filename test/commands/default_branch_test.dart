@@ -28,7 +28,7 @@ void main() {
 
   setUp(() async {
     messages.clear();
-    (local, remote) = await initLocalAndRemoteGit();
+    (local, remote) = await initCachedLocalAndRemoteGit();
     defaultBranch = DefaultBranch(ggLog: messages.add);
     runner = CommandRunner<void>('test', 'test');
     runner.addCommand(defaultBranch);
@@ -89,7 +89,7 @@ void main() {
       test('should fall back to master when there is no main', () async {
         final d = await initTestDir();
         addTearDown(() => d.deleteSync(recursive: true));
-        await initGit(d);
+        await initCachedGit(d);
         await addAndCommitSampleFile(d);
         await git(d, ['branch', '-m', 'main', 'master']);
         await createBranch(d, 'feat_abc');
@@ -119,7 +119,7 @@ void main() {
         () async {
           final d = await initTestDir();
           addTearDown(() => d.deleteSync(recursive: true));
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
           await git(d, ['branch', '-m', 'main', 'trunk']);
 

@@ -61,18 +61,20 @@ class UnstagedFiles extends GgGitBase<List<String>> {
     // Check if the directory is a Git repository
     await check(directory: directory);
 
-    // Use git status -s to get the status in a short format
-    final unstagedResult = await processWrapper.run('git', [
-      'diff',
-      '--name-only',
-    ], workingDirectory: directory.path);
+    // Changed and untracked files are two questions to git. They are asked
+    // at the same time: every git call is a process to wait for.
+    final (unstagedResult, untrackedResult) = await waitForBoth(
+      processWrapper.run('git', [
+        'diff',
+        '--name-only',
+      ], workingDirectory: directory.path),
+      processWrapper.run('git', [
+        'ls-files',
+        '--others',
+        '--exclude-standard',
+      ], workingDirectory: directory.path),
+    );
     final unstaged = _parseResult(unstagedResult, ignoreFiles);
-
-    final untrackedResult = await processWrapper.run('git', [
-      'ls-files',
-      '--others',
-      '--exclude-standard',
-    ], workingDirectory: directory.path);
     final untracked = _parseResult(untrackedResult, ignoreFiles);
 
     return {...unstaged, ...untracked}.toList();

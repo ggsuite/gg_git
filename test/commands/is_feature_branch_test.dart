@@ -33,7 +33,7 @@ void main() {
   group('IsFeatureBranch', () {
     group('get()', () {
       test('should return false when current branch is main', () async {
-        await initGit(d);
+        await initCachedGit(d);
 
         final result = await isFeatureBranch.get(
           directory: d,
@@ -44,7 +44,7 @@ void main() {
       });
 
       test('should return false when current branch is master', () async {
-        await initGit(d);
+        await initCachedGit(d);
         await createBranch(d, 'master');
 
         final result = await isFeatureBranch.get(
@@ -102,7 +102,7 @@ void main() {
 
       test('should return true when '
           'current branch is a feature branch', () async {
-        await initGit(d);
+        await initCachedGit(d);
         await createBranch(d, 'feat_abc');
 
         final result = await isFeatureBranch.get(
@@ -116,7 +116,7 @@ void main() {
 
     group('exec(directory, ggLog)', () {
       test('should print the evaluation result', () async {
-        await initGit(d);
+        await initCachedGit(d);
 
         await runner.run(['is-feature-branch', '-i', d.path]);
         expect(messages.last, 'false');
