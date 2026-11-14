@@ -1,14 +1,10 @@
 # Changelog
 
-## Unreleased
+## 4.9.0 - 2026-11-14
 
 ### Added
 
 - Add the blog post and describe Fetch and GitRetry
-
-Add the blog post of the change
-README: the options of Fetch, retrying network commands
-Tighten the dependencies
 
 ### Changed
 
