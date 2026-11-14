@@ -2,16 +2,17 @@
 
 ## Unreleased
 
+### Added
+
+- Add the blog post and describe Fetch and GitRetry
+
+Add the blog post of the change
+README: the options of Fetch, retrying network commands
+Tighten the dependencies
+
 ### Changed
 
 - Fetch tags and default branch in one connection
-
-Fetch takes mirrorTags and refreshDefaultBranch; GitVersion tells what the installed git can do
-LastChangesHash hashes all unstaged files with one git call and reads index and working tree at the same time
-Add waitForBoth
-GitRetry waits a minute, doubled with every retry, and tries again when a remote answers with a rate limit (HTTP 429, secondary rate limit)
-The test helpers start fewer git processes: initLocalGit does not check out main in a repository it just created, commitFile asks git status only when git refuses the commit and commits without auto maintenance
-The tests take their standard repositories from the cached templates: 1566 git processes instead of 2830
 
 ## 4.8.1 - 2026-11-06
 
