@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:gg_git/gg_git.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart';
 
 /// Returns a 64bit hash summarizing the changes since the last commit.
 class LastChangesHash extends GgGitBase<int> {
@@ -64,21 +65,25 @@ class LastChangesHash extends GgGitBase<int> {
     logDetails ??= argResults?['verbose'] as bool? ?? false;
     ignoreUnstaged ??= argResults?['ignoreUnstaged'] as bool? ?? false;
 
-    // Get hashes of unstaged files
-    final hashesFromGitLs = await _hashesFromGitLs(
-      directory: directory,
-      ggLog: ggLog,
-      ignoreFiles: ignoreFiles,
-    );
+    // The index and the working tree are read at the same time: neither
+    // needs the other, and every git call is a process to wait for.
+    final (hashesFromGitLs, hashesOfUnstagedFiles) = await waitForBoth(
+      // Get hashes of staged files
+      _hashesFromGitLs(
+        directory: directory,
+        ggLog: ggLog,
+        ignoreFiles: ignoreFiles,
+      ),
 
-    // Get hashes of staged files
-    final hashesOfUnstagedFiles = ignoreUnstaged
-        ? <String, String>{}
-        : await _hashesFromUnstagedFiles(
-            directory: directory,
-            ggLog: ggLog,
-            ignoreFiles: ignoreFiles,
-          );
+      // Get hashes of unstaged files
+      ignoreUnstaged
+          ? Future.value(<String, String>{})
+          : _hashesFromUnstagedFiles(
+              directory: directory,
+              ggLog: ggLog,
+              ignoreFiles: ignoreFiles,
+            ),
+    );
 
     // Merge hashes together
     // Remove ignore files. An entry ending with a slash names a directory
@@ -128,25 +133,82 @@ class LastChangesHash extends GgGitBase<int> {
           )).where((element) => !isIgnoredFile(element, ignoreFiles)).toList()
           ..sort();
 
-    final result = <String, String>{};
+    // A file that was deleted, or a folder, has no content to hash: its
+    // hash is empty, and git is not asked — it would stop at such a path
+    // and hash none of the files after it.
+    final result = <String, String>{for (final file in unstagedFiles) file: ''};
+    final hashable = unstagedFiles
+        .where((file) => File(join(directory.path, file)).existsSync())
+        .toList();
 
-    // Calculate the hashes of the unstaged files
-    for (final file in unstagedFiles) {
-      // git hash-object .vscode/settings.json
-      final raw =
-          (await processWrapper.run('git', [
-                'hash-object',
-                file,
-              ], workingDirectory: directory.path)).stdout
-              as String;
-
-      final hash = raw.trim();
-
-      result[file] = hash;
+    // Calculate the hashes of the unstaged files, many files per git call:
+    // one call per file made a tree with many changes slow.
+    for (final files in _chunks(hashable)) {
+      final hashes = await _hashObjects(directory, files);
+      for (var i = 0; i < files.length; i++) {
+        result[files[i]] = hashes[i];
+      }
     }
 
     return result;
   }
+
+  // ...........................................................................
+  /// The hash of the content of each of [files], in their order.
+  Future<List<String>> _hashObjects(
+    Directory directory,
+    List<String> files,
+  ) async {
+    // git hash-object -- .vscode/settings.json README.md
+    final all = await processWrapper.run('git', [
+      'hash-object',
+      '--',
+      ...files,
+    ], workingDirectory: directory.path);
+    final hashes = (all.stdout as String).trim().split('\n');
+    if (all.exitCode == 0 && hashes.length == files.length) {
+      return hashes.map((hash) => hash.trim()).toList();
+    }
+
+    // git stopped at a file it cannot read. Ask file by file: the unreadable
+    // ones get the empty hash, the others their own.
+    return [
+      for (final file in files)
+        ((await processWrapper.run('git', [
+                  'hash-object',
+                  '--',
+                  file,
+                ], workingDirectory: directory.path)).stdout
+                as String)
+            .trim(),
+    ];
+  }
+
+  // ...........................................................................
+  /// Splits [files] into lists a command line can take.
+  ///
+  /// Windows limits a command line to 32767 characters, a shell on Windows
+  /// to 8191; [maxCommandLineLength] stays below both.
+  Iterable<List<String>> _chunks(List<String> files) sync* {
+    var chunk = <String>[];
+    var length = 0;
+    for (final file in files) {
+      if (chunk.isNotEmpty && length + file.length + 1 > maxCommandLineLength) {
+        yield chunk;
+        chunk = <String>[];
+        length = 0;
+      }
+      chunk.add(file);
+      length += file.length + 1;
+    }
+    if (chunk.isNotEmpty) {
+      yield chunk;
+    }
+  }
+
+  /// How many characters of file names one `git hash-object` call gets at
+  /// most.
+  static const int maxCommandLineLength = 6000;
 
   // ...........................................................................
   Future<Map<String, String>> _hashesFromGitLs({

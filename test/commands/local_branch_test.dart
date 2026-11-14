@@ -47,7 +47,7 @@ void main() {
     // #########################################################################
     group('get()', () {
       test('should throw if "git branch --show-current" fails', () async {
-        await initGit(dLocal);
+        await initCachedGit(dLocal);
         final failingProcessWrapper = MockGgProcessWrapper();
 
         initCommand(processWrapper: failingProcessWrapper);
@@ -87,7 +87,7 @@ void main() {
           test(
             'when the repo has a remote and the branch has an local',
             () async {
-              await initGit(dLocal);
+              await initCachedGit(dLocal);
 
               initCommand();
               await initRemoteGit(dRemote);
@@ -108,7 +108,7 @@ void main() {
     group('exec(directory, ggLog)', () {
       group('should print the branch when available', () {
         test('when repo has a remote', () async {
-          await initGit(dLocal);
+          await initCachedGit(dLocal);
           await addAndCommitSampleFile(dLocal);
 
           initCommand();

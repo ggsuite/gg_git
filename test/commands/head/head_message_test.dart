@@ -46,7 +46,7 @@ void main() {
         group('when not everything is committed', () {
           test('and throwIfNotEverythingIsCommitted = true', () async {
             // Init git
-            await initGit(d);
+            await initCachedGit(d);
 
             // Add an uncommitted file
             await addFileWithoutCommitting(d);
@@ -85,7 +85,7 @@ void main() {
 
         test('when something goes wrong while getting the message', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Mock IsCommitted
@@ -133,7 +133,7 @@ void main() {
       group('should return the head commit message', () {
         test('when everything is committed', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Getting the head commit message should work
@@ -147,7 +147,7 @@ void main() {
         group('when not everything is committed', () {
           test('but throwIfNotEverythingIsCommitted = false', () async {
             // Init git
-            await initGit(d);
+            await initCachedGit(d);
 
             // Add an uncommitted file
             await addAndCommitSampleFile(
@@ -180,7 +180,7 @@ void main() {
       group('should allow to get the messages of commits before head', () {
         test('when offset is used', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d, message: 'Old commit');
           final oldMessage = await headMessage.get(
             directory: d,
@@ -211,7 +211,7 @@ void main() {
       group('should allow to run the command from cli', () {
         test('programmatically', () async {
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d, message: 'message 1');
 
           // Run the command
@@ -239,7 +239,7 @@ void main() {
           runner.addCommand(headMessage);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d, message: 'message 1');
 
           // Run the command
@@ -270,7 +270,7 @@ void main() {
           runner.addCommand(headMessage);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command
@@ -294,7 +294,7 @@ void main() {
           runner.addCommand(headMessage);
 
           // Init git
-          await initGit(d);
+          await initCachedGit(d);
           await addAndCommitSampleFile(d);
 
           // Run the command

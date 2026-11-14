@@ -25,7 +25,7 @@ void main() {
 
   setUp(() async {
     messages.clear();
-    (d, dRemote) = await initLocalAndRemoteGit();
+    (d, dRemote) = await initCachedLocalAndRemoteGit();
     commit = Commit(ggLog: messages.add);
     commitCount = CommitCount(ggLog: messages.add);
     headMessage = HeadMessage(ggLog: messages.add);

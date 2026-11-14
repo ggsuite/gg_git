@@ -20,7 +20,7 @@ void main() {
   setUp(() async {
     messages.clear();
     d = await initTestDir();
-    await initGit(d);
+    await initCachedGit(d);
     gitStatus = GitStatus(ggLog: messages.add);
   });
 

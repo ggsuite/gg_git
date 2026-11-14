@@ -14,11 +14,17 @@ import 'package:mocktail/mocktail.dart';
 /// Reruns a git network command that failed with a transient transport
 /// error: a dropped connection, GitHub's SSH throttling, a 5xx reply, a
 /// failed host name lookup or a connection that timed out.
+///
+/// A remote that answers with a **rate limit** — HTTP 429, GitHub's
+/// »secondary rate limit« — is asked again as well, but after a much longer
+/// wait ([rateLimitDelay], doubled with every retry): such a limit is
+/// lifted after a minute or more, and asking earlier only prolongs it.
 class GitRetry {
   /// Constructor
   const GitRetry({
     this.attempts = 4,
     this.baseDelay = const Duration(seconds: 5),
+    this.rateLimitDelay = const Duration(seconds: 60),
   });
 
   // ...........................................................................
@@ -31,13 +37,20 @@ class GitRetry {
   }) async {
     var result = await command();
     for (var attempt = 2; attempt <= attempts; attempt++) {
-      if (result.exitCode == 0 || !isTransient('${result.stderr}')) {
+      final stderr = '${result.stderr}';
+      if (result.exitCode == 0 || !isTransient(stderr)) {
         break;
       }
-      final delay = delayBeforeRetry(attempt - 1);
+      final rateLimited = isRateLimited(stderr);
+      final delay = rateLimited
+          ? delayAfterRateLimit(attempt - 1)
+          : delayBeforeRetry(attempt - 1);
+      final reason = rateLimited
+          ? 'was turned away: the remote limits how often it is asked'
+          : 'failed with a transient network error';
       ggLog(
         cDetail(
-          '$description failed with a transient network error. '
+          '$description $reason. '
           'Retrying in ${delay.inSeconds}s (attempt $attempt of $attempts).',
         ),
       );
@@ -53,14 +66,29 @@ class GitRetry {
       baseDelay * math.pow(3, retry - 1).toInt();
 
   // ...........................................................................
-  /// Whether [stderr] shows a dropped or throttled connection rather than a
-  /// real error such as rejected credentials or a missing repository.
+  /// The wait before the [retry]-th retry after a rate limit:
+  /// [rateLimitDelay], doubled each time.
+  Duration delayAfterRateLimit(int retry) =>
+      rateLimitDelay * (1 << (retry - 1));
+
+  // ...........................................................................
+  /// Whether [stderr] shows a dropped or throttled connection, or a rate
+  /// limit, rather than a real error such as rejected credentials or a
+  /// missing repository.
   static bool isTransient(String stderr) {
     final text = stderr.toLowerCase();
     if (_permanent.any(text.contains)) {
       return false;
     }
-    return _transient.any(text.contains);
+    return _transient.any(text.contains) || _rateLimited.any(text.contains);
+  }
+
+  // ...........................................................................
+  /// Whether [stderr] says the remote refused the request because the
+  /// client asked too often: it has to wait before it asks again.
+  static bool isRateLimited(String stderr) {
+    final text = stderr.toLowerCase();
+    return _rateLimited.any(text.contains);
   }
 
   /// How often the command runs at most, the first run included.
@@ -69,10 +97,15 @@ class GitRetry {
   /// The wait before the first retry.
   final Duration baseDelay;
 
+  /// The wait before the first retry after a rate limit. GitHub asks a
+  /// client it has limited to wait at least a minute.
+  final Duration rateLimitDelay;
+
   /// Retries without waiting, for tests.
   static const GitRetry example = GitRetry(
     attempts: 3,
     baseDelay: Duration.zero,
+    rateLimitDelay: Duration.zero,
   );
 
   // ######################
@@ -110,6 +143,20 @@ class GitRetry {
     'returned error: 502',
     'returned error: 503',
     'returned error: 504',
+  ];
+
+  // ...........................................................................
+  /// Messages of a remote that limits how often one client may ask.
+  static const List<String> _rateLimited = [
+    // GitHub: »API rate limit exceeded«, »You have exceeded a secondary
+    // rate limit«; npm and pub.dev: »rate limit exceeded«.
+    'rate limit',
+    // Older wording of GitHub's secondary rate limit.
+    'abuse detection',
+    // The plain HTTP answer, as git, gh, curl and npm print it.
+    'too many requests',
+    'http 429',
+    'returned error: 429',
   ];
 
   // ...........................................................................

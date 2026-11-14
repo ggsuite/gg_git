@@ -48,7 +48,7 @@ void main() {
     // #########################################################################
     group('get()', () {
       test('should throw if "git remote" fails', () async {
-        await initGit(dLocal);
+        await initCachedGit(dLocal);
         final failingProcessWrapper = MockGgProcessWrapper();
 
         initCommand(processWrapper: failingProcessWrapper);
@@ -81,7 +81,7 @@ void main() {
       group('should return', () {
         group('false', () {
           test('when repo has no remote', () async {
-            await initGit(dLocal);
+            await initCachedGit(dLocal);
             initCommand();
 
             final result = await hasRemote.get(
@@ -96,7 +96,7 @@ void main() {
         // .....................................................................
         group('true', () {
           test('when repo has a remote', () async {
-            await initGit(dLocal);
+            await initCachedGit(dLocal);
             await addAndCommitSampleFile(dLocal);
 
             initCommand();
@@ -117,7 +117,7 @@ void main() {
     group('exec(directory, ggLog)', () {
       group('should print ✗ and throw', () {
         test('when repo has no remote', () async {
-          await initGit(dLocal);
+          await initCachedGit(dLocal);
           initCommand();
 
           late String exception;
@@ -137,7 +137,7 @@ void main() {
 
       group('should print ✓ when repo has a remote', () {
         test('when repo has a remote', () async {
-          await initGit(dLocal);
+          await initCachedGit(dLocal);
           await addAndCommitSampleFile(dLocal);
 
           initCommand();

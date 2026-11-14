@@ -63,12 +63,22 @@ Future<void> initLocalGit(Directory testDir) async {
 
   final localDir = testDir;
 
+  // A repository git creates here is on »main« right away. Only one that
+  // was there before may sit on another branch.
+  final isNew =
+      FileSystemEntity.typeSync(join(localDir.path, '.git')) ==
+      FileSystemEntityType.notFound;
+
   final result = await ggRunProcess('git', [
     'init',
     '--initial-branch=main',
   ], workingDirectory: localDir.path);
 
   _throw('Could not initialize local git repository', result);
+
+  if (isNew) {
+    return;
+  }
 
   final result2 = await ggRunProcess('git', [
     'checkout',
@@ -252,23 +262,49 @@ Future<void> commitFile(
   bool stage = true,
   bool ammend = false,
 }) async {
-  final nothingHasChanged = (await modifiedFiles(testDir)).isEmpty;
-  if (nothingHasChanged) {
+  // Nothing changed, nothing to commit. Amending would rewrite the last
+  // commit all the same, so it asks first. A plain commit does not: git
+  // refuses it when nothing has changed, and only then the question is
+  // asked — one git process less for every commit that goes through.
+  Future<bool> nothingHasChanged() async =>
+      (await modifiedFiles(testDir)).isEmpty;
+
+  if (ammend && await nothingHasChanged()) {
     return;
   }
 
   if (stage) {
-    await stageFile(testDir, fileName);
+    final staged = await ggRunProcess('git', [
+      'add',
+      fileName,
+    ], workingDirectory: testDir.path);
+
+    if (staged.exitCode != 0) {
+      if (!ammend && await nothingHasChanged()) {
+        return;
+      }
+      _throw('Could not stage $fileName', staged);
+    }
   }
 
   final result2 = await ggRunProcess('git', [
+    // git looks after every commit whether the repository needs tidying
+    // up, in a process of its own that may outlive the test. A test
+    // repository never needs it.
+    '-c',
+    'maintenance.auto=false',
     'commit',
     '-m',
     message,
     if (ammend) '--amend',
   ], workingDirectory: testDir.path);
 
-  _throw('Could not commit $fileName', result2);
+  if (result2.exitCode != 0) {
+    if (!ammend && await nothingHasChanged()) {
+      return;
+    }
+    _throw('Could not commit $fileName', result2);
+  }
 }
 
 // .............................................................................
