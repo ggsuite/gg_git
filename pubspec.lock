@@ -113,22 +113,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.0"
-  dna_gg:
-    dependency: transitive
-    description:
-      name: dna_gg
-      sha256: fe0e9f273b7fb3ff126f0ed0b285a2a24dd57756ec9d7d175761785aba283dae
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.6.0"
   dna_ggsuite:
     dependency: "direct dev"
     description:
       name: dna_ggsuite
-      sha256: "11610f633b5547a5f324a8b7218c003cc13d05e75ece92bea1f26fa1ee221cd9"
+      sha256: "3897b2632e7af7180383a20ba3b1494ca994272467c823816a11b27fdb2bfb4f"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "2.0.0"
   dna_github:
     dependency: transitive
     description:
@@ -301,10 +293,10 @@ packages:
     dependency: "direct dev"
     description:
       name: helix
-      sha256: ef8f11569ff5d8e3c86b569c7a20598e266ea5d7ae8d8b24d82fbc1ad1c0e43a
+      sha256: b537b80216f6fa539e209da123ca3bc42a293629530c31aa3dd42c0ae62db0ec
       url: "https://pub.dev"
     source: hosted
-    version: "1.14.0"
+    version: "1.15.1"
   http_multi_server:
     dependency: transitive
     description:

@@ -159,7 +159,4 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   four packages depend on them.
 
 <!-- helix:claude_md:start -->
-
-@.claude/CLAUDE_dna_gg.md
-
 <!-- helix:claude_md:end -->
