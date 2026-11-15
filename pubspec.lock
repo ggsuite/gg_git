@@ -293,10 +293,10 @@ packages:
     dependency: "direct dev"
     description:
       name: helix
-      sha256: b537b80216f6fa539e209da123ca3bc42a293629530c31aa3dd42c0ae62db0ec
+      sha256: b4751fde19f6e9fd3ec930213b0cb868859a3eb85fe75d67bcb2a76e4d026490
       url: "https://pub.dev"
     source: hosted
-    version: "1.15.1"
+    version: "1.15.2"
   http_multi_server:
     dependency: transitive
     description:
@@ -594,4 +594,4 @@ packages:
     source: hosted
     version: "3.1.4"
 sdks:
-  dart: ">=3.13.0 <4.0.0"
+  dart: ">=3.14.0 <4.0.0"

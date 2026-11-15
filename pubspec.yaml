@@ -5,7 +5,7 @@ repository: https://github.com/inlavigo/gg_git.git
 #test
 
 environment:
-  sdk: ">=3.13.0 <4.0.0"
+  sdk: ">=3.14.0 <4.0.0"
 
 dependencies:
   args: ^2.7.0
@@ -27,4 +27,4 @@ dev_dependencies:
   test: ^1.33.0
   recase: ^4.1.0
   dna_ggsuite: ^2.0.0
-  helix: ^1.14.0
+  helix: ^1.15.2
