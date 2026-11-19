@@ -142,6 +142,39 @@ void main() {
       );
     });
 
+    test('ends a fetch Azure turns away and says to sign in again', () async {
+      // Azure prints VS403463 and keeps the connection open.
+      final sshCommand = writeFakeSsh(
+        d,
+        'echo "remote: VS403463: The conditional access policy defined by '
+        'your Microsoft Entra administrator has failed." >&2\n'
+        'read line',
+      );
+      await initGit(d);
+      await _git(d, [
+        'remote',
+        'add',
+        'origin',
+        'git@ssh.dev.azure.com:v3/org/project/repo',
+      ]);
+      await _git(d, ['config', 'ssh.variant', 'ssh']);
+      await _git(d, ['config', 'core.sshCommand', sshCommand]);
+
+      await expectLater(
+        Fetch(ggLog: messages.add).get(directory: d, ggLog: messages.add),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            allOf(
+              contains('VS403463'),
+              contains('Sign in to https://dev.azure.com/org in the browser'),
+            ),
+          ),
+        ),
+      );
+    }, timeout: const Timeout(Duration(seconds: 90)));
+
     group('with mirrorTags', () {
       test('prunes and forces the tags in the same fetch', () async {
         const args = ['fetch', '--prune', '--prune-tags', '--force'];

@@ -7,6 +7,8 @@
 import 'dart:io';
 
 import 'package:gg_git/gg_git.dart';
+import 'package:gg_git/gg_git_test_helpers.dart';
+import 'package:gg_process/gg_process.dart';
 import 'package:gg_status_printer/gg_status_printer.dart';
 import 'package:test/test.dart';
 
@@ -317,12 +319,55 @@ void main() {
             'declined)\nfatal: the remote end hung up unexpectedly';
         expect(GitRetry.isTransient(stderr), isFalse);
       });
+
+      test('is false when Azure turns the request away', () {
+        // A failed conditional access policy needs a new sign-in, however
+        // the connection ended.
+        const stderr =
+            'remote: VS403463: The conditional access policy defined by your '
+            'Microsoft Entra administrator has failed.\n'
+            'fatal: the remote end hung up unexpectedly';
+        expect(GitRetry.isTransient(stderr), isFalse);
+      });
     });
+
+    test('watches each attempt: a remote that turns it away and stays '
+        'connected ends it at once, without a retry', () async {
+      final dir = await initTestDir();
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final ssh = writeFakeSsh(
+        dir,
+        'echo "remote: VS403463: The conditional access policy …" >&2\n'
+        'read line',
+      );
+      var attempts = 0;
+
+      final result = await GitRetry.example.run(
+        () {
+          attempts++;
+          return ggRunProcess('git', [
+            '-c',
+            'ssh.variant=ssh',
+            '-c',
+            'core.sshCommand=$ssh',
+            'ls-remote',
+            'git@ssh.dev.azure.com:v3/org/project/repo',
+          ]);
+        },
+        ggLog: messages.add,
+        description: 'git ls-remote',
+      );
+
+      expect(result.exitCode, 128);
+      expect(result.stderr, contains('VS403463'));
+      expect(attempts, 1);
+    }, timeout: const Timeout(Duration(seconds: 90)));
 
     test('example retries without waiting', () {
       expect(GitRetry.example.attempts, 3);
       expect(GitRetry.example.baseDelay, Duration.zero);
       expect(GitRetry.example.rateLimitDelay, Duration.zero);
+      expect(GitRetry.example.watch, GitWatch.example);
     });
   });
 }

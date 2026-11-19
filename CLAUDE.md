@@ -60,6 +60,45 @@ Use `gg` for the workflow (never plain `git commit`/`git push`):
   limit is lifted after a minute or more, and asking earlier prolongs it.
   The log line then says that the remote limits how often it is asked. `Fetch` uses it, and
   so do the pushes of gg_one_commit (`do push`) and gg_one_do_publish.
+- `lib/src/base/git_watch.dart` — `GitWatch.run` runs a git network command
+  with `start` of `GgProcessDelegate.defaultDelegate`, never in a shell, and
+  reads its stderr while it runs. Like every `ggRunProcess` process it is
+  **not** tracked by the `GgProcessScope` — a cancelled scope lets it finish.
+  `GitWatch.watch(body)` installs a watching delegate for `body`
+  (`GgProcessDelegate.runWith`), so every **git** `ggRunProcess` /
+  `GgProcessWrapper.run` inside is watched, whatever runner the caller uses.
+  Passed through unwatched: other programs (`gh pr create` runs inside
+  `GitRetry` too), `ggStartProcess`, output asked for as bytes (encoding
+  `null`), and everything while a delegate other than the default one is
+  installed (embedders, tests answering commands themselves); an injected
+  fake runner never gets there. Output is decoded with the encodings the
+  caller passed, like `Process.run`. **`GitRetry.run` watches every attempt**
+  (`GitRetry.watch`, `GitRetry.example` uses `GitWatch.example`), so every
+  git network command of the family — push, publish, fetch, ls-remote,
+  clone — is covered without code at the call sites. A remote can turn
+  a request away and keep the connection open (Azure DevOps prints
+  »VS403463: The conditional access policy … has failed« and git waits for
+  hours); on such a message (`isFatalRemoteMessage`: `vs403463:` — the
+  colon keeps the branch names a fetch lists from matching; only the new
+  stderr plus a short overlap is searched) the watch ends git and its ssh
+  (`taskkill /T` on Windows, `pkill -P` elsewhere, then `kill`; a missing
+  tool is tolerated) and returns exit 128 with the stderr — unless git
+  ended by itself within 500 ms of the message, then its own exit code
+  counts; output arriving later triggers no notice. A command silent for `quietNotice` (30 s) is reported
+  to `ggLog`, again after every further 30 s, but keeps running. stdin is
+  closed, so a prompt fails instead of waiting; output is read as UTF-8.
+  The notice names the folder (`… in <workingDirectory>`); one timer per
+  silence (`_QuietNotice`), not one per chunk. The kill tools run through the
+  default delegate, never watched or refused by a cancelled scope. The VS403463 check itself lives once, in `SshHostKeys`. Tests fake ssh with
+  the test helper `writeFakeSsh` (`core.sshCommand` + `ssh.variant=ssh`);
+  the script must wait with the builtin `read`, a forked `sleep` loses its
+  parent under MSYS and survives the kill.
+- `SshHostKeys.isConditionalAccessFailure` / `setupHint` — VS403463 counts as
+  a setup problem; the hint says to sign in to `https://dev.azure.com/<org>`
+  (`azureOrganizationOf`: ssh, ssh://, https and legacy
+  `https://<org>.visualstudio.com` forms) in the browser.
+  `GitRetry` never retries it. `hintScope` tells callers what to show a
+  hint once per: the Azure organization for VS403463, else the ssh host.
 - `lib/src/base/git_version.dart` — `GitVersion.isAtLeast(major, minor)`
   asks `git --version` once per process and never throws (an unreadable
   answer counts as older than everything). `GitVersion.fixed` / `.unknown`

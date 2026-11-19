@@ -113,12 +113,23 @@ class SshHostKeys {
         text.contains('public key authentication failed');
   }
 
+  /// Whether [stderr] shows that Azure DevOps turned the request away
+  /// because a conditional access policy of the organization failed
+  /// (VS403463): the last sign-in of the developer is too old or was made
+  /// from another network. Over ssh as well as over https.
+  static bool isConditionalAccessFailure(String stderr) =>
+      stderr.toLowerCase().contains('vs403463:');
+
   /// Whether [stderr] shows that ssh is not set up for the host: unknown,
-  /// changed host key or refused user key — the cases [setupHint] explains.
+  /// changed host key or refused user key — or that the host turns the
+  /// developer away until they sign in again
+  /// ([isConditionalAccessFailure]). These are the cases [setupHint]
+  /// explains.
   static bool isSetupProblem(String stderr) =>
       isUnknownHost(stderr) ||
       isChangedHostKey(stderr) ||
-      isKeyRejected(stderr);
+      isKeyRejected(stderr) ||
+      isConditionalAccessFailure(stderr);
 
   // ...........................................................................
   /// What the developer does next when [stderr] of a git command on
@@ -130,6 +141,17 @@ class SshHostKeys {
     String stderr, {
     String? keyAddedTo,
   }) {
+    if (isConditionalAccessFailure(stderr)) {
+      final org = azureOrganizationOf(repoUrl);
+      final signIn = org != null
+          ? 'https://dev.azure.com/$org'
+          : 'Azure DevOps (https://dev.azure.com)';
+      return 'Azure DevOps turned the request away: a conditional access '
+          'policy of your organization failed (VS403463). Usually your last '
+          'sign-in is too old or was made from another network. Sign in to '
+          '$signIn in the browser, on this computer and network, then run '
+          'the command again.';
+    }
     final host = hostOf(repoUrl) ?? 'the host';
     final lsRemote = 'Run "git ls-remote $repoUrl" once';
     if (isUnknownHost(stderr)) {
@@ -173,6 +195,39 @@ class SshHostKeys {
     }
     return null;
   }
+
+  // ...........................................................................
+  /// What the [setupHint] for [stderr] of a git command on [repoUrl] is
+  /// about, so a caller shows it once per scope: the Azure DevOps
+  /// organization for a failed conditional access policy — a policy
+  /// applies per organization, while all of them share one ssh host — and
+  /// the ssh host otherwise.
+  static String hintScope(String repoUrl, String stderr) {
+    if (isConditionalAccessFailure(stderr)) {
+      return 'azure:${azureOrganizationOf(repoUrl) ?? repoUrl}';
+    }
+    return hostOf(repoUrl) ?? repoUrl;
+  }
+
+  // ...........................................................................
+  /// The Azure DevOps organization [repoUrl] points at, over ssh
+  /// (`git@ssh.dev.azure.com:v3/<org>/…`, `ssh://…/v3/<org>/…`), https or
+  /// legacy https (`https://<org>.visualstudio.com/…`)
+  /// (`https://[user@]dev.azure.com/<org>/…`). Null for every other url.
+  static String? azureOrganizationOf(String repoUrl) {
+    final match = _azureOrganization.firstMatch(repoUrl.trim());
+    return match?.namedGroup('org') ?? match?.namedGroup('legacy');
+  }
+
+  /// Finds the organization in an Azure DevOps url: behind `v3/` of an ssh
+  /// host, behind the https host, or in front of `.visualstudio.com`, the
+  /// https host of older organizations.
+  static final _azureOrganization = RegExp(
+    '(?:(?:${_azureHosts.map(RegExp.escape).join('|')})[:/]v3'
+    r'|[/@]dev\.azure\.com)/(?<org>[^/]+)/'
+    r'|^https?://(?:[^@/]+@)?(?<legacy>[^./@]+)\.visualstudio\.com/',
+    caseSensitive: false,
+  );
 
   // ...........................................................................
   /// The host [repoUrl] connects to over ssh, as the known_hosts file names

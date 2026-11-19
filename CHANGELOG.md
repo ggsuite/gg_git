@@ -1,11 +1,12 @@
 # Changelog
 
-## Unreleased
+## 4.10.0 - 2026-11-19
 
 ### Changed
 
 - Upgrade the DNA
 - Upgrade the SDK, the dependencies and the DNA
+- Watch git network commands in GitRetry: end git at once when Azure DevOps turns it away (VS403463), report long silences and say to sign in again
 
 ## 4.9.0 - 2026-11-14
 
