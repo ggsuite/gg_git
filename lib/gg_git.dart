@@ -10,6 +10,7 @@ export 'src/base/gg_git_base.dart';
 export 'src/base/git_retry.dart';
 export 'src/base/git_snapshot.dart';
 export 'src/base/git_version.dart';
+export 'src/base/git_watch.dart';
 export 'src/base/process_runner.dart';
 export 'src/base/ssh_host_keys.dart';
 export 'src/base/wait_for_both.dart';

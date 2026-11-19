@@ -574,3 +574,21 @@ Future<void> pushLocalChanges(Directory d) async {
 
   _throw('Could not push local changes', result1);
 }
+
+// ######################
+// Fake ssh
+// ######################
+
+// .............................................................................
+/// Writes [script] as an ssh stand-in into [dir] and returns the ssh command
+/// git runs it with: set it as `core.sshCommand`, together with
+/// `ssh.variant=ssh`, which spares git asking the stand-in which ssh it is.
+///
+/// A script that has to wait must use the builtin `read`: a forked `sleep`
+/// loses its parent under MSYS and survives when the test ends git.
+String writeFakeSsh(Directory dir, String script) {
+  final file = File(join(dir.path, 'fake_ssh.sh'))
+    ..writeAsStringSync('#!/bin/sh\n$script\n');
+  // git runs the ssh command through sh, which wants forward slashes.
+  return 'sh "${file.path.replaceAll(r'\', '/')}"';
+}

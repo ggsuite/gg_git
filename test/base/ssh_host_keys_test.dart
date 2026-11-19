@@ -111,6 +111,15 @@ void main() {
         expect(SshHostKeys.isKeyRejected(azure), isTrue);
         expect(SshHostKeys.isSetupProblem(azure), isTrue);
       });
+
+      test('isConditionalAccessFailure', () {
+        const blocked =
+            'remote: VS403463: The conditional access policy defined by your '
+            'Microsoft Entra administrator has failed.';
+        expect(SshHostKeys.isConditionalAccessFailure(blocked), isTrue);
+        expect(SshHostKeys.isSetupProblem(blocked), isTrue);
+        expect(SshHostKeys.isConditionalAccessFailure(rejected), isFalse);
+      });
     });
 
     group('setupHint', () {
@@ -208,6 +217,113 @@ void main() {
       test('is null for other failures', () {
         expect(
           SshHostKeys.setupHint('git@github.com:o/r.git', 'not found'),
+          isNull,
+        );
+      });
+    });
+
+    group('setupHint for a failed conditional access policy', () {
+      const blocked = 'remote: VS403463: The conditional access policy …';
+
+      test('names the organization to sign in to', () {
+        expect(
+          SshHostKeys.setupHint('git@ssh.dev.azure.com:v3/org/p/r', blocked),
+          'Azure DevOps turned the request away: a conditional access policy '
+          'of your organization failed (VS403463). Usually your last sign-in '
+          'is too old or was made from another network. Sign in to '
+          'https://dev.azure.com/org in the browser, on this computer and '
+          'network, then run the command again.',
+        );
+        expect(
+          SshHostKeys.setupHint('https://dev.azure.com/org/p/_git/r', blocked),
+          contains('Sign in to https://dev.azure.com/org in the browser'),
+        );
+      });
+
+      test('names Azure DevOps when the url names no organization', () {
+        expect(
+          SshHostKeys.setupHint('https://example.com/p/r', blocked),
+          contains('Sign in to Azure DevOps (https://dev.azure.com) in the'),
+        );
+      });
+    });
+
+    group('hintScope', () {
+      const blocked = 'remote: VS403463: The conditional access policy …';
+
+      test('is the organization for a failed conditional access policy', () {
+        expect(
+          SshHostKeys.hintScope('git@ssh.dev.azure.com:v3/a/p/r', blocked),
+          'azure:a',
+        );
+        expect(
+          SshHostKeys.hintScope('git@ssh.dev.azure.com:v3/b/p/r', blocked),
+          'azure:b',
+        );
+        expect(
+          SshHostKeys.hintScope('https://example.com/p/r', blocked),
+          'azure:https://example.com/p/r',
+        );
+      });
+
+      test('is the ssh host otherwise', () {
+        const refused = 'Permission denied (publickey).';
+        expect(
+          SshHostKeys.hintScope('git@github.com:o/r.git', refused),
+          'github.com',
+        );
+        expect(
+          SshHostKeys.hintScope('https://example.com/r.git', refused),
+          'https://example.com/r.git',
+        );
+      });
+    });
+
+    group('azureOrganizationOf', () {
+      test('reads the organization of an Azure DevOps url', () {
+        expect(
+          SshHostKeys.azureOrganizationOf('git@ssh.dev.azure.com:v3/o/p/r'),
+          'o',
+        );
+        expect(
+          SshHostKeys.azureOrganizationOf('o@vs-ssh.visualstudio.com:v3/o/p/r'),
+          'o',
+        );
+        expect(
+          SshHostKeys.azureOrganizationOf('https://dev.azure.com/o/p/_git/r'),
+          'o',
+        );
+        expect(
+          SshHostKeys.azureOrganizationOf(
+            'ssh://git@ssh.dev.azure.com/v3/o/p/r',
+          ),
+          'o',
+        );
+        expect(
+          SshHostKeys.azureOrganizationOf(
+            'https://o.visualstudio.com/p/_git/r',
+          ),
+          'o',
+        );
+        expect(
+          SshHostKeys.azureOrganizationOf(
+            'https://o@o.visualstudio.com/DefaultCollection/p/_git/r',
+          ),
+          'o',
+        );
+        expect(
+          SshHostKeys.azureOrganizationOf('https://o@dev.azure.com/o/p/_git/r'),
+          'o',
+        );
+      });
+
+      test('is null for other urls', () {
+        expect(
+          SshHostKeys.azureOrganizationOf('git@github.com:org/repo.git'),
+          isNull,
+        );
+        expect(
+          SshHostKeys.azureOrganizationOf('https://example.com/o/p/r'),
           isNull,
         );
       });

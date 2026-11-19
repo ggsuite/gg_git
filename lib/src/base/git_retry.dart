@@ -11,6 +11,9 @@ import 'package:gg_console_colors/gg_console_colors.dart';
 import 'package:gg_log/gg_log.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'git_watch.dart';
+import 'ssh_host_keys.dart';
+
 /// Reruns a git network command that failed with a transient transport
 /// error: a dropped connection, GitHub's SSH throttling, a 5xx reply, a
 /// failed host name lookup or a connection that timed out.
@@ -19,12 +22,18 @@ import 'package:mocktail/mocktail.dart';
 /// »secondary rate limit« — is asked again as well, but after a much longer
 /// wait ([rateLimitDelay], doubled with every retry): such a limit is
 /// lifted after a minute or more, and asking earlier only prolongs it.
+///
+/// Every attempt runs under [watch]: a remote that turns the command away
+/// but keeps the connection open — Azure DevOps after a failed conditional
+/// access policy — ends it at once instead of after hours, and a command
+/// that stays silent is reported.
 class GitRetry {
   /// Constructor
   const GitRetry({
     this.attempts = 4,
     this.baseDelay = const Duration(seconds: 5),
     this.rateLimitDelay = const Duration(seconds: 60),
+    this.watch = const GitWatch(),
   });
 
   // ...........................................................................
@@ -35,7 +44,10 @@ class GitRetry {
     required GgLog ggLog,
     required String description,
   }) async {
-    var result = await command();
+    Future<ProcessResult> watched() =>
+        watch.watch(command, ggLog: ggLog, description: description);
+
+    var result = await watched();
     for (var attempt = 2; attempt <= attempts; attempt++) {
       final stderr = '${result.stderr}';
       if (result.exitCode == 0 || !isTransient(stderr)) {
@@ -55,7 +67,7 @@ class GitRetry {
         ),
       );
       await Future<void>.delayed(delay);
-      result = await command();
+      result = await watched();
     }
     return result;
   }
@@ -77,7 +89,10 @@ class GitRetry {
   /// missing repository.
   static bool isTransient(String stderr) {
     final text = stderr.toLowerCase();
-    if (_permanent.any(text.contains)) {
+    // A failed conditional access policy of Azure DevOps: the developer has
+    // to sign in again first.
+    if (_permanent.any(text.contains) ||
+        SshHostKeys.isConditionalAccessFailure(stderr)) {
       return false;
     }
     return _transient.any(text.contains) || _rateLimited.any(text.contains);
@@ -101,11 +116,15 @@ class GitRetry {
   /// client it has limited to wait at least a minute.
   final Duration rateLimitDelay;
 
+  /// Watches each attempt while it runs.
+  final GitWatch watch;
+
   /// Retries without waiting, for tests.
   static const GitRetry example = GitRetry(
     attempts: 3,
     baseDelay: Duration.zero,
     rateLimitDelay: Duration.zero,
+    watch: GitWatch.example,
   );
 
   // ######################
