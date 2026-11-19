@@ -268,10 +268,11 @@ packages:
   gg_process:
     dependency: "direct main"
     description:
-      path: "../gg_process"
-      relative: true
-    source: path
-    version: "1.5.0"
+      name: gg_process
+      sha256: "0a51b2a50b134b7c287a6fe5219b84757659f42158dbfd1f957557dea61f949f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
   gg_status_printer:
     dependency: "direct main"
     description:
