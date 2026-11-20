@@ -212,10 +212,9 @@ packages:
   gg_args:
     dependency: "direct main"
     description:
-      name: gg_args
-      sha256: "16b93244b8a344bc9899230cc9556dc142b54a880f65e1ea36ec7293ca8f982b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../gg_args"
+      relative: true
+    source: path
     version: "3.2.1"
   gg_capture_print:
     dependency: "direct dev"
@@ -268,10 +267,9 @@ packages:
   gg_process:
     dependency: "direct main"
     description:
-      name: gg_process
-      sha256: "0a51b2a50b134b7c287a6fe5219b84757659f42158dbfd1f957557dea61f949f"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../gg_process"
+      relative: true
+    source: path
     version: "1.6.0"
   gg_status_printer:
     dependency: "direct main"
