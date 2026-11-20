@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Stay within major versions on dependency upgrades
+
 ## 4.10.0 - 2026-11-19
 
 ### Changed
