@@ -172,8 +172,10 @@ class GitWatch {
       SshHostKeys.isConditionalAccessFailure(stderr);
 
   /// Whether [executable] names git, the one program [watch] watches.
+  /// The Windows context splits at `/` and `\` alike, so a Windows path
+  /// is recognized on every host.
   static bool isGit(String executable) =>
-      p.basenameWithoutExtension(executable).toLowerCase() == 'git';
+      p.windows.basenameWithoutExtension(executable).toLowerCase() == 'git';
 
   /// Watches without notices, for tests.
   static const GitWatch example = GitWatch(quietNotice: Duration(hours: 1));
